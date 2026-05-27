@@ -1,7 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { CSSProperties, RefObject } from "react";
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import type { Block } from "../../types/generated/template";
 import type { TemplateSchemaResponse } from "../../types/template";
 import { InlineBlockForm } from "../forms/InlineBlockForm";
@@ -90,8 +90,11 @@ function CanvasRow({ row, schema, onChangeBlock, onRemoveBlock, onSetRowWidths }
     },
   });
   const widths = getRowWidths(row);
-  const gridTemplateColumns = gridTemplateForWidths(widths, row.blocks.length);
   const canResizeColumns = row.blocks.length > 1;
+  const gridTemplateColumns = gridTemplateForWidths(
+    canResizeColumns ? (widths ?? []) : widths,
+    row.blocks.length,
+  );
 
   return (
     <section
@@ -114,32 +117,28 @@ function CanvasRow({ row, schema, onChangeBlock, onRemoveBlock, onSetRowWidths }
         style={gridTemplateColumns ? { gridTemplateColumns } : undefined}
       >
         <SortableContext items={row.blocks.map((block) => block.uid)}>
-          {row.blocks.map((editorBlock) => (
-            <SortableBlock
-              key={editorBlock.uid}
-              rowUid={row.uid}
-              editorBlock={editorBlock}
-              schema={schema}
-              onChangeBlock={onChangeBlock}
-              onRemoveBlock={onRemoveBlock}
-            />
-          ))}
-        </SortableContext>
-
-        {canResizeColumns
-          ? row.blocks
-              .slice(0, -1)
-              .map((block, index) => (
+          {row.blocks.map((editorBlock, index) => (
+            <Fragment key={editorBlock.uid}>
+              <SortableBlock
+                rowUid={row.uid}
+                editorBlock={editorBlock}
+                schema={schema}
+                onChangeBlock={onChangeBlock}
+                onRemoveBlock={onRemoveBlock}
+              />
+              {canResizeColumns && index < row.blocks.length - 1 ? (
                 <ColumnResizer
-                  key={`${block.uid}:resizer`}
+                  key={`${editorBlock.uid}:resizer`}
                   widths={widths}
                   count={row.blocks.length}
                   leftIndex={index}
                   containerRef={rowRef as RefObject<HTMLElement | null>}
                   onResize={(nextWidths) => onSetRowWidths(row.uid, nextWidths)}
                 />
-              ))
-          : null}
+              ) : null}
+            </Fragment>
+          ))}
+        </SortableContext>
       </div>
     </section>
   );
