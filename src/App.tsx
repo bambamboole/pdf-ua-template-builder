@@ -1,5 +1,5 @@
-import { TemplateBuilderShell } from "./components/TemplateBuilderShell";
+import { TemplateBuilderPage } from "./builder/TemplateBuilderPage";
 
 export default function App() {
-  return <TemplateBuilderShell />;
+  return <TemplateBuilderPage />;
 }
