@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { createEditorModel } from "./state/editorModel";
-import { createNextBlockId } from "./TemplateBuilderPage";
+import { createNextBlockId, getRowIndex } from "./TemplateBuilderPage";
 import { PdfPane } from "./pdf/PdfPane";
 
 describe("PdfPane", () => {
@@ -12,6 +12,26 @@ describe("PdfPane", () => {
 
     expect(html).toContain('data="blob:http://localhost:5174/test"');
     expect(html).not.toContain("sandbox=");
+  });
+});
+
+describe("getRowIndex", () => {
+  it("resolves row drops over nested blocks to the block row", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [
+        { blocks: [{ type: "heading", id: "heading-1", text: "Title" }] },
+        { blocks: [{ type: "text", id: "text-1", text: "Body" }] },
+      ],
+    });
+
+    expect(
+      getRowIndex(model, model.rows[1].blocks[0].uid, {
+        type: "block",
+        rowUid: model.rows[1].uid,
+        blockUid: model.rows[1].blocks[0].uid,
+      }),
+    ).toBe(1);
   });
 });
 

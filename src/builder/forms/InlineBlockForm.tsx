@@ -1,4 +1,4 @@
-import type { ChangeEvent, ReactNode } from "react";
+import { useEffect, useState, type ChangeEvent, type ReactNode } from "react";
 import type { Block } from "../../types/generated/template";
 import type { JsonObject } from "../../types/template";
 import type { JsonSchemaObject } from "../schema/schemaAdapter";
@@ -111,11 +111,7 @@ function renderControl({
     return (
       <label key={key}>
         {label}
-        <textarea
-          name={name}
-          value={jsonText(normalizedValue)}
-          onChange={(event) => onChange(jsonValue(event.currentTarget.value, normalizedValue))}
-        />
+        <JsonTextarea name={name} value={normalizedValue} onChange={onChange} />
       </label>
     );
   }
@@ -180,13 +176,7 @@ function renderArrayItems(
   const itemProperties = itemSchema ? getProperties(itemSchema) : {};
 
   if (Object.keys(itemProperties).length === 0) {
-    return (
-      <textarea
-        name={name}
-        value={jsonText(items)}
-        onChange={(event) => onChange(jsonValue(event.currentTarget.value, items))}
-      />
-    );
+    return <JsonTextarea name={name} value={items} onChange={onChange} />;
   }
 
   return items.map((item, index) => {
@@ -414,16 +404,57 @@ function jsonText(value: unknown): string {
   return typeof value === "string" ? value : JSON.stringify(value, null, 2);
 }
 
-function jsonValue(value: string, fallback: unknown): unknown {
+function parseJsonDraft(value: string): { ok: true; value: unknown } | { ok: false } {
   if (value.trim() === "") {
-    return undefined;
+    return {
+      ok: true,
+      value: undefined,
+    };
   }
 
   try {
-    return JSON.parse(value);
+    return {
+      ok: true,
+      value: JSON.parse(value),
+    };
   } catch {
-    return fallback;
+    return {
+      ok: false,
+    };
   }
+}
+
+function JsonTextarea({
+  name,
+  value,
+  onChange,
+}: {
+  name: string;
+  value: unknown;
+  onChange: (value: unknown) => void;
+}) {
+  const [draft, setDraft] = useState(() => jsonText(value));
+
+  useEffect(() => {
+    setDraft(jsonText(value));
+  }, [value]);
+
+  return (
+    <textarea
+      name={name}
+      value={draft}
+      onChange={(event) => {
+        const nextDraft = event.currentTarget.value;
+        const parsed = parseJsonDraft(nextDraft);
+
+        setDraft(nextDraft);
+
+        if (parsed.ok) {
+          onChange(parsed.value);
+        }
+      }}
+    />
+  );
 }
 
 function isJsonObject(value: unknown): value is JsonSchemaObject {

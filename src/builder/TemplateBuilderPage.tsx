@@ -324,12 +324,15 @@ function getDropTarget(
   };
 }
 
-function getRowIndex(
+export function getRowIndex(
   model: EditorModel,
   overId: UniqueIdentifier | undefined,
   overData: DragData,
 ): number | null {
-  const rowUid = overData.type === "row" && overData.rowUid ? overData.rowUid : String(overId);
+  const rowUid =
+    (overData.type === "row" || overData.type === "block") && overData.rowUid
+      ? overData.rowUid
+      : String(overId);
   const index = model.rows.findIndex((row) => row.uid === rowUid);
 
   return index === -1 ? null : index;
