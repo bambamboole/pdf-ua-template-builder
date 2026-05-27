@@ -1,0 +1,9 @@
+node_modules
+dist
+.vite
+.idea
+*.local
+coverage
+.superpowers
+docs/superpowers
+package-lock.json

@@ -1,0 +1,41 @@
+{
+  "name": "pdf-ua-template-builder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "sync:schema": "cp ../pdf-ua-api/app/src/main/resources/schemas/template.schema.json schemas/template.schema.json",
+    "generate:types": "json2ts --input schemas/template.schema.json --output src/types/generated/template.d.ts --unreachableDefinitions",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "lint:github": "oxlint --format=github",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@rjsf/core": "^6.5.3",
+    "@rjsf/utils": "^6.5.3",
+    "@rjsf/validator-ajv8": "^6.5.3",
+    "ajv": "^8.20.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.0",
+    "json-schema-to-typescript": "^15.0.4",
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.0.0",
+    "vitest": "^4.1.7"
+  }
+}
