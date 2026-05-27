@@ -90,7 +90,12 @@ export function getBlockConfigSchema(
 
   const ref = config.$ref;
 
-  return typeof ref === "string" ? resolveRef(schema, ref) : config;
+  const configSchema = typeof ref === "string" ? resolveRef(schema, ref) : config;
+
+  return {
+    ...configSchema,
+    $defs: schema.$defs,
+  };
 }
 
 export function createDefaultBlock(schema: JsonSchemaObject, blockType: string, id: string): Block {

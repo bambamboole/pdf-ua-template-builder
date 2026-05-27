@@ -54,6 +54,11 @@
       "title": "DividerStyle",
       "enum": ["solid", "dashed", "dotted", "double", "none"]
     },
+    "tableStyle": {
+      "type": "string",
+      "title": "TableStyle",
+      "enum": ["striped", "bordered", "minimal"]
+    },
     "pageBackgroundType": {
       "type": "string",
       "title": "PageBackgroundType",
@@ -70,7 +75,7 @@
         "size": {
           "type": ["integer", "null"],
           "description": "Font size in points.",
-          "minimum": 1
+          "minimum": 1.0
         },
         "weight": {
           "type": ["integer", "null"],
@@ -95,22 +100,22 @@
         "top": {
           "type": ["integer", "null"],
           "description": "Top spacing in millimetres.",
-          "minimum": 0
+          "minimum": 0.0
         },
         "right": {
           "type": ["integer", "null"],
           "description": "Right spacing in millimetres.",
-          "minimum": 0
+          "minimum": 0.0
         },
         "bottom": {
           "type": ["integer", "null"],
           "description": "Bottom spacing in millimetres.",
-          "minimum": 0
+          "minimum": 0.0
         },
         "left": {
           "type": ["integer", "null"],
           "description": "Left spacing in millimetres.",
-          "minimum": 0
+          "minimum": 0.0
         }
       },
       "additionalProperties": false
@@ -188,8 +193,8 @@
         "level": {
           "type": "integer",
           "default": 2,
-          "minimum": 1,
-          "maximum": 6
+          "minimum": 1.0,
+          "maximum": 6.0
         }
       },
       "additionalProperties": false,
@@ -231,11 +236,74 @@
         "maxHeight": {
           "type": "integer",
           "default": 60,
-          "minimum": 1
+          "minimum": 1.0
         }
       },
       "additionalProperties": false,
       "tsType": "BlockConfig & { maxHeight?: number }"
+    },
+    "keyValueField": {
+      "type": "object",
+      "title": "KeyValueField",
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": ["key", "label"],
+      "additionalProperties": false,
+      "tsType": "{ key: string; label: string }"
+    },
+    "keyValueConfig": {
+      "type": "object",
+      "title": "KeyValueConfig",
+      "properties": {
+        "typography": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/typographyConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "spacing": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/spacingConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "width": {
+          "type": ["string", "null"],
+          "description": "CSS width for this block, such as 50%, 80mm, or auto."
+        },
+        "align": {
+          "type": ["string", "null"],
+          "description": "Horizontal placement of this block within its row cell.",
+          "enum": ["left", "center", "right", null]
+        },
+        "labelWidth": {
+          "type": "string",
+          "default": "30mm"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/keyValueField"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "tsType": "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }"
     },
     "spacerConfig": {
       "type": "object",
@@ -273,7 +341,7 @@
         "height": {
           "type": "integer",
           "default": 5,
-          "minimum": 0
+          "minimum": 0.0
         }
       },
       "additionalProperties": false,
@@ -315,7 +383,7 @@
         "thickness": {
           "type": "integer",
           "default": 1,
-          "minimum": 0
+          "minimum": 0.0
         },
         "lineColor": {
           "type": "string",
@@ -328,6 +396,82 @@
       },
       "additionalProperties": false,
       "tsType": "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }"
+    },
+    "tableColumn": {
+      "type": "object",
+      "title": "TableColumn",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Runtime data key used for this table column.",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+        },
+        "label": {
+          "type": "string",
+          "description": "Header label rendered for this table column."
+        },
+        "align": {
+          "type": ["string", "null"],
+          "description": "Text alignment for this table column.",
+          "enum": ["left", "center", "right", null]
+        },
+        "width": {
+          "type": ["string", "null"],
+          "description": "Column width as a CSS width value, such as 20mm or 15%."
+        }
+      },
+      "required": ["key", "label"],
+      "additionalProperties": false
+    },
+    "tableConfig": {
+      "type": "object",
+      "title": "TableConfig",
+      "properties": {
+        "typography": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/typographyConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "spacing": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/spacingConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "width": {
+          "type": ["string", "null"],
+          "description": "CSS width for this block, such as 50%, 80mm, or auto."
+        },
+        "align": {
+          "type": ["string", "null"],
+          "description": "Horizontal placement of this block within its row cell.",
+          "enum": ["left", "center", "right", null]
+        },
+        "numberRows": {
+          "type": "boolean",
+          "default": false
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tableColumn"
+          }
+        },
+        "style": {
+          "$ref": "#/$defs/tableStyle"
+        }
+      },
+      "additionalProperties": false,
+      "tsType": "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }"
     },
     "textBlock": {
       "type": "object",
@@ -423,6 +567,36 @@
       "required": ["type", "src"],
       "additionalProperties": false
     },
+    "keyValueBlock": {
+      "type": "object",
+      "title": "KeyValueBlock",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "key-value"
+        },
+        "id": {
+          "type": ["string", "null"],
+          "description": "Stable block identifier used for runtime data overrides."
+        },
+        "values": {
+          "type": "object",
+          "title": "KeyValueValues",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": ["string", "null"]
+          }
+        },
+        "config": {
+          "$ref": "#/$defs/keyValueConfig"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
     "spacerBlock": {
       "type": "object",
       "title": "SpacerBlock",
@@ -461,6 +635,25 @@
       "required": ["type"],
       "additionalProperties": false
     },
+    "tableBlock": {
+      "type": "object",
+      "title": "TableBlock",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "table"
+        },
+        "id": {
+          "type": ["string", "null"],
+          "description": "Stable block identifier used for runtime data overrides."
+        },
+        "config": {
+          "$ref": "#/$defs/tableConfig"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
     "block": {
       "oneOf": [
         {
@@ -476,10 +669,16 @@
           "$ref": "#/$defs/imageBlock"
         },
         {
+          "$ref": "#/$defs/keyValueBlock"
+        },
+        {
           "$ref": "#/$defs/spacerBlock"
         },
         {
           "$ref": "#/$defs/dividerBlock"
+        },
+        {
+          "$ref": "#/$defs/tableBlock"
         }
       ]
     },
@@ -516,11 +715,11 @@
       "properties": {
         "width": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1.0
         },
         "height": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1.0
         }
       },
       "required": ["width", "height"],
@@ -567,6 +766,24 @@
       "required": ["src"],
       "additionalProperties": false
     },
+    "pageFooterConfig": {
+      "type": "object",
+      "title": "PageFooterConfig",
+      "properties": {
+        "repeat": {
+          "type": "boolean",
+          "default": true
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "tsType": "{ repeat?: boolean; rows?: Row[] }"
+    },
     "pageConfig": {
       "type": "object",
       "title": "PageConfig",
@@ -593,10 +810,13 @@
               "type": "null"
             }
           ]
+        },
+        "footer": {
+          "$ref": "#/$defs/pageFooterConfig"
         }
       },
       "additionalProperties": false,
-      "tsType": "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null }"
+      "tsType": "{ size?: PageSize; locale?: string; margins?: SpacingConfig; pageNumbers?: PageNumbersConfig; background?: PageBackgroundConfig | null; footer?: PageFooterConfig }"
     },
     "templateConfig": {
       "type": "object",
@@ -687,27 +907,27 @@
       "Roboto",
       "Rubik"
     ],
-    "blockOrder": ["text", "html", "heading", "image", "spacer", "divider"],
+    "blockOrder": ["text", "html", "heading", "image", "key-value", "spacer", "divider", "table"],
     "pageFormats": [
       {
         "name": "A3",
-        "widthMm": 297,
-        "heightMm": 420
+        "widthMm": 297.0,
+        "heightMm": 420.0
       },
       {
         "name": "A4",
-        "widthMm": 210,
-        "heightMm": 297
+        "widthMm": 210.0,
+        "heightMm": 297.0
       },
       {
         "name": "A5",
-        "widthMm": 148,
-        "heightMm": 210
+        "widthMm": 148.0,
+        "heightMm": 210.0
       },
       {
         "name": "A6",
-        "widthMm": 105,
-        "heightMm": 148
+        "widthMm": 105.0,
+        "heightMm": 148.0
       },
       {
         "name": "Letter",

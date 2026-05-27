@@ -113,7 +113,10 @@ describe("schema adapter", () => {
   });
 
   it("resolves the block config schema", () => {
-    expect(getBlockConfigSchema(schema, "heading")).toEqual(schema.$defs.headingConfig);
+    expect(getBlockConfigSchema(schema, "heading")).toEqual({
+      ...(schema.$defs.headingConfig as JsonSchemaObject),
+      $defs: schema.$defs,
+    });
   });
 
   it("creates a conservative default heading block", () => {

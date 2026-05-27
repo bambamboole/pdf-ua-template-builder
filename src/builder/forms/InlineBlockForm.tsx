@@ -26,7 +26,7 @@ export function InlineBlockForm({
           key: field,
           name: field,
           label: getLabel(field, schema),
-          schema,
+          schema: withRootDefinitions(schema, fieldSchema),
           value: getBlockValue(block, field),
           preserveEmptyString: true,
           onChange: (value) => onChange(setBlockField(block, field, value)),
@@ -38,7 +38,7 @@ export function InlineBlockForm({
           key: `config.${field}`,
           name: `config.${field}`,
           label: getLabel(field, schema),
-          schema,
+          schema: configSchema ? withRootDefinitions(schema, configSchema) : schema,
           value: getConfigValue(block, field),
           preserveEmptyString: false,
           onChange: (value) => onChange(setConfigField(block, field, value)),
@@ -67,6 +67,7 @@ function renderControl({
   preserveEmptyString,
   onChange,
 }: ControlOptions): ReactNode {
+  const resolvedSchema = resolveSchema(schema);
   const enumValues = getEnumValues(schema);
   const normalizedValue = value ?? "";
 
@@ -90,7 +91,50 @@ function renderControl({
     );
   }
 
-  if (isNumberSchema(schema)) {
+  if (isArraySchema(resolvedSchema)) {
+    return (
+      <fieldset key={key} className="builder-array-field">
+        <legend>{label}</legend>
+        {renderArrayItems(name, resolvedSchema, value, onChange)}
+        <button
+          type="button"
+          className="builder-array-field__add"
+          onClick={() => onChange([...arrayValue(value), createDefaultArrayItem(resolvedSchema)])}
+        >
+          Add {label}
+        </button>
+      </fieldset>
+    );
+  }
+
+  if (isObjectSchema(resolvedSchema)) {
+    return (
+      <label key={key}>
+        {label}
+        <textarea
+          name={name}
+          value={jsonText(normalizedValue)}
+          onChange={(event) => onChange(jsonValue(event.currentTarget.value, normalizedValue))}
+        />
+      </label>
+    );
+  }
+
+  if (isBooleanSchema(resolvedSchema)) {
+    return (
+      <label key={key} className="builder-field builder-field--checkbox">
+        <input
+          name={name}
+          type="checkbox"
+          checked={value === true}
+          onChange={(event) => onChange(event.currentTarget.checked)}
+        />
+        {label}
+      </label>
+    );
+  }
+
+  if (isNumberSchema(resolvedSchema)) {
     return (
       <label key={key}>
         {label}
@@ -104,7 +148,7 @@ function renderControl({
     );
   }
 
-  if (isStringSchema(schema)) {
+  if (isStringSchema(resolvedSchema)) {
     const stringValue = String(normalizedValue);
 
     return (
@@ -123,6 +167,55 @@ function renderControl({
   }
 
   return null;
+}
+
+function renderArrayItems(
+  name: string,
+  schema: JsonSchemaObject,
+  value: unknown,
+  onChange: (value: unknown) => void,
+): ReactNode {
+  const items = arrayValue(value);
+  const itemSchema = getArrayItemSchema(schema);
+  const itemProperties = itemSchema ? getProperties(itemSchema) : {};
+
+  if (Object.keys(itemProperties).length === 0) {
+    return (
+      <textarea
+        name={name}
+        value={jsonText(items)}
+        onChange={(event) => onChange(jsonValue(event.currentTarget.value, items))}
+      />
+    );
+  }
+
+  return items.map((item, index) => {
+    const itemRecord = isJsonObject(item) ? item : {};
+
+    return (
+      <div key={getArrayItemKey(name, index)} className="builder-array-field__item">
+        {Object.entries(itemProperties).map(([field, fieldSchema]) =>
+          renderControl({
+            key: `${name}.${index}.${field}`,
+            name: `${name}.${index}.${field}`,
+            label: getLabel(field, fieldSchema),
+            schema: withRootDefinitions(fieldSchema, schema),
+            value: itemRecord[field],
+            preserveEmptyString: true,
+            onChange: (nextValue) =>
+              onChange(replaceArrayItem(items, index, { ...itemRecord, [field]: nextValue })),
+          }),
+        )}
+        <button type="button" onClick={() => onChange(removeArrayItem(items, index))}>
+          Remove
+        </button>
+      </div>
+    );
+  });
+}
+
+function getArrayItemKey(name: string, position: number): string {
+  return `${name}.position-${position}`;
 }
 
 function setBlockField(block: Block, field: string, value: unknown): Block {
@@ -182,7 +275,11 @@ function getLabel(field: string, schema: JsonSchemaObject): string {
 }
 
 function getEnumValues(schema: JsonSchemaObject): unknown[] {
-  return Array.isArray(schema.enum) ? schema.enum.filter((value) => value !== null) : [];
+  const resolvedSchema = resolveSchema(schema);
+
+  return Array.isArray(resolvedSchema.enum)
+    ? resolvedSchema.enum.filter((value) => value !== null)
+    : [];
 }
 
 function isNumberSchema(schema: JsonSchemaObject): boolean {
@@ -191,6 +288,18 @@ function isNumberSchema(schema: JsonSchemaObject): boolean {
 
 function isStringSchema(schema: JsonSchemaObject): boolean {
   return hasType(schema, "string");
+}
+
+function isBooleanSchema(schema: JsonSchemaObject): boolean {
+  return hasType(schema, "boolean");
+}
+
+function isArraySchema(schema: JsonSchemaObject): boolean {
+  return hasType(schema, "array");
+}
+
+function isObjectSchema(schema: JsonSchemaObject): boolean {
+  return hasType(schema, "object") || isJsonObject(schema.additionalProperties);
 }
 
 function hasType(schema: JsonSchemaObject, type: string): boolean {
@@ -213,6 +322,108 @@ function emptyToUndefined(value: string): string | undefined {
 
 function stringValueFromInput(value: string, preserveEmptyString: boolean): string | undefined {
   return preserveEmptyString ? value : emptyToUndefined(value);
+}
+
+function arrayValue(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function replaceArrayItem(items: unknown[], index: number, item: unknown): unknown[] {
+  return items.map((current, currentIndex) => (currentIndex === index ? item : current));
+}
+
+function removeArrayItem(items: unknown[], index: number): unknown[] {
+  return items.filter((_, currentIndex) => currentIndex !== index);
+}
+
+function createDefaultArrayItem(schema: JsonSchemaObject): unknown {
+  const itemSchema = getArrayItemSchema(schema);
+  const properties = itemSchema ? getProperties(itemSchema) : {};
+
+  if (Object.keys(properties).length === 0) {
+    return "";
+  }
+
+  return Object.fromEntries(
+    Object.entries(properties).map(([field, fieldSchema]) => [
+      field,
+      createDefaultValue(fieldSchema),
+    ]),
+  );
+}
+
+function createDefaultValue(schema: JsonSchemaObject): unknown {
+  const resolvedSchema = resolveSchema(schema);
+
+  if ("default" in resolvedSchema) {
+    return resolvedSchema.default;
+  }
+
+  const enumValues = getEnumValues(resolvedSchema);
+
+  if (enumValues.length > 0) {
+    return enumValues[0];
+  }
+
+  if (isNumberSchema(resolvedSchema)) {
+    return 0;
+  }
+
+  if (isBooleanSchema(resolvedSchema)) {
+    return false;
+  }
+
+  if (isArraySchema(resolvedSchema)) {
+    return [];
+  }
+
+  if (isObjectSchema(resolvedSchema)) {
+    return {};
+  }
+
+  return "";
+}
+
+function getArrayItemSchema(schema: JsonSchemaObject): JsonSchemaObject | undefined {
+  return isJsonObject(schema.items)
+    ? resolveSchema(withRootDefinitions(schema.items, schema))
+    : undefined;
+}
+
+function resolveSchema(schema: JsonSchemaObject): JsonSchemaObject {
+  if (typeof schema.$ref !== "string") {
+    return schema;
+  }
+
+  const defs = schema.$defs;
+
+  if (!isJsonObject(defs) || !schema.$ref.startsWith("#/$defs/")) {
+    return schema;
+  }
+
+  const definition = defs[schema.$ref.slice("#/$defs/".length)];
+
+  return isJsonObject(definition) ? withRootDefinitions(definition, schema) : schema;
+}
+
+function withRootDefinitions(schema: JsonSchemaObject, parent: JsonSchemaObject): JsonSchemaObject {
+  return "$defs" in schema || !("$defs" in parent) ? schema : { ...schema, $defs: parent.$defs };
+}
+
+function jsonText(value: unknown): string {
+  return typeof value === "string" ? value : JSON.stringify(value, null, 2);
+}
+
+function jsonValue(value: string, fallback: unknown): unknown {
+  if (value.trim() === "") {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
 }
 
 function isJsonObject(value: unknown): value is JsonSchemaObject {

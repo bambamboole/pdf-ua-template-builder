@@ -161,6 +161,103 @@ describe("InlineBlockForm", () => {
       },
     ]);
   });
+
+  it("server-renders schema-derived arrays of referenced objects", () => {
+    const html = renderToStaticMarkup(
+      <InlineBlockForm
+        block={{
+          type: "key-value",
+          config: {
+            fields: [{ key: "invoiceNumber", label: "Invoice number" }],
+          },
+        }}
+        fieldSchema={{ type: "object", properties: {} }}
+        configSchema={{
+          type: "object",
+          properties: {
+            fields: {
+              type: "array",
+              title: "Fields",
+              items: {
+                $ref: "#/$defs/keyValueField",
+              },
+            },
+          },
+          $defs: {
+            keyValueField: {
+              type: "object",
+              properties: {
+                key: {
+                  type: "string",
+                  title: "Key",
+                },
+                label: {
+                  type: "string",
+                  title: "Label",
+                },
+              },
+            },
+          },
+        }}
+        onChange={() => undefined}
+      />,
+    );
+
+    expect(html).toContain("Fields");
+    expect(html).toContain("Key");
+    expect(html).toContain("Label");
+    expect(html).toContain("invoiceNumber");
+    expect(html).toContain("Invoice number");
+    expect(html).toContain("Add Fields");
+  });
+
+  it("updates schema-derived array object fields", () => {
+    const changes: Block[] = [];
+    const element = InlineBlockForm({
+      block: {
+        type: "table",
+        config: {
+          columns: [{ key: "description", label: "Description" }],
+        },
+      },
+      fieldSchema: { type: "object", properties: {} },
+      configSchema: {
+        type: "object",
+        properties: {
+          columns: {
+            type: "array",
+            title: "Columns",
+            items: {
+              type: "object",
+              properties: {
+                key: {
+                  type: "string",
+                  title: "Key",
+                },
+                label: {
+                  type: "string",
+                  title: "Label",
+                },
+              },
+            },
+          },
+        },
+      },
+      onChange: (block) => changes.push(block),
+    });
+    const control = requireControl(element, "config.columns.0.label");
+
+    getChangeHandler(control)({ currentTarget: { value: "Item" } });
+
+    expect(changes).toEqual([
+      {
+        type: "table",
+        config: {
+          columns: [{ key: "description", label: "Item" }],
+        },
+      },
+    ]);
+  });
 });
 
 type TestElement = ReactElement<Record<string, unknown>>;

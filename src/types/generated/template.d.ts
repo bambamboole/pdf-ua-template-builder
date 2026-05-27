@@ -14,7 +14,15 @@ export type TemplateConfig = { page?: PageConfig; typography?: TypographyConfig 
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "block".
  */
-export type Block = TextBlock | HtmlBlock | HeadingBlock | ImageBlock | SpacerBlock | DividerBlock;
+export type Block =
+  | TextBlock
+  | HtmlBlock
+  | HeadingBlock
+  | ImageBlock
+  | KeyValueBlock
+  | SpacerBlock
+  | DividerBlock
+  | TableBlock;
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "blockConfig".
@@ -37,6 +45,11 @@ export type HeadingConfig = BlockConfig & { level?: number };
 export type ImageConfig = BlockConfig & { maxHeight?: number };
 /**
  * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "keyValueConfig".
+ */
+export type KeyValueConfig = BlockConfig & { labelWidth?: string; fields?: KeyValueField[] };
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "spacerConfig".
  */
 export type SpacerConfig = BlockConfig & { height?: number };
@@ -48,6 +61,15 @@ export type DividerConfig = BlockConfig & {
   thickness?: number;
   lineColor?: string;
   style?: DividerStyle;
+};
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "tableConfig".
+ */
+export type TableConfig = BlockConfig & {
+  numberRows?: boolean;
+  columns?: TableColumn[];
+  style?: TableStyle;
 };
 /**
  * This interface was referenced by `Template`'s JSON-Schema
@@ -71,14 +93,29 @@ export type Orientation = "portrait" | "landscape";
 export type DividerStyle = "solid" | "dashed" | "dotted" | "double" | "none";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "tableStyle".
+ */
+export type TableStyle = "striped" | "bordered" | "minimal";
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageBackgroundType".
  */
 export type PageBackgroundType = "auto" | "image" | "pdf";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "keyValueField".
+ */
+export type KeyValueField = { key: string; label: string };
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageSize".
  */
 export type PageSize = PresetPageSize | CustomPageSize;
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "pageFooterConfig".
+ */
+export type PageFooterConfig = { repeat?: boolean; rows?: Row[] };
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageConfig".
@@ -89,6 +126,7 @@ export type PageConfig = {
   margins?: SpacingConfig;
   pageNumbers?: PageNumbersConfig;
   background?: PageBackgroundConfig | null;
+  footer?: PageFooterConfig;
 };
 
 export interface Template {
@@ -194,6 +232,22 @@ export interface ImageBlock {
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "keyValueBlock".
+ */
+export interface KeyValueBlock {
+  type: "key-value";
+  /**
+   * Stable block identifier used for runtime data overrides.
+   */
+  id?: string | null;
+  values?: KeyValueValues;
+  config?: KeyValueConfig;
+}
+export interface KeyValueValues {
+  [k: string]: string | null;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "spacerBlock".
  */
 export interface SpacerBlock {
@@ -215,6 +269,18 @@ export interface DividerBlock {
    */
   id?: string | null;
   config?: DividerConfig;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "tableBlock".
+ */
+export interface TableBlock {
+  type: "table";
+  /**
+   * Stable block identifier used for runtime data overrides.
+   */
+  id?: string | null;
+  config?: TableConfig;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
@@ -263,6 +329,28 @@ export interface SpacingConfig {
    * Left spacing in millimetres.
    */
   left?: number | null;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "tableColumn".
+ */
+export interface TableColumn {
+  /**
+   * Runtime data key used for this table column.
+   */
+  key: string;
+  /**
+   * Header label rendered for this table column.
+   */
+  label: string;
+  /**
+   * Text alignment for this table column.
+   */
+  align?: "left" | "center" | "right" | null;
+  /**
+   * Column width as a CSS width value, such as 20mm or 15%.
+   */
+  width?: string | null;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
