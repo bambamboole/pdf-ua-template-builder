@@ -434,8 +434,6 @@ export function TemplateBuilder({
           loading={pdfLoading}
           template={serializedTemplate}
           data={data}
-          onRender={() => void renderPdf()}
-          renderDisabled={!schema || pdfLoading}
         />
 
         <DragOverlay dropAnimation={null}>

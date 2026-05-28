@@ -10,19 +10,9 @@ export interface PdfPaneProps {
   loading: boolean;
   template?: Template;
   data?: TemplateData;
-  onRender?: () => void;
-  renderDisabled?: boolean;
 }
 
-export function PdfPane({
-  pdfUrl,
-  error,
-  loading,
-  template,
-  data,
-  onRender,
-  renderDisabled,
-}: PdfPaneProps) {
+export function PdfPane({ pdfUrl, error, loading, template, data }: PdfPaneProps) {
   const [tab, setTab] = useState<OutputTab>("pdf");
   const status: "ready" | "rendering" | "empty" = loading
     ? "rendering"
@@ -55,6 +45,7 @@ export function PdfPane({
           >
             Data
           </button>
+          {tab === "data" ? <CopyJsonButton template={template} data={data} /> : null}
         </div>
         <span className="pdf-pane__status-pill" data-status={status}>
           {statusLabel}
@@ -70,47 +61,13 @@ export function PdfPane({
           <DataView template={template} data={data} />
         )}
       </div>
-
-      <footer className="pdf-pane__footer">
-        {tab === "pdf" && pdfUrl ? (
-          <a
-            href={pdfUrl}
-            target="_blank"
-            rel="noreferrer"
-            download="template-preview.pdf"
-            className="builder-button builder-button--ghost"
-          >
-            ⤓ Download
-          </a>
-        ) : tab === "data" ? (
-          <CopyJsonButton template={template} data={data} />
-        ) : (
-          <span />
-        )}
-        {onRender ? (
-          <button
-            type="button"
-            className="builder-button"
-            onClick={onRender}
-            disabled={renderDisabled}
-          >
-            {loading ? "Rendering…" : pdfUrl ? "Re-render" : "Render PDF"}
-          </button>
-        ) : null}
-      </footer>
     </aside>
   );
 }
 
 function PdfView({ pdfUrl, loading }: { pdfUrl: string | null; loading: boolean }) {
   if (pdfUrl) {
-    return (
-      <object data={pdfUrl} type="application/pdf" className="pdf-pane__object">
-        <a href={pdfUrl} target="_blank" rel="noreferrer" download="template-preview.pdf">
-          Open PDF
-        </a>
-      </object>
-    );
+    return <object data={pdfUrl} type="application/pdf" className="pdf-pane__object" />;
   }
   return (
     <div className="pdf-pane__empty">
@@ -144,7 +101,7 @@ function CopyJsonButton({ template, data }: { template?: Template; data?: Templa
   }
 
   return (
-    <button type="button" className="builder-button builder-button--ghost" onClick={handleCopy}>
+    <button type="button" className="pdf-pane__copy" onClick={handleCopy}>
       {copied ? "✓ Copied" : "⧉ Copy JSON"}
     </button>
   );
