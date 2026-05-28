@@ -15,6 +15,7 @@ import {
   setPageNumbers,
   setPageSize,
   setRowWidths,
+  updateTemplateSettings,
   updateBlock,
 } from "./editorModel";
 
@@ -248,6 +249,53 @@ describe("editor model", () => {
         locale: "de_DE",
         size: { format: "A5", orientation: "landscape" },
       },
+    });
+  });
+
+  it("updates document settings without replacing editable body or footer rows", () => {
+    const model = createEditorModel({
+      version: 1,
+      config: {
+        page: {
+          footer: {
+            repeat: false,
+            rows: [{ blocks: [{ type: "text", id: "footer", text: "Footer" }] }],
+          },
+        },
+      },
+      rows: [{ blocks: [headingBlock] }],
+    });
+    const bodyRowUid = model.rows[0]?.uid;
+    const footerRowUid = model.footerRows[0]?.uid;
+    const next = updateTemplateSettings(model, {
+      ...serializeTemplate(model),
+      config: {
+        page: {
+          footer: {
+            repeat: true,
+            rows: [{ blocks: [{ type: "text", id: "footer", text: "Footer" }] }],
+          },
+          pageNumbers: { enabled: true, position: "center" },
+          margins: { top: 18 },
+        },
+      },
+    });
+
+    expect(next.rows[0]?.uid).toBe(bodyRowUid);
+    expect(next.footerRows[0]?.uid).toBe(footerRowUid);
+    expect(serializeTemplate(next)).toEqual({
+      version: 1,
+      config: {
+        page: {
+          footer: {
+            repeat: true,
+            rows: [{ blocks: [{ type: "text", id: "footer", text: "Footer" }] }],
+          },
+          pageNumbers: { enabled: true, position: "center" },
+          margins: { top: 18 },
+        },
+      },
+      rows: [{ blocks: [headingBlock] }],
     });
   });
 

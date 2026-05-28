@@ -195,6 +195,13 @@ export function updateBlock(model: EditorModel, blockUid: string, block: Block):
   );
 }
 
+export function updateTemplateSettings(model: EditorModel, template: Template): EditorModel {
+  return {
+    ...model,
+    template: createEditorModel(template).template,
+  };
+}
+
 export function getPageSize(model: EditorModel): ResolvedPageSize {
   const size = model.template.config?.page?.size;
 

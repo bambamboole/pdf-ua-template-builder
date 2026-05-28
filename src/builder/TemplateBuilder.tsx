@@ -24,6 +24,8 @@ import { BlockPalette } from "./blocks/BlockPalette";
 import { getBlockSummary } from "./blocks/blockChrome";
 import { BlockCardPreview } from "./canvas/BlockCardPreview";
 import { BuilderCanvas } from "./canvas/BuilderCanvas";
+import { BlockInspector } from "./inspector/BlockInspector";
+import { DocumentSettingsInspector } from "./inspector/DocumentSettingsInspector";
 import { PdfPane } from "./pdf/PdfPane";
 import { createInvoiceExample } from "./schema/invoiceExample";
 import {
@@ -46,6 +48,7 @@ import {
   setPageNumbers,
   setPageSize,
   setRowWidths,
+  updateTemplateSettings,
   updateBlock,
   type EditorArea,
   type EditorBlock,
@@ -113,6 +116,7 @@ export function TemplateBuilder({
   const [pdfLoading, setPdfLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeDrag, setActiveDrag] = useState<ActiveDrag>(null);
+  const [selectedBlockUid, setSelectedBlockUid] = useState<string | null>(null);
   const initialApiUrl = useRef(defaultApiUrl);
   const mounted = useRef(false);
   const schemaRequestId = useRef(0);
@@ -141,6 +145,10 @@ export function TemplateBuilder({
   const footerRepeat = getFooterRepeat(model);
   const pageNumbers = getPageNumbers(model);
   const serializedTemplate = useMemo(() => serializeTemplate(model), [model]);
+  const selectedBlock = useMemo(
+    () => resolveSelectedEditorBlock(model, selectedBlockUid),
+    [model, selectedBlockUid],
+  );
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 4 },
@@ -236,8 +244,21 @@ export function TemplateBuilder({
     setModel((currentModel) => updateBlock(currentModel, blockUid, block));
   }, []);
 
+  const handleChangeTemplateSettings = useCallback((template: Template) => {
+    setModel((currentModel) => updateTemplateSettings(currentModel, template));
+  }, []);
+
   const handleRemoveBlock = useCallback((blockUid: string) => {
+    setSelectedBlockUid((currentUid) => (currentUid === blockUid ? null : currentUid));
     setModel((currentModel) => removeBlock(currentModel, blockUid));
+  }, []);
+
+  const handleSelectBlock = useCallback((blockUid: string) => {
+    setSelectedBlockUid(blockUid);
+  }, []);
+
+  const handleCloseInspector = useCallback(() => {
+    setSelectedBlockUid(null);
   }, []);
 
   const handleSetRowWidths = useCallback((rowUid: string, widths: string[]) => {
@@ -365,6 +386,10 @@ export function TemplateBuilder({
     setActiveDrag(null);
   }, []);
 
+  useEffect(() => {
+    setSelectedBlockUid((currentUid) => reconcileSelectedBlockUid(model, currentUid));
+  }, [model]);
+
   const rootClassName = className
     ? `template-builder-page ${className}`
     : "template-builder-page";
@@ -409,13 +434,18 @@ export function TemplateBuilder({
             <BuilderCanvas
               schema={schema}
               model={model}
+              data={data}
               format={pageSize.format}
               orientation={pageSize.orientation}
               footerRepeat={footerRepeat}
               pageNumbers={pageNumbers}
+              selectedBlockUid={selectedBlockUid}
               onChangeBlock={handleChangeBlock}
               onRemoveBlock={handleRemoveBlock}
+              onSelectBlock={handleSelectBlock}
+              onDeselect={handleCloseInspector}
               onSetRowWidths={handleSetRowWidths}
+              onChangeData={setData}
               onToggleFooterRepeat={handleToggleFooterRepeat}
               onChangePageNumbers={handleChangePageNumbers}
             />
@@ -426,6 +456,32 @@ export function TemplateBuilder({
               </div>
             </div>
           )}
+
+          {schema && selectedBlock ? (
+            <BlockInspector
+              block={selectedBlock}
+              schema={schema}
+              data={data}
+              onChangeBlock={handleChangeBlock}
+              onChangeData={setData}
+              onRemoveBlock={handleRemoveBlock}
+              onClose={handleCloseInspector}
+            />
+          ) : schema ? (
+            <DocumentSettingsInspector
+              template={serializedTemplate}
+              metadata={schema["x-pdfUa"]}
+              format={pageSize.format}
+              orientation={pageSize.orientation}
+              footerRepeat={footerRepeat}
+              pageNumbers={pageNumbers}
+              onChangeTemplate={handleChangeTemplateSettings}
+              onChangeFormat={handleChangeFormat}
+              onChangeOrientation={handleChangeOrientation}
+              onToggleFooterRepeat={handleToggleFooterRepeat}
+              onChangePageNumbers={handleChangePageNumbers}
+            />
+          ) : null}
         </section>
 
         <PdfPane
@@ -553,6 +609,20 @@ function findEditorBlock(model: EditorModel, blockUid: string): EditorBlock | un
   return [...model.rows, ...model.footerRows]
     .flatMap((row) => row.blocks)
     .find((block) => block.uid === blockUid);
+}
+
+export function resolveSelectedEditorBlock(
+  model: EditorModel,
+  blockUid: string | null,
+): EditorBlock | null {
+  return blockUid ? (findEditorBlock(model, blockUid) ?? null) : null;
+}
+
+export function reconcileSelectedBlockUid(
+  model: EditorModel,
+  blockUid: string | null,
+): string | null {
+  return resolveSelectedEditorBlock(model, blockUid) ? blockUid : null;
 }
 
 export function createNextBlockId(model: EditorModel, blockType: string): string {

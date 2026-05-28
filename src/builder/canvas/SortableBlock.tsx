@@ -1,25 +1,22 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
-import { getBlockChrome, getBlockSummary } from "../blocks/blockChrome";
-import { InlineBlockForm } from "../forms/InlineBlockForm";
-import {
-  getBlockDefinition,
-  getBlockConfigSchema,
-  getBlockFieldSchema,
-  type JsonSchemaObject,
-} from "../schema/schemaAdapter";
+import type { CSSProperties, KeyboardEvent, MouseEvent } from "react";
 import type { EditorArea, EditorBlock } from "../state/editorModel";
 import type { Block } from "../../types/generated/template";
-import type { TemplateSchemaResponse } from "../../types/template";
+import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
+import { BlockDataPreview } from "./BlockDataPreview";
 
 export interface SortableBlockProps {
   rowUid: string;
   area: EditorArea;
   editorBlock: EditorBlock;
   schema: TemplateSchemaResponse;
+  data: TemplateData;
+  selected: boolean;
   onChangeBlock: (blockUid: string, block: Block) => void;
   onRemoveBlock: (blockUid: string) => void;
+  onSelect: (blockUid: string) => void;
+  onChangeData: (data: TemplateData) => void;
   style?: CSSProperties;
 }
 
@@ -28,11 +25,14 @@ export function SortableBlock({
   area,
   editorBlock,
   schema,
+  data,
+  selected,
   onChangeBlock,
   onRemoveBlock,
+  onSelect,
+  onChangeData,
   style: layoutStyle,
 }: SortableBlockProps) {
-  const [expanded, setExpanded] = useState(false);
   const {
     attributes,
     listeners,
@@ -51,20 +51,16 @@ export function SortableBlock({
     },
   });
 
-  const schemaObject = schema as unknown as JsonSchemaObject;
-  const isKnownType = getBlockDefinition(schemaObject, editorBlock.block.type) !== undefined;
-  const fieldSchema = isKnownType
-    ? getBlockFieldSchema(schemaObject, editorBlock.block.type)
-    : null;
-  const configSchema = isKnownType
-    ? getBlockConfigSchema(schemaObject, editorBlock.block.type)
-    : undefined;
-  const chrome = getBlockChrome(editorBlock.block.type);
-  const summary = getBlockSummary(editorBlock.block);
+  void schema;
+  void onChangeBlock;
+  void onChangeData;
+
+  const blockId = typeof editorBlock.block.id === "string" ? editorBlock.block.id : null;
+  const rowData = blockId ? data[blockId] : undefined;
   const classes = [
     "builder-card",
     isDragging ? "is-dragging" : "",
-    expanded ? "is-expanded" : "",
+    selected ? "is-selected" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -74,17 +70,17 @@ export function SortableBlock({
     ...layoutStyle,
   };
 
-  function toggleExpanded() {
-    setExpanded((value) => !value);
+  function selectBlock() {
+    onSelect(editorBlock.uid);
   }
 
-  function handleHeaderKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+  function handleCardKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.target !== event.currentTarget) {
       return;
     }
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      toggleExpanded();
+      selectBlock();
     }
   }
 
@@ -94,15 +90,16 @@ export function SortableBlock({
   }
 
   return (
-    <article ref={setNodeRef} className={classes} style={style}>
-      <div
-        className="builder-card__header"
-        role="button"
-        tabIndex={0}
-        aria-expanded={expanded}
-        onClick={toggleExpanded}
-        onKeyDown={handleHeaderKeyDown}
-      >
+    <article
+      ref={setNodeRef}
+      className={classes}
+      style={style}
+      aria-current={selected}
+      tabIndex={0}
+      onClick={selectBlock}
+      onKeyDown={handleCardKeyDown}
+    >
+      <div className="builder-card__chrome">
         <button
           ref={setActivatorNodeRef}
           type="button"
@@ -114,25 +111,7 @@ export function SortableBlock({
         >
           ⋮⋮
         </button>
-        <span className="builder-chip" aria-hidden="true">
-          {chrome.chip}
-        </span>
-        <div className="builder-card__title">
-          <span className="builder-card__label">{chrome.label}</span>
-          {summary ? <span className="builder-card__summary">{summary}</span> : null}
-        </div>
         <div className="builder-card__actions">
-          <button
-            type="button"
-            className="builder-card__icon-button"
-            aria-label={expanded ? "Collapse block" : "Expand block"}
-            onClick={(event) => {
-              event.stopPropagation();
-              toggleExpanded();
-            }}
-          >
-            {expanded ? "▴" : "▾"}
-          </button>
           <button
             type="button"
             className="builder-card__icon-button builder-card__icon-button--danger"
@@ -143,23 +122,9 @@ export function SortableBlock({
           </button>
         </div>
       </div>
-      {expanded ? (
-        <div className="builder-card__form">
-          {fieldSchema ? (
-            <InlineBlockForm
-              block={editorBlock.block}
-              fieldSchema={fieldSchema}
-              configSchema={configSchema}
-              onChange={(block) => onChangeBlock(editorBlock.uid, block)}
-            />
-          ) : (
-            <p className="builder-card__warning">
-              The backend schema does not advertise <code>{editorBlock.block.type}</code>. Update or
-              restart the API to edit this block.
-            </p>
-          )}
-        </div>
-      ) : null}
+      <div className="builder-card-preview">
+        <BlockDataPreview block={editorBlock.block} rowData={rowData} />
+      </div>
     </article>
   );
 }
