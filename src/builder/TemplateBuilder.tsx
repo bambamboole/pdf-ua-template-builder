@@ -140,6 +140,7 @@ export function TemplateBuilder({
   const pageSize = getPageSize(model);
   const footerRepeat = getFooterRepeat(model);
   const pageNumbers = getPageNumbers(model);
+  const serializedTemplate = useMemo(() => serializeTemplate(model), [model]);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 4 },
@@ -431,6 +432,8 @@ export function TemplateBuilder({
           pdfUrl={pdfUrl}
           error={error}
           loading={pdfLoading}
+          template={serializedTemplate}
+          data={data}
           onRender={() => void renderPdf()}
           renderDisabled={!schema || pdfLoading}
         />

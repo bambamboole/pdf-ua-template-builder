@@ -932,6 +932,7 @@ a:hover {
   display: grid;
   min-width: 0;
   min-height: 100vh;
+  max-height: 100vh;
   grid-template-rows: 56px auto minmax(0, 1fr) auto;
   background: var(--surface-sunk);
 }
@@ -953,6 +954,52 @@ a:hover {
   font-size: var(--text-md);
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.pdf-pane__tabs {
+  display: inline-flex;
+  align-items: stretch;
+  height: 100%;
+  gap: 2px;
+}
+
+.pdf-pane__tab {
+  height: 100%;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0 var(--space-3);
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.pdf-pane__tab:hover {
+  color: var(--ink);
+}
+.pdf-pane__tab[data-active="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.pdf-pane__json {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-page);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  padding: var(--space-4);
+  tab-size: 2;
+  white-space: pre;
 }
 
 .pdf-pane__status-pill {
@@ -1070,9 +1117,11 @@ a:hover {
   .template-builder-page__authoring,
   .pdf-pane {
     min-height: auto;
+    max-height: none;
   }
   .pdf-pane__object,
-  .pdf-pane__empty {
+  .pdf-pane__empty,
+  .pdf-pane__json {
     height: 34rem;
   }
 }
