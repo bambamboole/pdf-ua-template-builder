@@ -7,4 +7,3 @@ coverage
 .superpowers
 docs/superpowers
 .worktrees
-package-lock.json
