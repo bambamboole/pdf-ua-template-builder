@@ -390,9 +390,9 @@ export function TemplateBuilder({
     setSelectedBlockUid((currentUid) => reconcileSelectedBlockUid(model, currentUid));
   }, [model]);
 
-  const rootClassName = className
-    ? `template-builder-page ${className}`
-    : "template-builder-page";
+  const shellClass =
+    "grid h-screen overflow-hidden bg-stone-50 text-stone-900 grid-cols-[minmax(40rem,1.55fr)_minmax(28rem,0.95fr)] max-[1080px]:h-auto max-[1080px]:grid-cols-1 max-[1080px]:overflow-visible";
+  const rootClassName = className ? `${shellClass} ${className}` : shellClass;
 
   return (
     <main className={rootClassName}>
@@ -404,7 +404,7 @@ export function TemplateBuilder({
         onDragCancel={handleDragCancel}
       >
         <section
-          className="template-builder-page__authoring"
+          className="grid min-w-0 min-h-0 border-0 border-r border-solid border-stone-200 bg-stone-50 grid-cols-[minmax(360px,1fr)_minmax(320px,360px)] grid-rows-[auto_auto_minmax(0,1fr)] max-[760px]:grid-cols-1"
           aria-label="Template authoring"
         >
           <BuilderTopbar
@@ -423,9 +423,14 @@ export function TemplateBuilder({
             rendering={pdfLoading}
           />
 
-          <aside className="builder-palette" aria-label="Block palette">
-            <div>
-              <h2 className="builder-palette__section-title">Blocks</h2>
+          <aside
+            className="col-span-full row-start-2 flex min-w-0 items-center overflow-hidden border-0 border-b border-solid border-stone-200 bg-white px-4 py-2 max-[760px]:col-span-1 max-[760px]:row-auto"
+            aria-label="Block palette"
+          >
+            <div className="flex w-full min-w-0 items-center gap-3">
+              <h2 className="m-0 flex-none text-[11px] font-medium uppercase tracking-[0.06em] text-stone-400">
+                Blocks
+              </h2>
               <BlockPalette blockTypes={blockTypes} onAdd={handleAddBlock} />
             </div>
           </aside>
@@ -450,8 +455,8 @@ export function TemplateBuilder({
               onChangePageNumbers={handleChangePageNumbers}
             />
           ) : (
-            <div className="builder-canvas">
-              <div className="builder-canvas__empty">
+            <div className="col-start-1 row-start-3 min-w-0 min-h-0 overflow-auto bg-stone-200 px-4 pb-8 pt-6 max-[760px]:col-span-1 max-[760px]:row-auto">
+              <div className="grid h-full place-items-center text-sm text-stone-500">
                 {schemaLoading ? "Loading schema…" : "Load the schema to start building."}
               </div>
             </div>
@@ -513,12 +518,15 @@ function ActiveDragPreview({ drag }: { drag: NonNullable<ActiveDrag> }) {
     );
   }
   return (
-    <div className="builder-drag-overlay">
-      <div className="builder-drag-overlay__card">
-        <span className="builder-chip" aria-hidden="true">
+    <div className="pointer-events-none origin-top-left rotate-[1.5deg] scale-[1.02] cursor-grabbing [filter:drop-shadow(0_12px_24px_rgba(0,0,0,0.18))]">
+      <div className="inline-flex min-w-[180px] max-w-[360px] items-center gap-2 rounded-lg border border-solid border-stone-300 bg-white px-3 py-2 text-sm font-medium">
+        <span
+          className="inline-grid h-[22px] w-[22px] flex-none place-items-center rounded bg-stone-100 font-mono text-[11px] font-semibold text-stone-500"
+          aria-hidden="true"
+        >
           ⋮⋮
         </span>
-        <span style={{ fontWeight: 500 }}>Row</span>
+        <span className="font-medium">Row</span>
       </div>
     </div>
   );

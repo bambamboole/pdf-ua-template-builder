@@ -4,6 +4,21 @@ import { PAGE_SIZES_MM } from "../lib/pageSizes";
 
 const PAGE_FORMATS = Object.keys(PAGE_SIZES_MM) as PageFormat[];
 
+const buttonClass =
+  "inline-flex h-8 items-center gap-2 m-0 whitespace-nowrap rounded-md border border-solid border-stone-200 bg-white px-3 font-medium text-stone-900 transition-colors hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:bg-white disabled:text-stone-400 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
+const primaryButtonClass =
+  "inline-flex h-8 items-center gap-2 m-0 whitespace-nowrap rounded-md border border-solid border-stone-800 bg-stone-800 px-3 font-semibold text-white transition-colors hover:border-stone-950 hover:bg-stone-950 disabled:cursor-not-allowed disabled:border-stone-300 disabled:bg-stone-100 disabled:text-stone-400 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
+const iconGhostButtonClass =
+  "inline-flex h-8 w-8 items-center justify-center m-0 cursor-pointer rounded-md border border-solid border-transparent bg-transparent p-0 text-stone-900 transition-colors hover:border-stone-200 hover:bg-stone-100 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
+const selectClass =
+  "h-8 w-auto min-w-0 cursor-pointer appearance-none rounded-md border border-solid border-stone-200 bg-white py-0 pl-3 pr-7 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20 bg-[linear-gradient(45deg,transparent_50%,#6b6b6b_50%),linear-gradient(135deg,#6b6b6b_50%,transparent_50%)] bg-[length:5px_5px,5px_5px] bg-[position:calc(100%-14px)_50%,calc(100%-9px)_50%] bg-no-repeat";
+
+const inputClass =
+  "h-8 w-full min-w-0 rounded-md border border-solid border-stone-200 bg-white px-3 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
 export interface BuilderTopbarProps {
   format: PageFormat;
   orientation: Orientation;
@@ -36,20 +51,26 @@ export function BuilderTopbar({
   rendering,
 }: BuilderTopbarProps) {
   return (
-    <header className="builder-topbar" aria-label="Template builder toolbar">
-      <div className="builder-topbar__brand">
-        <span className="builder-topbar__brand-mark" aria-hidden="true">
+    <header
+      className="col-span-full flex min-w-0 h-14 items-center gap-3 border-0 border-b border-solid border-stone-200 bg-white px-4"
+      aria-label="Template builder toolbar"
+    >
+      <div className="flex items-center gap-2 whitespace-nowrap text-[17px] font-semibold tracking-tight text-stone-900">
+        <span
+          className="inline-grid h-[22px] w-[22px] place-items-center rounded bg-stone-800 text-[11px] font-semibold text-white"
+          aria-hidden="true"
+        >
           ◳
         </span>
         <span>Template Builder</span>
-        <span className="builder-topbar__brand-sub">· pdf-ua</span>
+        <span className="text-[15px] font-medium text-stone-500">· pdf-ua</span>
       </div>
 
-      <div className="builder-topbar__spacer" />
+      <div className="flex-auto" />
 
-      <div className="builder-topbar__group">
+      <div className="flex items-center gap-2">
         <select
-          className="builder-select"
+          className={`${selectClass} min-w-[88px]`}
           value={format}
           onChange={(event) => onChangeFormat(event.currentTarget.value as PageFormat)}
           aria-label="Page format"
@@ -61,7 +82,7 @@ export function BuilderTopbar({
           ))}
         </select>
         <select
-          className="builder-select"
+          className={`${selectClass} min-w-[112px]`}
           value={orientation}
           onChange={(event) => onChangeOrientation(event.currentTarget.value as Orientation)}
           aria-label="Orientation"
@@ -71,10 +92,10 @@ export function BuilderTopbar({
         </select>
       </div>
 
-      <div className="builder-topbar__group">
+      <div className="flex items-center gap-2">
         <button
           type="button"
-          className="builder-button"
+          className={buttonClass}
           onClick={onLoadExample}
           disabled={exampleDisabled}
         >
@@ -82,7 +103,7 @@ export function BuilderTopbar({
         </button>
         <button
           type="button"
-          className="builder-button builder-button--primary"
+          className={primaryButtonClass}
           onClick={onRender}
           disabled={renderDisabled}
         >
@@ -142,10 +163,10 @@ function SettingsPopover({
   }, [open]);
 
   return (
-    <div className="builder-topbar__settings" ref={containerRef}>
+    <div className="relative" ref={containerRef}>
       <button
         type="button"
-        className="builder-button builder-button--ghost builder-button--icon"
+        className={iconGhostButtonClass}
         aria-label="Settings"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
@@ -153,18 +174,22 @@ function SettingsPopover({
         ⚙
       </button>
       {open ? (
-        <div className="builder-topbar__settings-panel" role="dialog" aria-label="Settings">
-          <label>
+        <div
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-10 grid w-80 gap-2 rounded-lg border border-solid border-stone-200 bg-white p-3 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.12)]"
+          role="dialog"
+          aria-label="Settings"
+        >
+          <label className="grid gap-1 text-[11px] font-medium uppercase tracking-wide text-stone-500">
             API URL
             <input
-              className="builder-input"
+              className={inputClass}
               value={apiUrl}
               onChange={(event) => onApiUrlChange(event.currentTarget.value)}
             />
           </label>
           <button
             type="button"
-            className="builder-button"
+            className={buttonClass}
             onClick={onLoadSchema}
             disabled={schemaLoading}
           >
