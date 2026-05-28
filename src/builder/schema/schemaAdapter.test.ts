@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { TemplateSchemaMetadata } from "../../types/template";
 import {
   createDefaultBlock,
-  createExampleTemplate,
   getBlockConfigSchema,
   getBlockFieldSchema,
   getBlockTypes,
@@ -134,16 +133,4 @@ describe("schema adapter", () => {
     });
   });
 
-  it("creates an example template from advertised heading, text, and divider blocks", () => {
-    expect(createExampleTemplate(schema)).toEqual({
-      version: 1,
-      rows: [
-        {
-          blocks: [{ type: "heading", id: "heading-1", text: "Accessible PDF template" }],
-        },
-        { blocks: [{ type: "text", id: "text-1", text: "Edit this block inline." }] },
-        { blocks: [{ type: "divider", id: "divider-1" }] },
-      ],
-    });
-  });
 });

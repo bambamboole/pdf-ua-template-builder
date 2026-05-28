@@ -4,10 +4,16 @@ import {
   addBlockToNewRow,
   addBlockToRow,
   createEditorModel,
+  getFooterRepeat,
+  getPageNumbers,
+  getPageSize,
   moveBlock,
   moveRow,
   removeBlock,
   serializeTemplate,
+  setFooterRepeat,
+  setPageNumbers,
+  setPageSize,
   setRowWidths,
   updateBlock,
 } from "./editorModel";
@@ -121,6 +127,127 @@ describe("editor model", () => {
       version: 1,
       config: { page: { locale: "en-US" } },
       rows: [{ blocks: [{ ...headingBlock, text: "Updated" }] }],
+    });
+  });
+
+  it("ingests footer rows from template.config.page.footer and round-trips them", () => {
+    const model = createEditorModel({
+      version: 1,
+      config: {
+        page: {
+          footer: {
+            repeat: true,
+            rows: [{ blocks: [{ type: "text", id: "footer-legal", text: "Legal text" }] }],
+          },
+        },
+      },
+      rows: [{ blocks: [headingBlock] }],
+    });
+
+    expect(model.footerRows).toHaveLength(1);
+    expect(model.footerRows[0]?.blocks[0]?.block).toEqual({
+      type: "text",
+      id: "footer-legal",
+      text: "Legal text",
+    });
+    expect(model.template.config?.page?.footer).toEqual({ repeat: true });
+    expect(serializeTemplate(model).config?.page?.footer).toEqual({
+      repeat: true,
+      rows: [{ blocks: [{ type: "text", id: "footer-legal", text: "Legal text" }] }],
+    });
+  });
+
+  it("adds blocks to a footer area and finds rows by uid across both areas", () => {
+    const model = createEditorModel({ version: 1, rows: [{ blocks: [headingBlock] }] });
+    const withFooterBlock = addBlockToNewRow(model, textBlock, "footer");
+    const footerRowUid = withFooterBlock.footerRows[0]?.uid ?? "";
+    const withSecondFooter = addBlockToRow(withFooterBlock, footerRowUid, dividerBlock, 1);
+
+    expect(withSecondFooter.rows[0]?.blocks).toHaveLength(1);
+    expect(withSecondFooter.footerRows[0]?.blocks.map((b) => b.block.type)).toEqual([
+      "text",
+      "divider",
+    ]);
+    expect(serializeTemplate(withSecondFooter).config?.page?.footer?.rows?.[0]?.blocks).toEqual([
+      textBlock,
+      dividerBlock,
+    ]);
+  });
+
+  it("moves a block from the body into a new footer row", () => {
+    const model = createEditorModel({ version: 1, rows: [{ blocks: [headingBlock, textBlock] }] });
+    const textUid = model.rows[0]?.blocks[1]?.uid ?? "";
+    const moved = moveBlock(model, textUid, null, 0, "footer");
+
+    expect(moved.rows[0]?.blocks.map((b) => b.block.type)).toEqual(["heading"]);
+    expect(moved.footerRows[0]?.blocks.map((b) => b.block.type)).toEqual(["text"]);
+  });
+
+  it("reads, sets, and disables page numbers", () => {
+    const model = createEditorModel({ version: 1 });
+
+    expect(getPageNumbers(model)).toBe("disabled");
+
+    const enabled = setPageNumbers(model, "center");
+    expect(getPageNumbers(enabled)).toBe("center");
+    expect(serializeTemplate(enabled).config?.page?.pageNumbers).toEqual({
+      enabled: true,
+      position: "center",
+    });
+
+    const disabled = setPageNumbers(enabled, "disabled");
+    expect(getPageNumbers(disabled)).toBe("disabled");
+    expect(serializeTemplate(disabled).config?.page?.pageNumbers).toEqual({
+      enabled: false,
+      position: "center",
+    });
+  });
+
+  it("reads and sets the footer repeat flag", () => {
+    const model = createEditorModel({ version: 1 });
+
+    expect(getFooterRepeat(model)).toBe(true);
+
+    const off = setFooterRepeat(model, false);
+    expect(getFooterRepeat(off)).toBe(false);
+    expect(serializeTemplate(off).config?.page?.footer).toEqual({ repeat: false });
+  });
+
+  it("returns a default A4 portrait page size when not set", () => {
+    const model = createEditorModel({ version: 1 });
+
+    expect(getPageSize(model)).toEqual({
+      format: "A4",
+      orientation: "portrait",
+      custom: null,
+    });
+  });
+
+  it("reads preset format and orientation from the template", () => {
+    const model = createEditorModel({
+      version: 1,
+      config: { page: { size: { format: "Letter", orientation: "landscape" } } },
+    });
+
+    expect(getPageSize(model)).toEqual({
+      format: "Letter",
+      orientation: "landscape",
+      custom: null,
+    });
+  });
+
+  it("writes page size while preserving other page config", () => {
+    const model = createEditorModel({
+      version: 1,
+      config: { page: { locale: "de_DE" } },
+    });
+    const next = setPageSize(model, "A5", "landscape");
+
+    expect(serializeTemplate(next).config).toEqual({
+      page: {
+        locale: "de_DE",
+        size: { format: "A5", orientation: "landscape" },
+      },
     });
   });
 

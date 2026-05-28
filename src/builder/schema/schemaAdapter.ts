@@ -1,4 +1,4 @@
-import type { Block, Template } from "../../types/generated/template";
+import type { Block } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
 
 export type JsonSchemaValue =
@@ -119,32 +119,6 @@ export function createDefaultBlock(schema: JsonSchemaObject, blockType: string, 
   }
 
   return block as unknown as Block;
-}
-
-export function createExampleTemplate(schema: JsonSchemaObject): Template {
-  const blockTypes = new Set(getBlockTypes(schema));
-  const preferredTypes = ["heading", "text", "divider"].filter((type) => blockTypes.has(type));
-
-  return {
-    version: 1,
-    rows: preferredTypes.map((type) => ({
-      blocks: [createExampleBlock(schema, type)],
-    })),
-  };
-}
-
-function createExampleBlock(schema: JsonSchemaObject, blockType: string): Block {
-  const block = createDefaultBlock(schema, blockType, `${blockType}-1`);
-
-  if (block.type === "heading") {
-    return { ...block, text: "Accessible PDF template" };
-  }
-
-  if (block.type === "text") {
-    return { ...block, text: "Edit this block inline." };
-  }
-
-  return block;
 }
 
 function getBlockDefinitions(schema: JsonSchemaObject): JsonSchemaObject[] {

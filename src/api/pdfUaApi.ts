@@ -21,13 +21,15 @@ function joinUrl(baseUrl: string, path: string): string {
 
 async function parseError(response: Response): Promise<string> {
   const contentType = response.headers.get("content-type") ?? "";
+  const fallback = `${response.status} ${response.statusText || "Request failed"}`;
 
   if (contentType.includes("application/json")) {
     const payload = (await response.json()) as { error?: string };
-    return payload.error ?? response.statusText;
+    return payload.error || fallback;
   }
 
-  return response.text();
+  const body = (await response.text()).trim();
+  return body || fallback;
 }
 
 export async function fetchTemplateSchema(baseUrl: string): Promise<TemplateSchemaResponse> {

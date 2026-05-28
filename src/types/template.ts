@@ -1,7 +1,7 @@
 export type { Template } from "./generated/template";
 
 export type JsonObject = Record<string, unknown>;
-export type TemplateData = Record<string, JsonObject>;
+export type TemplateData = Record<string, unknown>;
 
 export interface RenderOptions {
   title?: string;
