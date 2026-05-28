@@ -4,6 +4,8 @@ import type { TemplateData } from "../../types/template";
 
 export type OutputTab = "pdf" | "data";
 
+type OutputStatus = "ready" | "rendering" | "empty";
+
 export interface PdfPaneProps {
   pdfUrl: string | null;
   error: string | null;
@@ -20,7 +22,7 @@ const tabActiveClass = "text-stone-900 border-stone-900";
 const statusPillBaseClass =
   "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium";
 
-const statusPillVariantClass: Record<"ready" | "rendering" | "empty", string> = {
+const statusPillVariantClass: Record<OutputStatus, string> = {
   ready: "bg-emerald-100 text-emerald-700",
   rendering: "bg-indigo-50 text-indigo-600",
   empty: "bg-stone-100 text-stone-500",
@@ -31,7 +33,7 @@ const surfacePanelClass =
 
 export function PdfPane({ pdfUrl, error, loading, template, data }: PdfPaneProps) {
   const [tab, setTab] = useState<OutputTab>("pdf");
-  const status: "ready" | "rendering" | "empty" = loading
+  const status: OutputStatus = loading
     ? "rendering"
     : pdfUrl
       ? "ready"

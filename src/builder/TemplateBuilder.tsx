@@ -20,7 +20,7 @@ import type {
   Template,
 } from "../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../types/template";
-import { BlockPalette } from "./blocks/BlockPalette";
+import { BlockPalette, paletteChipClass } from "./blocks/BlockPalette";
 import { getBlockSummary } from "./blocks/blockChrome";
 import { BlockCardPreview } from "./canvas/BlockCardPreview";
 import { BuilderCanvas } from "./canvas/BuilderCanvas";
@@ -520,10 +520,7 @@ function ActiveDragPreview({ drag }: { drag: NonNullable<ActiveDrag> }) {
   return (
     <div className="pointer-events-none origin-top-left rotate-[1.5deg] scale-[1.02] cursor-grabbing [filter:drop-shadow(0_12px_24px_rgba(0,0,0,0.18))]">
       <div className="inline-flex min-w-[180px] max-w-[360px] items-center gap-2 rounded-lg border border-solid border-stone-300 bg-white px-3 py-2 text-sm font-medium">
-        <span
-          className="inline-grid h-[22px] w-[22px] flex-none place-items-center rounded bg-stone-100 font-mono text-[11px] font-semibold text-stone-500"
-          aria-hidden="true"
-        >
+        <span className={paletteChipClass} aria-hidden="true">
           ⋮⋮
         </span>
         <span className="font-medium">Row</span>
