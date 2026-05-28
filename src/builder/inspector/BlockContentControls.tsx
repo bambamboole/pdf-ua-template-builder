@@ -3,12 +3,7 @@ import type { Block } from "../../types/generated/template";
 import { ImageBlockEditor } from "../forms/ImageBlockEditor";
 import { KeyValueBlockEditor } from "../forms/KeyValueBlockEditor";
 import { TableBlockEditor } from "../forms/TableBlockEditor";
-import {
-  SelectField,
-  TextAreaField,
-  TextField,
-  type SelectFieldOption,
-} from "../forms/controls";
+import { SelectField, TextAreaField, TextField, type SelectFieldOption } from "../forms/controls";
 import { setBlockConfigField } from "../state/configUpdates";
 
 export interface BlockContentControlsProps {
@@ -38,7 +33,7 @@ export function BlockContentControls({
   switch (block.type) {
     case "text":
       return (
-        <div className="block-content-controls">
+        <div className="grid gap-2">
           <TextAreaField
             name="text"
             label="Text"
@@ -50,7 +45,7 @@ export function BlockContentControls({
       );
     case "html":
       return (
-        <div className="block-content-controls">
+        <div className="grid gap-2">
           <TextAreaField
             name="html"
             label="HTML"
@@ -62,7 +57,7 @@ export function BlockContentControls({
       );
     case "heading":
       return (
-        <div className="block-content-controls">
+        <div className="grid gap-2">
           <TextField
             name="text"
             label="Text"
@@ -84,11 +79,7 @@ export function BlockContentControls({
       );
     case "image":
       return (
-        <ImageBlockEditor
-          block={block}
-          onChangeBlock={onChangeBlock}
-          showLayoutControls={false}
-        />
+        <ImageBlockEditor block={block} onChangeBlock={onChangeBlock} showLayoutControls={false} />
       );
     case "key-value":
       return (
@@ -110,7 +101,7 @@ export function BlockContentControls({
       );
     case "spacer":
     case "divider":
-      return <p>No content fields for this block.</p>;
+      return <p className="m-0 text-xs text-stone-500">No content fields for this block.</p>;
   }
 }
 

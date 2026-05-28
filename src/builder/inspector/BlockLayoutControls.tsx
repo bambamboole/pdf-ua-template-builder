@@ -47,12 +47,9 @@ const numberRowsOptions = [
 
 type NumberRowsValue = "show" | "hide";
 
-export function BlockLayoutControls({
-  block,
-  onChangeBlock,
-}: BlockLayoutControlsProps): ReactNode {
+export function BlockLayoutControls({ block, onChangeBlock }: BlockLayoutControlsProps): ReactNode {
   return (
-    <div className="block-layout-controls">
+    <div className="grid gap-2">
       <UnitField
         name="config.width"
         label="Width"

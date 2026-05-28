@@ -4,8 +4,17 @@ import type { TemplateSchemaMetadata } from "../../types/template";
 import { CheckboxField, SelectField } from "../forms/controls";
 import { PAGE_SIZES_MM } from "../lib/pageSizes";
 import type { PageNumbersValue } from "../state/editorModel";
+import {
+  inspectorClass,
+  inspectorSectionClass,
+  inspectorSectionHeadingClass,
+  inspectorTitleClass,
+} from "./BlockInspector";
 import { SpacingControls } from "./SpacingControls";
 import { TypographyControls } from "./TypographyControls";
+
+const chipClass =
+  "inline-grid h-[22px] min-w-[22px] flex-none place-items-center rounded bg-stone-100 px-1 font-mono text-[11px] font-semibold text-stone-500";
 
 const pageFormatOptions = Object.keys(PAGE_SIZES_MM).map((format) => ({
   value: format as PageFormat,
@@ -52,25 +61,25 @@ export function DocumentSettingsInspector({
   onChangePageNumbers,
 }: DocumentSettingsInspectorProps): ReactNode {
   return (
-    <aside className="builder-inspector" aria-label="Document settings inspector">
-      <header className="builder-inspector__header">
-        <div className="builder-inspector__heading">
-          <span className="builder-chip" aria-hidden="true">
+    <aside className={inspectorClass} aria-label="Document settings inspector">
+      <header className="flex min-w-0 items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-auto items-start gap-2">
+          <span className={chipClass} aria-hidden="true">
             Doc
           </span>
           <div>
-            <h2 className="builder-inspector__title">Document settings</h2>
-            <p className="builder-inspector__summary">
+            <h2 className={inspectorTitleClass}>Document settings</h2>
+            <p className="mt-0.5 mb-0 break-words text-xs text-stone-500">
               Changes apply to the whole template.
             </p>
           </div>
         </div>
       </header>
 
-      <div className="builder-inspector__sections" aria-label="Document settings sections">
-        <section className="builder-inspector__section">
-          <h3>Page setup</h3>
-          <div className="document-settings__field-grid">
+      <div className="grid gap-2" aria-label="Document settings sections">
+        <section className={inspectorSectionClass}>
+          <h3 className={inspectorSectionHeadingClass}>Page setup</h3>
+          <div className="grid gap-2">
             <SelectField
               name="document.page.size.format"
               label="Page size"
@@ -96,17 +105,13 @@ export function DocumentSettingsInspector({
           </div>
         </section>
 
-        <section className="builder-inspector__section">
-          <SpacingControls
-            scope="page"
-            template={template}
-            onChangeTemplate={onChangeTemplate}
-          />
+        <section className={inspectorSectionClass}>
+          <SpacingControls scope="page" template={template} onChangeTemplate={onChangeTemplate} />
         </section>
 
-        <section className="builder-inspector__section">
-          <h3>Footer</h3>
-          <div className="document-settings__field-grid">
+        <section className={inspectorSectionClass}>
+          <h3 className={inspectorSectionHeadingClass}>Footer</h3>
+          <div className="grid gap-2">
             <CheckboxField
               name="document.page.footer.repeat"
               label="Repeat footer"
@@ -124,7 +129,7 @@ export function DocumentSettingsInspector({
           </div>
         </section>
 
-        <section className="builder-inspector__section">
+        <section className={inspectorSectionClass}>
           <TypographyControls
             target="template"
             template={template}

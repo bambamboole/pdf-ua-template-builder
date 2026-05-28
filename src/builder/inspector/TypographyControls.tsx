@@ -1,20 +1,9 @@
 import type { ChangeEvent, ReactNode } from "react";
-import type {
-  Block,
-  Template,
-  TypographyConfig,
-} from "../../types/generated/template";
+import type { Block, Template, TypographyConfig } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
-import {
-  BuilderField,
-  ColorField,
-  NumberField,
-  SelectField,
-} from "../forms/controls";
-import {
-  setBlockTypographyField,
-  setTemplateTypographyField,
-} from "../state/configUpdates";
+import { BuilderField, ColorField, NumberField, SelectField } from "../forms/controls";
+import { arrayFieldClass, arrayLegendClass, controlClass } from "../forms/controls/fieldStyles";
+import { setBlockTypographyField, setTemplateTypographyField } from "../state/configUpdates";
 
 type TypographyAlign = Exclude<TypographyConfig["align"], null | undefined>;
 
@@ -47,11 +36,8 @@ const alignOptions = [
 
 export function TypographyControls(props: TypographyControlsProps): ReactNode {
   const typography =
-    props.target === "block"
-      ? props.block.config?.typography
-      : props.template.config?.typography;
-  const namePrefix =
-    props.target === "block" ? "config.typography" : "template.config.typography";
+    props.target === "block" ? props.block.config?.typography : props.template.config?.typography;
+  const namePrefix = props.target === "block" ? "config.typography" : "template.config.typography";
   const fontOptions = bundledFontOptions(props.metadata);
 
   function handleChange<TKey extends keyof TypographyConfig>(
@@ -67,8 +53,8 @@ export function TypographyControls(props: TypographyControlsProps): ReactNode {
   }
 
   return (
-    <fieldset className="typography-controls builder-array-field">
-      <legend>{props.title ?? "Typography"}</legend>
+    <fieldset className={arrayFieldClass}>
+      <legend className={arrayLegendClass}>{props.title ?? "Typography"}</legend>
       <FontFamilyField
         name={`${namePrefix}.family`}
         value={typography?.family ?? undefined}
@@ -118,12 +104,7 @@ interface FontFamilyFieldProps {
   onChange: (value: string | undefined) => void;
 }
 
-function FontFamilyField({
-  name,
-  value,
-  fontOptions,
-  onChange,
-}: FontFamilyFieldProps): ReactNode {
+function FontFamilyField({ name, value, fontOptions, onChange }: FontFamilyFieldProps): ReactNode {
   const id = createControlId(name);
   const listId = fontOptions.length > 0 ? `${id}-options` : undefined;
 
@@ -133,14 +114,12 @@ function FontFamilyField({
       label="Family"
       id={id}
       help={
-        fontOptions.length > 0
-          ? "Choose a bundled font or type another family name."
-          : undefined
+        fontOptions.length > 0 ? "Choose a bundled font or type another family name." : undefined
       }
     >
       <input
         id={id}
-        className="builder-input"
+        className={controlClass}
         name={name}
         type="text"
         list={listId}

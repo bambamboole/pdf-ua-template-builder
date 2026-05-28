@@ -27,9 +27,9 @@ export function SpacingControls(props: SpacingControlsProps): ReactNode {
     props.scope === "block" ? props.block.config?.spacing : props.template.config?.page?.margins;
 
   return (
-    <fieldset className="spacing-controls" aria-label={title}>
-      <legend>{title}</legend>
-      <div className="spacing-controls__grid">
+    <fieldset className="m-0 grid min-w-0 gap-2 border-0 p-0" aria-label={title}>
+      <legend className="p-0 text-[11px] font-semibold text-stone-400">{title}</legend>
+      <div className="grid grid-cols-2 gap-2">
         {spacingSides.map((side) => (
           <NumberField
             key={side}
