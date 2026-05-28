@@ -2,6 +2,14 @@ import { useEffect, useState, type ChangeEvent, type ReactNode } from "react";
 import type { Block } from "../../types/generated/template";
 import type { JsonObject } from "../../types/template";
 import type { JsonSchemaObject } from "../schema/schemaAdapter";
+import {
+  arrayAddClass,
+  arrayFieldClass,
+  arrayLegendClass,
+  checkboxLabelClass,
+  controlClass,
+  fieldLabelClass,
+} from "./controls/fieldStyles";
 
 export interface InlineBlockFormProps {
   block: Block;
@@ -10,28 +18,10 @@ export interface InlineBlockFormProps {
   onChange: (block: Block) => void;
 }
 
-const fieldLabelClass =
-  "grid min-w-0 gap-1 text-[11px] font-medium uppercase tracking-wide text-stone-500";
-
-const checkboxLabelClass =
-  "grid grid-cols-[max-content_minmax(0,1fr)] items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-stone-500";
-
-const controlClass =
-  "w-full min-w-0 min-h-8 rounded-md border border-solid border-stone-200 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
-
 const textareaControlClass = `${controlClass} min-h-24 font-mono text-xs`;
-
-const arrayFieldClass =
-  "col-span-full grid min-w-0 gap-2 rounded-md border border-solid border-stone-200 p-3";
-
-const arrayLegendClass =
-  "px-2 text-[11px] font-medium uppercase tracking-wide text-stone-500";
 
 const arrayItemClass =
   "relative grid gap-2 rounded-md border border-solid border-stone-200 bg-stone-100 p-3";
-
-const arrayAddClass =
-  "h-7 w-fit cursor-pointer rounded-md border border-dashed border-stone-300 bg-transparent px-3 text-[11px] text-stone-500 hover:border-indigo-600 hover:text-indigo-600";
 
 export function InlineBlockForm({
   block,

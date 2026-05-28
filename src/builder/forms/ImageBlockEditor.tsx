@@ -1,12 +1,7 @@
 import type { ChangeEvent, ReactNode } from "react";
 import type { Align, Block, ImageBlock } from "../../types/generated/template";
 import type { BlockEditorProps } from "./blockEditors";
-
-const fieldLabelClass =
-  "grid min-w-0 gap-1 text-[11px] font-medium uppercase tracking-wide text-stone-500";
-
-const controlClass =
-  "w-full min-w-0 min-h-8 rounded-md border border-solid border-stone-200 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+import { controlClass, fieldLabelClass } from "./controls/fieldStyles";
 
 export function ImageBlockEditor({
   block,
