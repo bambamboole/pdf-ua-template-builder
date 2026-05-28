@@ -9,7 +9,7 @@
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "templateConfig".
  */
-export type TemplateConfig = { page?: PageConfig; typography?: TypographyConfig };
+export type TemplateConfig = {page?: PageConfig; typography?: TypographyConfig};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "block".
@@ -37,40 +37,32 @@ export type BlockConfig = {
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "headingConfig".
  */
-export type HeadingConfig = BlockConfig & { level?: number };
+export type HeadingConfig = BlockConfig & {level?: number};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "imageConfig".
  */
-export type ImageConfig = BlockConfig & { maxHeight?: number };
+export type ImageConfig = BlockConfig & {maxHeight?: number};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "keyValueConfig".
  */
-export type KeyValueConfig = BlockConfig & { labelWidth?: string; fields?: KeyValueField[] };
+export type KeyValueConfig = BlockConfig & {labelWidth?: string; fields?: KeyValueField[]};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "spacerConfig".
  */
-export type SpacerConfig = BlockConfig & { height?: number };
+export type SpacerConfig = BlockConfig & {height?: number};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "dividerConfig".
  */
-export type DividerConfig = BlockConfig & {
-  thickness?: number;
-  lineColor?: string;
-  style?: DividerStyle;
-};
+export type DividerConfig = BlockConfig & {thickness?: number; lineColor?: string; style?: DividerStyle};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "tableConfig".
  */
-export type TableConfig = BlockConfig & {
-  numberRows?: boolean;
-  columns?: TableColumn[];
-  style?: TableStyle;
-};
+export type TableConfig = BlockConfig & {numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "align".
@@ -105,7 +97,7 @@ export type PageBackgroundType = "auto" | "image" | "pdf";
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "keyValueField".
  */
-export type KeyValueField = { key: string; label: string };
+export type KeyValueField = {key: string; label: string};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageSize".
@@ -115,7 +107,7 @@ export type PageSize = PresetPageSize | CustomPageSize;
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageFooterConfig".
  */
-export type PageFooterConfig = { repeat?: boolean; rows?: Row[] };
+export type PageFooterConfig = {repeat?: boolean; rows?: Row[]};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageConfig".
