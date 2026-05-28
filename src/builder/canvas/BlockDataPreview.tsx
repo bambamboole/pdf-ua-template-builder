@@ -16,6 +16,12 @@ export interface BlockDataPreviewProps {
   rowData?: unknown;
 }
 
+const emptyClass = "m-0 text-sm text-stone-400";
+const copyClass =
+  "m-0 line-clamp-3 overflow-hidden text-sm leading-[1.45] text-stone-500 [display:-webkit-box] [-webkit-box-orient:vertical]";
+const headingCopyClass =
+  "m-0 line-clamp-2 overflow-hidden text-[17px] font-semibold leading-[1.25] text-stone-900 [display:-webkit-box] [-webkit-box-orient:vertical]";
+
 export function BlockDataPreview({ block, rowData }: BlockDataPreviewProps) {
   switch (block.type) {
     case "heading":
@@ -49,36 +55,36 @@ function TextPreview({
   const text = block.text.trim();
 
   if (text.length === 0) {
-    return <p className="builder-card-preview__empty">No text yet</p>;
+    return <p className={emptyClass}>No text yet</p>;
   }
 
-  return (
-    <p className={`builder-card-preview__copy builder-card-preview__copy--${variant}`}>
-      {text}
-    </p>
-  );
+  return <p className={variant === "heading" ? headingCopyClass : copyClass}>{text}</p>;
 }
 
 function HtmlPreview({ block }: { block: HtmlBlock }) {
   const text = stripMarkup(block.html).trim();
 
   if (text.length === 0) {
-    return <p className="builder-card-preview__empty">No HTML content yet</p>;
+    return <p className={emptyClass}>No HTML content yet</p>;
   }
 
-  return <p className="builder-card-preview__copy">{text}</p>;
+  return <p className={copyClass}>{text}</p>;
 }
 
 function ImagePreview({ block }: { block: ImageBlock }) {
   const src = block.src.trim();
 
   if (src.length === 0) {
-    return <p className="builder-card-preview__empty">No image selected</p>;
+    return <p className={emptyClass}>No image selected</p>;
   }
 
   return (
-    <div className="builder-card-preview__image-frame">
-      <img className="builder-card-preview__image" src={src} alt={block.alt ?? ""} />
+    <div className="grid min-h-[72px] place-items-center overflow-hidden rounded-md border border-solid border-stone-200 bg-stone-100">
+      <img
+        className="block max-h-[120px] max-w-full object-contain"
+        src={src}
+        alt={block.alt ?? ""}
+      />
     </div>
   );
 }
@@ -100,15 +106,22 @@ function KeyValuePreview({ block, rowData }: { block: KeyValueBlock; rowData?: u
         }));
 
   if (entries.length === 0) {
-    return <p className="builder-card-preview__empty">No fields yet</p>;
+    return <p className={emptyClass}>No fields yet</p>;
   }
 
   return (
-    <dl className="builder-card-preview__kv">
+    <dl className="m-0 grid gap-0.5">
       {entries.slice(0, 5).map((entry) => (
-        <div key={entry.key}>
-          <dt>{entry.label}</dt>
-          <dd>{entry.value || "—"}</dd>
+        <div
+          key={entry.key}
+          className="grid min-w-0 items-baseline gap-2 grid-cols-[minmax(72px,0.42fr)_minmax(0,1fr)]"
+        >
+          <dt className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-stone-400">
+            {entry.label}
+          </dt>
+          <dd className="m-0 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm text-stone-900">
+            {entry.value || "—"}
+          </dd>
         </div>
       ))}
     </dl>
@@ -120,31 +133,46 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
   const rows = Array.isArray(rowData) ? rowData.filter(isRecord) : [];
 
   if (columns.length === 0) {
-    return <p className="builder-card-preview__empty">No columns yet</p>;
+    return <p className={emptyClass}>No columns yet</p>;
   }
 
   return (
-    <div className="builder-card-preview__table-wrap">
-      <table className="builder-card-preview__table">
+    <div className="min-w-0 overflow-hidden rounded-md border border-solid border-stone-200">
+      <table className="w-full table-fixed border-collapse text-[11px]">
         <thead>
           <tr>
             {columns.slice(0, 4).map((column) => (
-              <th key={column.key}>{column.label || column.key}</th>
+              <th
+                key={column.key}
+                className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-stone-200 bg-stone-100 px-2 py-[5px] text-left font-semibold text-stone-900"
+              >
+                {column.label || column.key}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.length > 0 ? (
             rows.slice(0, 3).map((row) => (
-              <tr key={tableRowPreviewKey(row, columns)}>
+              <tr key={tableRowPreviewKey(row, columns)} className="last:[&>td]:border-b-0">
                 {columns.slice(0, 4).map((column) => (
-                  <td key={column.key}>{stringifyPreviewValue(row[column.key]) || "—"}</td>
+                  <td
+                    key={column.key}
+                    className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-stone-200 px-2 py-[5px] text-left text-stone-500"
+                  >
+                    {stringifyPreviewValue(row[column.key]) || "—"}
+                  </td>
                 ))}
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={Math.min(columns.length, 4)}>No runtime rows yet</td>
+              <td
+                colSpan={Math.min(columns.length, 4)}
+                className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 px-2 py-[5px] text-left text-stone-500"
+              >
+                No runtime rows yet
+              </td>
             </tr>
           )}
         </tbody>
@@ -157,7 +185,7 @@ function SpacerPreview({ block }: { block: SpacerBlock }) {
   const height = block.config?.height;
 
   return (
-    <div className="builder-card-preview__spacer">
+    <div className="grid h-9 place-items-center rounded-md border border-dashed border-stone-300 text-[11px] text-stone-400">
       {typeof height === "number" ? `${height}mm spacer` : "Spacer"}
     </div>
   );
@@ -165,8 +193,19 @@ function SpacerPreview({ block }: { block: SpacerBlock }) {
 
 function DividerPreview({ block }: { block: DividerBlock }) {
   const style = block.config?.style ?? "solid";
+  const baseClass = "my-2 border-0 border-t border-stone-300";
+  const styleClass =
+    style === "dashed"
+      ? "border-dashed"
+      : style === "dotted"
+        ? "border-dotted"
+        : style === "double"
+          ? "border-double border-t-[3px]"
+          : style === "none"
+            ? "border-t-transparent"
+            : "border-solid";
 
-  return <div className={`builder-card-preview__divider builder-card-preview__divider--${style}`} />;
+  return <div className={`${baseClass} ${styleClass}`} />;
 }
 
 function mergeRecordValues(

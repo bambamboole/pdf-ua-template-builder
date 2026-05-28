@@ -58,9 +58,9 @@ export function SortableBlock({
   const blockId = typeof editorBlock.block.id === "string" ? editorBlock.block.id : null;
   const rowData = blockId ? data[blockId] : undefined;
   const classes = [
-    "builder-card",
-    isDragging ? "is-dragging" : "",
-    selected ? "is-selected" : "",
+    "group/card relative grid min-w-0 cursor-pointer overflow-hidden rounded-lg border border-solid bg-white transition-[border-color,box-shadow,background] hover:border-stone-300",
+    isDragging ? "border-dashed border-stone-200 opacity-45" : "border-stone-200",
+    selected ? "!border-indigo-600 ring-2 ring-indigo-50" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -89,6 +89,8 @@ export function SortableBlock({
     onRemoveBlock(editorBlock.uid);
   }
 
+  const chromeRevealedClass = selected || isDragging ? "opacity-100" : "opacity-0";
+
   return (
     <article
       ref={setNodeRef}
@@ -99,11 +101,13 @@ export function SortableBlock({
       onClick={selectBlock}
       onKeyDown={handleCardKeyDown}
     >
-      <div className="builder-card__chrome">
+      <div
+        className={`pointer-events-none absolute inset-x-2 top-2 z-[1] flex items-center justify-between gap-1 transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100 ${chromeRevealedClass}`}
+      >
         <button
           ref={setActivatorNodeRef}
           type="button"
-          className="builder-card__handle"
+          className="pointer-events-auto inline-grid h-[22px] w-[22px] flex-none cursor-grab place-items-center rounded border border-solid border-stone-200 bg-white/90 p-0 font-mono text-xs text-stone-400 transition-[background,border-color,color] hover:border-stone-300 hover:bg-white hover:text-stone-900 active:cursor-grabbing"
           aria-label="Drag to move block"
           onClick={(event) => event.stopPropagation()}
           {...attributes}
@@ -111,10 +115,10 @@ export function SortableBlock({
         >
           ⋮⋮
         </button>
-        <div className="builder-card__actions">
+        <div className="pointer-events-auto inline-flex flex-none items-center gap-1">
           <button
             type="button"
-            className="builder-card__icon-button builder-card__icon-button--danger"
+            className="inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border border-solid border-stone-200 bg-white/90 p-0 text-[13px] text-stone-500 transition-[background,border-color,color] hover:border-stone-300 hover:bg-red-50 hover:text-red-700"
             aria-label="Remove block"
             onClick={handleRemove}
           >
@@ -122,7 +126,7 @@ export function SortableBlock({
           </button>
         </div>
       </div>
-      <div className="builder-card-preview">
+      <div className="grid min-w-0 bg-white p-3">
         <BlockDataPreview block={editorBlock.block} rowData={rowData} />
       </div>
     </article>
