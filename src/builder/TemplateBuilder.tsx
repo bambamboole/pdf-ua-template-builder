@@ -58,6 +58,21 @@ const emptyTemplate: Template = {
   version: 1,
 };
 
+export interface TemplateBuilderProps {
+  /** Base URL of a running pdf-ua-api instance. Defaults to "" (relative URLs / proxy). */
+  apiUrl?: string;
+  /** Template loaded into the editor on first render. */
+  initialTemplate?: Template;
+  /** Runtime data keyed by block id (table rows, dynamic key-value overrides). */
+  initialData?: TemplateData;
+  /** Fires whenever the user edits the template or its runtime data. */
+  onChange?: (template: Template, data: TemplateData) => void;
+  /** Fires after a successful render with the produced PDF blob. */
+  onRendered?: (pdf: Blob) => void;
+  /** Optional className appended to the root element. */
+  className?: string;
+}
+
 interface DragData {
   source?: string;
   type?: string;
@@ -78,12 +93,21 @@ type ActiveDrag =
   | { kind: "row" }
   | null;
 
-export function TemplateBuilderPage() {
-  const defaultApiUrl = resolveDefaultApiUrl(import.meta.env.VITE_PDF_UA_API_URL);
+export function TemplateBuilder({
+  apiUrl: initialApiUrlProp,
+  initialTemplate,
+  initialData,
+  onChange,
+  onRendered,
+  className,
+}: TemplateBuilderProps = {}) {
+  const defaultApiUrl = resolveDefaultApiUrl(initialApiUrlProp);
   const [apiUrl, setApiUrl] = useState(defaultApiUrl);
   const [schema, setSchema] = useState<TemplateSchemaResponse | null>(null);
-  const [model, setModel] = useState<EditorModel>(() => createEditorModel(emptyTemplate));
-  const [data, setData] = useState<TemplateData>({});
+  const [model, setModel] = useState<EditorModel>(() =>
+    createEditorModel(initialTemplate ?? emptyTemplate),
+  );
+  const [data, setData] = useState<TemplateData>(initialData ?? {});
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [schemaLoading, setSchemaLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -94,6 +118,20 @@ export function TemplateBuilderPage() {
   const schemaRequestId = useRef(0);
   const renderRequestId = useRef(0);
   const pdfUrlRef = useRef<string | null>(null);
+  const onChangeRef = useRef(onChange);
+  const onRenderedRef = useRef(onRendered);
+  const skipNextChangeRef = useRef(true);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    onRenderedRef.current = onRendered;
+  }, [onChange, onRendered]);
+  useEffect(() => {
+    if (skipNextChangeRef.current) {
+      skipNextChangeRef.current = false;
+      return;
+    }
+    onChangeRef.current?.(serializeTemplate(model), data);
+  }, [model, data]);
   const schemaObject = schema as unknown as JsonSchemaObject | null;
   const blockTypes = useMemo(
     () => (schemaObject ? getBlockTypes(schemaObject) : []),
@@ -181,6 +219,7 @@ export function TemplateBuilderPage() {
         pdfUrlRef.current = nextPdfUrl;
         return nextPdfUrl;
       });
+      onRenderedRef.current?.(pdf);
     } catch (cause) {
       if (mounted.current && requestId === renderRequestId.current) {
         setError(errorMessage(cause));
@@ -325,8 +364,12 @@ export function TemplateBuilderPage() {
     setActiveDrag(null);
   }, []);
 
+  const rootClassName = className
+    ? `template-builder-page ${className}`
+    : "template-builder-page";
+
   return (
-    <main className="template-builder-page">
+    <main className={rootClassName}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

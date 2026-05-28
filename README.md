@@ -1,30 +1,100 @@
-# PDF/UA Template Builder
+# @bambamboole/pdf-ua-template-builder
 
-Standalone React frontend for building templates that render through `pdf-ua-api`.
+An embeddable React template builder for the
+[pdf-ua-api](https://github.com/bambamboole/pdf-ua-api) PDF/UA renderer.
 
-## Scripts
+- Hybrid block cards that expand inline for editing
+- Page-format aware canvas (A3/A4/A5/A6/Letter/Legal/Tabloid + orientation)
+- Repeated footer area and page-number controls
+- Animated drag-and-drop with full keyboard accessibility (powered by dnd-kit)
+- Lightweight neutral UI built around CSS custom properties
 
-- `npm run dev` starts Vite on port `5174`.
-- `npm run build` runs TypeScript and builds the Vite app.
-- `npm run sync:schema` copies the backend-owned template schema from `../pdf-ua-api`.
-- `npm run generate:types` regenerates TypeScript declarations from `schemas/template.schema.json`.
-- `npm run typecheck` runs TypeScript only.
-- `npm run lint` runs oxlint.
-- `npm run fmt` runs oxfmt.
+## Install
 
-Set `VITE_PDF_UA_API_URL` when the API is not running at `http://localhost:8080`.
-
-## Current Scope
-
-This is initial boilerplate with a direct API client for `/schema` and `/render/template`.
-The full builder UI should be ported from `../pdf-ua-client/resources/js/builder` after the API template schema and frontend model are reconciled.
-
-## Generated Types
-
-The template schema is owned by `pdf-ua-api` and exposed at `/schema/template.json`.
-Regenerate frontend declarations after backend schema changes:
-
-```sh
-npm run sync:schema
-npm run generate:types
+```bash
+npm install @bambamboole/pdf-ua-template-builder
 ```
+
+React 18 or 19 is required as a peer dependency:
+
+```bash
+npm install react react-dom
+```
+
+## Usage
+
+```tsx
+import { TemplateBuilder, createInvoiceExample } from "@bambamboole/pdf-ua-template-builder";
+import "@bambamboole/pdf-ua-template-builder/style.css";
+
+const example = createInvoiceExample();
+
+export default function App() {
+  return (
+    <TemplateBuilder
+      apiUrl="http://localhost:8080"
+      initialTemplate={example.template}
+      initialData={example.data}
+      onChange={(template, data) => console.log("changed", template, data)}
+      onRendered={(pdf) => console.log("rendered pdf blob", pdf)}
+    />
+  );
+}
+```
+
+## Props
+
+| Prop              | Type                                                                | Description                                                                  |
+| ----------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `apiUrl`          | `string`                                                            | Base URL of a running `pdf-ua-api`. Defaults to `""` (relative URL / proxy). |
+| `initialTemplate` | `Template`                                                          | Template loaded on first render.                                             |
+| `initialData`     | `Record<string, unknown>`                                           | Runtime data keyed by block id (table rows, dynamic key-value overrides).   |
+| `onChange`        | `(template: Template, data: Record<string, unknown>) => void`       | Fires on every edit.                                                         |
+| `onRendered`     | `(pdf: Blob) => void`                                               | Fires after a successful render.                                             |
+| `className`      | `string`                                                            | Class appended to the root element.                                          |
+
+## Backend
+
+The component talks to a `pdf-ua-api` instance via:
+
+- `GET {apiUrl}/schema` — for block metadata used by the palette and forms.
+- `POST {apiUrl}/render/template` — to render the current template + data into a PDF blob.
+
+See the [pdf-ua-api](https://github.com/bambamboole/pdf-ua-api) repository for
+installation and configuration. The component does **not** render PDFs in the
+browser — the backend owns the PDF/UA-accurate rendering pipeline.
+
+## Helpers
+
+The package also exports framework-agnostic utilities:
+
+```ts
+import {
+  pageSizeForFormat,   // [widthMm, heightMm] for a PageFormat + Orientation
+  mmToPx,              // mm → CSS px at 96 DPI
+  createEditorModel,   // ingest a Template into an editor model
+  serializeTemplate,   // emit a Template from an editor model
+  getPageSize, setPageSize,
+  getFooterRepeat, setFooterRepeat,
+  getPageNumbers, setPageNumbers,
+} from "@bambamboole/pdf-ua-template-builder";
+```
+
+## Local development
+
+```bash
+npm install
+npm run dev          # runs the playground app on http://localhost:5174
+npm run build        # produces the npm package in dist/
+npm run build:app    # produces the playground build
+npm run test         # vitest
+npm run typecheck    # tsc --noEmit
+npm run lint         # oxlint
+```
+
+`npm run dev` proxies `/schema` and `/render/*` to a local `pdf-ua-api`
+(default: `http://localhost:8080`, override with `PDF_UA_API_PROXY_URL`).
+
+## License
+
+MIT

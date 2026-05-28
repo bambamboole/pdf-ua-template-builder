@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { createEditorModel } from "./state/editorModel";
-import { createNextBlockId, getRowIndex } from "./TemplateBuilderPage";
+import { createNextBlockId, getRowIndex } from "./TemplateBuilder";
 import { PdfPane } from "./pdf/PdfPane";
 
 describe("PdfPane", () => {

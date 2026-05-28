@@ -1,5 +1,5 @@
-import { TemplateBuilderPage } from "./builder/TemplateBuilderPage";
+import { TemplateBuilder } from "./builder/TemplateBuilder";
 
 export default function App() {
-  return <TemplateBuilderPage />;
+  return <TemplateBuilder apiUrl={import.meta.env.VITE_PDF_UA_API_URL} />;
 }
