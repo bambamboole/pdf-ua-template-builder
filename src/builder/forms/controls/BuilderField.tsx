@@ -79,6 +79,14 @@ interface FieldControlState {
   invalid: boolean;
 }
 
+const inputClass =
+  "h-8 w-full min-w-0 rounded-md border border-solid border-stone-200 bg-white px-3 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
+const textareaClass =
+  "min-h-24 w-full min-w-0 rounded-md border border-solid border-stone-200 bg-white px-3 py-2 font-mono text-xs text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
+const selectClass = inputClass;
+
 export function TextField({
   value,
   placeholder,
@@ -93,7 +101,7 @@ export function TextField({
     <BuilderField {...fieldProps}>
       <input
         id={fieldState.id}
-        className="builder-input"
+        className={inputClass}
         name={fieldProps.name}
         type="text"
         value={value ?? ""}
@@ -122,7 +130,7 @@ export function TextAreaField({
     <BuilderField {...fieldProps}>
       <textarea
         id={fieldState.id}
-        className="builder-input builder-textarea"
+        className={textareaClass}
         name={fieldProps.name}
         value={value ?? ""}
         placeholder={placeholder}
@@ -151,7 +159,7 @@ export function NumberField({
     <BuilderField {...fieldProps}>
       <input
         id={fieldState.id}
-        className="builder-input"
+        className={inputClass}
         name={fieldProps.name}
         type="number"
         value={value ?? ""}
@@ -182,7 +190,7 @@ export function SelectField<Value extends string>({
     <BuilderField {...fieldProps}>
       <select
         id={fieldState.id}
-        className="builder-select"
+        className={selectClass}
         name={fieldProps.name}
         value={value ?? ""}
         disabled={fieldProps.disabled}
@@ -209,12 +217,10 @@ export function CheckboxField({
   const fieldState = createFieldState(fieldProps);
 
   return (
-    <BuilderField
-      {...fieldProps}
-      className={classNames("builder-field--checkbox", fieldProps.className)}
-    >
+    <BuilderField {...fieldProps} className={fieldProps.className}>
       <input
         id={fieldState.id}
+        className="h-3.5 w-3.5 accent-indigo-600"
         name={fieldProps.name}
         type="checkbox"
         checked={checked}
@@ -239,7 +245,7 @@ export function ColorField({
     <BuilderField {...fieldProps}>
       <input
         id={fieldState.id}
-        className="builder-input builder-input--color"
+        className={`${inputClass} p-1`}
         name={fieldProps.name}
         type="color"
         value={value ?? fallbackValue}
@@ -265,7 +271,7 @@ export function UnitField({
     <BuilderField {...fieldProps}>
       <input
         id={fieldState.id}
-        className="builder-input"
+        className={inputClass}
         name={fieldProps.name}
         type="text"
         inputMode="text"
@@ -295,18 +301,18 @@ export function BuilderField({
   const errorId = error ? `${fieldState.id}-error` : undefined;
 
   return (
-    <div className={classNames("builder-field", className)}>
-      <label className="builder-field__label" htmlFor={fieldState.id}>
+    <div className={classNames("grid min-w-0 gap-1", className)}>
+      <label className="text-[11px] font-medium text-stone-500" htmlFor={fieldState.id}>
         {label}
       </label>
-      <div className="builder-field__control">{children}</div>
+      <div className="min-w-0">{children}</div>
       {help ? (
-        <p className="builder-field__help" id={helpId}>
+        <p className="m-0 text-[11px] text-stone-500" id={helpId}>
           {help}
         </p>
       ) : null}
       {error ? (
-        <p className="builder-field__error" id={errorId} role="alert">
+        <p className="m-0 text-[11px] text-red-700" id={errorId} role="alert">
           {error}
         </p>
       ) : null}

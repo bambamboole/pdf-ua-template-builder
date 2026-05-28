@@ -24,7 +24,8 @@ describe("builder form controls", () => {
       />,
     );
 
-    expect(html).toContain('class="builder-field');
+    expect(html).toContain('for="builder-field-block-text"');
+    expect(html).toContain('id="builder-field-block-text"');
     expect(html).toContain("Heading text");
     expect(html).toContain('name="block.text"');
     expect(html).toContain('value="Invoice"');

@@ -2,6 +2,12 @@ import type { ChangeEvent, ReactNode } from "react";
 import type { Align, Block, ImageBlock } from "../../types/generated/template";
 import type { BlockEditorProps } from "./blockEditors";
 
+const fieldLabelClass =
+  "grid min-w-0 gap-1 text-[11px] font-medium uppercase tracking-wide text-stone-500";
+
+const controlClass =
+  "w-full min-w-0 min-h-8 rounded-md border border-solid border-stone-200 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
 export function ImageBlockEditor({
   block,
   onChangeBlock,
@@ -54,18 +60,22 @@ export function ImageBlockEditor({
   }
 
   return (
-    <div className="inline-block-form">
-      <div className="image-block-editor__preview" data-name="preview">
+    <div className="grid gap-3 [container-type:inline-size]">
+      <div
+        className="grid min-h-24 place-items-center rounded-md border border-solid border-stone-200 bg-stone-100 p-3"
+        data-name="preview"
+      >
         {src ? (
-          <img src={src} alt={alt} className="image-block-editor__preview-image" />
+          <img src={src} alt={alt} className="max-h-[120px] max-w-full object-contain" />
         ) : (
-          <div className="image-block-editor__preview-empty">No image selected</div>
+          <div className="text-[11px] text-stone-500">No image selected</div>
         )}
       </div>
 
-      <label>
+      <label className={fieldLabelClass}>
         Source
         <input
+          className={controlClass}
           name="src"
           type="text"
           value={src}
@@ -73,29 +83,37 @@ export function ImageBlockEditor({
         />
       </label>
 
-      <label>
+      <label className={fieldLabelClass}>
         Upload
-        <input name="src-file" type="file" accept="image/*" onChange={handleFileChange} />
+        <input
+          className={controlClass}
+          name="src-file"
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+        />
       </label>
 
-      <label>
+      <label className={fieldLabelClass}>
         Alt text
         <input
+          className={controlClass}
           name="alt"
           type="text"
           value={alt}
           onChange={(event) => handleAltChange(event.currentTarget.value)}
         />
       </label>
-      <p className="image-block-editor__hint">
+      <p className="-mt-2 m-0 text-[11px] text-stone-500">
         Alt text is required for PDF/UA accessibility. Describe what the image conveys.
       </p>
 
       {showLayoutControls ? (
         <>
-          <label>
+          <label className={fieldLabelClass}>
             Max height (mm)
             <input
+              className={controlClass}
               name="config.maxHeight"
               type="number"
               min={0}
@@ -106,9 +124,10 @@ export function ImageBlockEditor({
             />
           </label>
 
-          <label>
+          <label className={fieldLabelClass}>
             Width
             <input
+              className={controlClass}
               name="config.width"
               type="text"
               value={width}
@@ -116,9 +135,10 @@ export function ImageBlockEditor({
             />
           </label>
 
-          <label>
+          <label className={fieldLabelClass}>
             Align
             <select
+              className={controlClass}
               name="config.align"
               value={align}
               onChange={(event) => handleAlignChange(event.currentTarget.value)}

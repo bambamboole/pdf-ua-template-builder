@@ -19,6 +19,35 @@ import type { CSSProperties, ReactNode } from "react";
 import type { Align, Block, TableBlock } from "../../types/generated/template";
 import type { BlockEditorProps } from "./blockEditors";
 
+const fieldLabelClass =
+  "grid min-w-0 gap-1 text-[11px] font-medium uppercase tracking-wide text-stone-500";
+
+const checkboxLabelClass =
+  "grid grid-cols-[max-content_minmax(0,1fr)] items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-stone-500";
+
+const controlClass =
+  "w-full min-w-0 min-h-8 rounded-md border border-solid border-stone-200 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
+const arrayFieldClass =
+  "col-span-full grid min-w-0 gap-2 rounded-md border border-solid border-stone-200 p-3";
+
+const arrayLegendClass =
+  "px-2 text-[11px] font-medium uppercase tracking-wide text-stone-500";
+
+const arrayItemSortableClass =
+  "relative grid gap-2 rounded-md border border-solid border-stone-200 bg-stone-100 py-3 pr-8 pl-8";
+
+const arrayHandleClass =
+  "absolute top-2 left-2 inline-grid h-[22px] w-[22px] cursor-grab place-items-center rounded border-0 bg-transparent p-0 font-mono text-xs tracking-tighter text-stone-500 hover:bg-white hover:text-stone-900 active:cursor-grabbing";
+
+const arrayRemoveClass =
+  "absolute top-2 right-2 inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border-0 bg-transparent p-0 text-xs text-stone-500 hover:bg-red-50 hover:text-red-700";
+
+const arrayAddClass =
+  "h-7 w-fit cursor-pointer rounded-md border border-dashed border-stone-300 bg-transparent px-3 text-[11px] text-stone-500 hover:border-indigo-600 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50";
+
+const hintClass = "m-0 text-[11px] text-stone-500";
+
 interface TableColumn {
   key: string;
   label: string;
@@ -253,7 +282,7 @@ export function TableBlockEditor({
   }
 
   return (
-    <div className="inline-block-form">
+    <div className="grid gap-3 [container-type:inline-size]">
       <ColumnsEditor
         block={tableBlock}
         columns={columns}
@@ -271,8 +300,9 @@ export function TableBlockEditor({
 
       {showLayoutControls ? (
         <>
-          <label className="builder-field builder-field--checkbox">
+          <label className={checkboxLabelClass}>
             <input
+              className="h-3.5 w-3.5 accent-indigo-600"
               name="config.numberRows"
               type="checkbox"
               checked={tableBlock.config?.numberRows === true}
@@ -281,9 +311,10 @@ export function TableBlockEditor({
             Number rows
           </label>
 
-          <label>
+          <label className={fieldLabelClass}>
             Width
             <input
+              className={controlClass}
               name="config.width"
               type="text"
               value={width}
@@ -291,9 +322,10 @@ export function TableBlockEditor({
             />
           </label>
 
-          <label>
+          <label className={fieldLabelClass}>
             Align
             <select
+              className={controlClass}
               name="config.align"
               value={align}
               onChange={(event) => handleChangeAlign(event.currentTarget.value)}
@@ -350,8 +382,8 @@ function ColumnsEditor({
   const sortableIds = columns.map((_, index) => String(index));
 
   return (
-    <fieldset className="builder-array-field">
-      <legend>Columns</legend>
+    <fieldset className={arrayFieldClass}>
+      <legend className={arrayLegendClass}>Columns</legend>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -376,7 +408,7 @@ function ColumnsEditor({
       <button
         type="button"
         data-name="add-column"
-        className="builder-array-field__add"
+        className={arrayAddClass}
         onClick={() => onChangeBlock(addColumn(block))}
       >
         Add column
@@ -422,42 +454,41 @@ function ColumnRow({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      className="builder-array-field__item builder-array-field__item--sortable"
-      style={style}
-    >
+    <div ref={setNodeRef} className={arrayItemSortableClass} style={style}>
       <button
         ref={setActivatorNodeRef}
         type="button"
-        className="builder-array-field__handle"
+        className={arrayHandleClass}
         aria-label={`Drag to reorder column ${index + 1}`}
         {...attributes}
         {...listeners}
       >
         ⋮⋮
       </button>
-      <label>
+      <label className={fieldLabelClass}>
         Key
         <input
+          className={controlClass}
           name={`column-key-${index}`}
           type="text"
           value={column.key}
           onChange={(event) => onChangeKey(event.currentTarget.value)}
         />
       </label>
-      <label>
+      <label className={fieldLabelClass}>
         Label
         <input
+          className={controlClass}
           name={`column-label-${index}`}
           type="text"
           value={column.label}
           onChange={(event) => onChangeLabel(event.currentTarget.value)}
         />
       </label>
-      <label>
+      <label className={fieldLabelClass}>
         Align
         <select
+          className={controlClass}
           name={`column-align-${index}`}
           value={(column.align ?? "") as string}
           onChange={(event) => onChangeAlign(event.currentTarget.value)}
@@ -468,9 +499,10 @@ function ColumnRow({
           <option value="right">right</option>
         </select>
       </label>
-      <label>
+      <label className={fieldLabelClass}>
         Width
         <input
+          className={controlClass}
           name={`column-width-${index}`}
           type="text"
           value={column.width ?? ""}
@@ -480,7 +512,7 @@ function ColumnRow({
       <button
         type="button"
         data-name={`remove-column-${index}`}
-        className="builder-array-field__remove"
+        className={arrayRemoveClass}
         aria-label={`Remove column ${index + 1}`}
         onClick={onRemove}
       >
@@ -522,11 +554,9 @@ function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorP
 
   if (!canEditRows) {
     return (
-      <fieldset className="builder-array-field">
-        <legend>Rows</legend>
-        <p className="table-block-editor__hint">
-          Give this block an id to edit runtime row data here.
-        </p>
+      <fieldset className={arrayFieldClass}>
+        <legend className={arrayLegendClass}>Rows</legend>
+        <p className={hintClass}>Give this block an id to edit runtime row data here.</p>
       </fieldset>
     );
   }
@@ -534,12 +564,10 @@ function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorP
   const sortableIds = rows.map((_, index) => String(index));
 
   return (
-    <fieldset className="builder-array-field">
-      <legend>Rows</legend>
+    <fieldset className={arrayFieldClass}>
+      <legend className={arrayLegendClass}>Rows</legend>
       {rows.length === 0 ? (
-        <p className="table-block-editor__hint">
-          No rows yet. Add one to seed runtime data for this table.
-        </p>
+        <p className={hintClass}>No rows yet. Add one to seed runtime data for this table.</p>
       ) : (
         <DndContext
           sensors={sensors}
@@ -566,7 +594,7 @@ function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorP
       <button
         type="button"
         data-name="add-row"
-        className="builder-array-field__add"
+        className={arrayAddClass}
         disabled={columns.length === 0}
         onClick={() => onChangeRowData?.(addRow(rows, columns))}
       >
@@ -602,15 +630,11 @@ function DataRow({ id, index, row, columns, onChangeCell, onRemove }: DataRowPro
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      className="builder-array-field__item builder-array-field__item--sortable"
-      style={style}
-    >
+    <div ref={setNodeRef} className={arrayItemSortableClass} style={style}>
       <button
         ref={setActivatorNodeRef}
         type="button"
-        className="builder-array-field__handle"
+        className={arrayHandleClass}
         aria-label={`Drag to reorder row ${index + 1}`}
         {...attributes}
         {...listeners}
@@ -618,9 +642,10 @@ function DataRow({ id, index, row, columns, onChangeCell, onRemove }: DataRowPro
         ⋮⋮
       </button>
       {columns.map((column) => (
-        <label key={column.key}>
+        <label key={column.key} className={fieldLabelClass}>
           {column.label || column.key}
           <input
+            className={controlClass}
             name={`row-${index}.${column.key}`}
             type="text"
             value={row[column.key] ?? ""}
@@ -631,7 +656,7 @@ function DataRow({ id, index, row, columns, onChangeCell, onRemove }: DataRowPro
       <button
         type="button"
         data-name={`remove-row-${index}`}
-        className="builder-array-field__remove"
+        className={arrayRemoveClass}
         aria-label={`Remove row ${index + 1}`}
         onClick={onRemove}
       >

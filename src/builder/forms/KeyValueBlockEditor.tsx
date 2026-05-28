@@ -19,6 +19,30 @@ import type { CSSProperties, ReactNode } from "react";
 import type { Align, Block, KeyValueBlock } from "../../types/generated/template";
 import type { BlockEditorProps } from "./blockEditors";
 
+const fieldLabelClass =
+  "grid min-w-0 gap-1 text-[11px] font-medium uppercase tracking-wide text-stone-500";
+
+const controlClass =
+  "w-full min-w-0 min-h-8 rounded-md border border-solid border-stone-200 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+
+const arrayFieldClass =
+  "col-span-full grid min-w-0 gap-2 rounded-md border border-solid border-stone-200 p-3";
+
+const arrayLegendClass =
+  "px-2 text-[11px] font-medium uppercase tracking-wide text-stone-500";
+
+const arrayItemSortableClass =
+  "relative grid gap-2 rounded-md border border-solid border-stone-200 bg-stone-100 py-3 pr-8 pl-8";
+
+const arrayHandleClass =
+  "absolute top-2 left-2 inline-grid h-[22px] w-[22px] cursor-grab place-items-center rounded border-0 bg-transparent p-0 font-mono text-xs tracking-tighter text-stone-500 hover:bg-white hover:text-stone-900 active:cursor-grabbing";
+
+const arrayRemoveClass =
+  "absolute top-2 right-2 inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border-0 bg-transparent p-0 text-xs text-stone-500 hover:bg-red-50 hover:text-red-700";
+
+const arrayAddClass =
+  "h-7 w-fit cursor-pointer rounded-md border border-dashed border-stone-300 bg-transparent px-3 text-[11px] text-stone-500 hover:border-indigo-600 hover:text-indigo-600";
+
 interface KeyValueField {
   key: string;
   label: string;
@@ -129,16 +153,17 @@ export function KeyValueBlockEditor({
   }
 
   return (
-    <div className="inline-block-form">
+    <div className="grid gap-3 [container-type:inline-size]">
       <FieldsEditor block={kvBlock} fields={fields} onChangeBlock={onChangeBlock} />
 
       {fields.length > 0 ? (
-        <fieldset className="builder-array-field">
-          <legend>Values</legend>
+        <fieldset className={arrayFieldClass}>
+          <legend className={arrayLegendClass}>Values</legend>
           {fields.map((field) => (
-            <label key={field.key}>
+            <label key={field.key} className={fieldLabelClass}>
               {field.label || field.key}
               <input
+                className={controlClass}
                 name={`values.${field.key}`}
                 type="text"
                 value={String(values[field.key] ?? "")}
@@ -153,9 +178,10 @@ export function KeyValueBlockEditor({
 
       {showLayoutControls ? (
         <>
-          <label>
+          <label className={fieldLabelClass}>
             Width
             <input
+              className={controlClass}
               name="config.width"
               type="text"
               value={width}
@@ -163,9 +189,10 @@ export function KeyValueBlockEditor({
             />
           </label>
 
-          <label>
+          <label className={fieldLabelClass}>
             Align
             <select
+              className={controlClass}
               name="config.align"
               value={align}
               onChange={(event) => handleChangeAlign(event.currentTarget.value)}
@@ -214,8 +241,8 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
   const sortableIds = fields.map((_, index) => String(index));
 
   return (
-    <fieldset className="builder-array-field">
-      <legend>Fields</legend>
+    <fieldset className={arrayFieldClass}>
+      <legend className={arrayLegendClass}>Fields</legend>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -238,7 +265,7 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
       <button
         type="button"
         data-name="add-field"
-        className="builder-array-field__add"
+        className={arrayAddClass}
         onClick={() => onChangeBlock(addField(block))}
       >
         Add field
@@ -273,33 +300,31 @@ function FieldRow({ id, index, field, onChangeKey, onChangeLabel, onRemove }: Fi
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      className="builder-array-field__item builder-array-field__item--sortable"
-      style={style}
-    >
+    <div ref={setNodeRef} className={arrayItemSortableClass} style={style}>
       <button
         ref={setActivatorNodeRef}
         type="button"
-        className="builder-array-field__handle"
+        className={arrayHandleClass}
         aria-label={`Drag to reorder field ${index + 1}`}
         {...attributes}
         {...listeners}
       >
         ⋮⋮
       </button>
-      <label>
+      <label className={fieldLabelClass}>
         Key
         <input
+          className={controlClass}
           name={`field-key-${index}`}
           type="text"
           value={field.key}
           onChange={(event) => onChangeKey(event.currentTarget.value)}
         />
       </label>
-      <label>
+      <label className={fieldLabelClass}>
         Label
         <input
+          className={controlClass}
           name={`field-label-${index}`}
           type="text"
           value={field.label}
@@ -309,7 +334,7 @@ function FieldRow({ id, index, field, onChangeKey, onChangeLabel, onRemove }: Fi
       <button
         type="button"
         data-name={`remove-field-${index}`}
-        className="builder-array-field__remove"
+        className={arrayRemoveClass}
         aria-label={`Remove field ${index + 1}`}
         onClick={onRemove}
       >
