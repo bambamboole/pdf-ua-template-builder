@@ -162,18 +162,26 @@ function KeyValuePreview({
 
 function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown }) {
   const columns = block.config?.columns ?? [];
+  const numberRows = block.config?.numberRows === true;
   const rows = Array.isArray(rowData) ? rowData.filter(isRecord) : [];
 
   if (columns.length === 0) {
     return <EmptyPreview>No columns yet</EmptyPreview>;
   }
 
+  const visibleColumns = columns.slice(0, 4);
+
   return (
     <div className="min-w-0 overflow-hidden rounded-md border border-solid border-border">
       <table className="w-full table-fixed border-collapse text-2xs">
         <thead>
           <tr>
-            {columns.slice(0, 4).map((column) => (
+            {numberRows ? (
+              <th className="w-7 border-0 border-b border-solid border-border bg-surface-muted px-2 py-[5px] text-left font-semibold text-fg-subtle">
+                #
+              </th>
+            ) : null}
+            {visibleColumns.map((column) => (
               <th
                 key={column.key}
                 className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-border bg-surface-muted px-2 py-[5px] text-left font-semibold text-fg"
@@ -185,9 +193,14 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
         </thead>
         <tbody>
           {rows.length > 0 ? (
-            rows.map((row) => (
+            rows.map((row, rowIndex) => (
               <tr key={tableRowPreviewKey(row, columns)} className="last:[&>td]:border-b-0">
-                {columns.slice(0, 4).map((column) => (
+                {numberRows ? (
+                  <td className="border-0 border-b border-solid border-border px-2 py-[5px] text-left text-fg-subtle">
+                    {rowIndex + 1}
+                  </td>
+                ) : null}
+                {visibleColumns.map((column) => (
                   <td
                     key={column.key}
                     className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-border px-2 py-[5px] text-left text-fg-muted"
@@ -200,7 +213,7 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
           ) : (
             <tr>
               <td
-                colSpan={Math.min(columns.length, 4)}
+                colSpan={visibleColumns.length + (numberRows ? 1 : 0)}
                 className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 px-2 py-[5px] text-left text-fg-muted"
               >
                 No runtime rows yet

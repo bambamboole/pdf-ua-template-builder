@@ -94,4 +94,34 @@ describe("BlockDataPreview", () => {
     expect(html).toContain("Accessible PDF template");
     expect(html).toContain("3.800,00 €");
   });
+
+  it("adds a numbered column to the table preview when numberRows is enabled", () => {
+    const block: Block = {
+      type: "table",
+      id: "lineItems",
+      config: { numberRows: true, columns: [{ key: "description", label: "Description" }] },
+    };
+
+    const html = renderToStaticMarkup(
+      <BlockDataPreview block={block} rowData={[{ description: "Row one" }, { description: "Row two" }]} />,
+    );
+
+    expect(html).toContain(">#<");
+    expect(html).toContain(">1<");
+    expect(html).toContain(">2<");
+  });
+
+  it("omits the numbered column when numberRows is not set", () => {
+    const block: Block = {
+      type: "table",
+      id: "lineItems",
+      config: { columns: [{ key: "description", label: "Description" }] },
+    };
+
+    const html = renderToStaticMarkup(
+      <BlockDataPreview block={block} rowData={[{ description: "Row one" }]} />,
+    );
+
+    expect(html).not.toContain(">#<");
+  });
 });

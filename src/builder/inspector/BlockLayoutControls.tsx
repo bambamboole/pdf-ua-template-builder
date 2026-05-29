@@ -133,7 +133,7 @@ function renderTypeSpecificControls(
       );
     case "table":
       return (
-        <>
+        <div className="grid grid-cols-2 gap-2">
           <SelectField
             name="config.style"
             label="Table style"
@@ -154,7 +154,7 @@ function renderTypeSpecificControls(
               onChangeBlock(setBlockConfigField(block, "numberRows", booleanFromNumberRows(value)))
             }
           />
-        </>
+        </div>
       );
     case "key-value":
     case "heading":
