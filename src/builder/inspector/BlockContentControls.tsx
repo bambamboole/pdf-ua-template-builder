@@ -30,15 +30,21 @@ export function BlockContentControls(props: BlockContentControlsProps): ReactNod
     return <KeyValueBlockEditor block={props.block} onChangeBlock={props.onChangeBlock} />;
   }
 
+  if (props.block.type === "table") {
+    return (
+      <TableBlockEditor
+        block={props.block}
+        rowData={props.rowData}
+        onChangeBlock={props.onChangeBlock}
+        onChangeRowData={props.onChangeRowData}
+      />
+    );
+  }
+
   return <InspectorSection title="Content">{renderContentFields(props)}</InspectorSection>;
 }
 
-function renderContentFields({
-  block,
-  rowData,
-  onChangeBlock,
-  onChangeRowData,
-}: BlockContentControlsProps): ReactNode {
+function renderContentFields({ block, onChangeBlock }: BlockContentControlsProps): ReactNode {
   switch (block.type) {
     case "text":
       return (
@@ -89,16 +95,8 @@ function renderContentFields({
     case "image":
       return <ImageBlockEditor block={block} onChangeBlock={onChangeBlock} />;
     case "key-value":
-      return null;
     case "table":
-      return (
-        <TableBlockEditor
-          block={block}
-          rowData={rowData}
-          onChangeBlock={onChangeBlock}
-          onChangeRowData={onChangeRowData}
-        />
-      );
+      return null;
     case "spacer":
     case "divider":
       return <p className="m-0 text-xs text-fg-muted">No content fields for this block.</p>;
