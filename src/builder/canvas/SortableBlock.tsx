@@ -2,21 +2,17 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties, KeyboardEvent, MouseEvent } from "react";
 import type { EditorArea, EditorBlock } from "../state/editorModel";
-import type { Block } from "../../types/generated/template";
-import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
+import type { TemplateData } from "../../types/template";
 import { BlockDataPreview } from "./BlockDataPreview";
 
 export interface SortableBlockProps {
   rowUid: string;
   area: EditorArea;
   editorBlock: EditorBlock;
-  schema: TemplateSchemaResponse;
   data: TemplateData;
   selected: boolean;
-  onChangeBlock: (blockUid: string, block: Block) => void;
   onRemoveBlock: (blockUid: string) => void;
   onSelect: (blockUid: string) => void;
-  onChangeData: (data: TemplateData) => void;
   style?: CSSProperties;
 }
 
@@ -24,13 +20,10 @@ export function SortableBlock({
   rowUid,
   area,
   editorBlock,
-  schema,
   data,
   selected,
-  onChangeBlock,
   onRemoveBlock,
   onSelect,
-  onChangeData,
   style: layoutStyle,
 }: SortableBlockProps) {
   const {
@@ -51,16 +44,12 @@ export function SortableBlock({
     },
   });
 
-  void schema;
-  void onChangeBlock;
-  void onChangeData;
-
   const blockId = typeof editorBlock.block.id === "string" ? editorBlock.block.id : null;
   const rowData = blockId ? data[blockId] : undefined;
   const classes = [
-    "group/card relative grid min-w-0 cursor-pointer overflow-hidden rounded-lg border border-solid bg-white transition-[border-color,box-shadow,background] hover:border-stone-300",
-    isDragging ? "border-dashed border-stone-200 opacity-45" : "border-stone-200",
-    selected ? "!border-indigo-600 ring-2 ring-indigo-50" : "",
+    "group/card relative grid min-w-0 cursor-pointer overflow-hidden rounded-lg border border-solid bg-surface transition-[border-color,box-shadow,background] hover:border-border-strong",
+    isDragging ? "border-dashed border-border opacity-45" : "border-border",
+    selected ? "!border-accent ring-2 ring-accent-soft" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -107,7 +96,7 @@ export function SortableBlock({
         <button
           ref={setActivatorNodeRef}
           type="button"
-          className="pointer-events-auto inline-grid h-[22px] w-[22px] flex-none cursor-grab place-items-center rounded border border-solid border-stone-200 bg-white/90 p-0 font-mono text-xs text-stone-400 transition-[background,border-color,color] hover:border-stone-300 hover:bg-white hover:text-stone-900 active:cursor-grabbing"
+          className="pointer-events-auto inline-grid h-[22px] w-[22px] flex-none cursor-grab place-items-center rounded border border-solid border-border bg-surface/90 p-0 font-mono text-xs text-fg-subtle transition-[background,border-color,color] hover:border-border-strong hover:bg-surface hover:text-fg active:cursor-grabbing"
           aria-label="Drag to move block"
           onClick={(event) => event.stopPropagation()}
           {...attributes}
@@ -118,7 +107,7 @@ export function SortableBlock({
         <div className="pointer-events-auto inline-flex flex-none items-center gap-1">
           <button
             type="button"
-            className="inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border border-solid border-stone-200 bg-white/90 p-0 text-[13px] text-stone-500 transition-[background,border-color,color] hover:border-stone-300 hover:bg-red-50 hover:text-red-700"
+            className="inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border border-solid border-border bg-surface/90 p-0 text-[13px] text-fg-muted transition-[background,border-color,color] hover:border-border-strong hover:bg-danger-soft hover:text-danger"
             aria-label="Remove block"
             onClick={handleRemove}
           >
@@ -126,7 +115,7 @@ export function SortableBlock({
           </button>
         </div>
       </div>
-      <div className="grid min-w-0 bg-white p-3">
+      <div className="grid min-w-0 bg-surface p-3">
         <BlockDataPreview block={editorBlock.block} rowData={rowData} />
       </div>
     </article>

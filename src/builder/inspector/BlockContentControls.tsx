@@ -78,17 +78,9 @@ export function BlockContentControls({
         </div>
       );
     case "image":
-      return (
-        <ImageBlockEditor block={block} onChangeBlock={onChangeBlock} showLayoutControls={false} />
-      );
+      return <ImageBlockEditor block={block} onChangeBlock={onChangeBlock} />;
     case "key-value":
-      return (
-        <KeyValueBlockEditor
-          block={block}
-          onChangeBlock={onChangeBlock}
-          showLayoutControls={false}
-        />
-      );
+      return <KeyValueBlockEditor block={block} onChangeBlock={onChangeBlock} />;
     case "table":
       return (
         <TableBlockEditor
@@ -96,12 +88,11 @@ export function BlockContentControls({
           rowData={rowData}
           onChangeBlock={onChangeBlock}
           onChangeRowData={onChangeRowData}
-          showLayoutControls={false}
         />
       );
     case "spacer":
     case "divider":
-      return <p className="m-0 text-xs text-stone-500">No content fields for this block.</p>;
+      return <p className="m-0 text-xs text-fg-muted">No content fields for this block.</p>;
   }
 }
 

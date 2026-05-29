@@ -55,7 +55,7 @@ export function ColumnResizer({
       aria-label={`Resize columns ${leftIndex + 1} and ${leftIndex + 2}`}
       onPointerDown={handlePointerDown}
     >
-      <span className="mx-auto block h-full w-0.5 rounded-full bg-stone-300 transition-colors group-hover/resizer:bg-indigo-600" />
+      <span className="mx-auto block h-full w-0.5 rounded-full bg-border-strong transition-colors group-hover/resizer:bg-accent" />
     </button>
   );
 }

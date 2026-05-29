@@ -3,24 +3,21 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties, RefObject } from "react";
 import { Fragment, useRef } from "react";
-import type { Block, Orientation, PageFormat } from "../../types/generated/template";
-import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
+import type { Orientation, PageFormat } from "../../types/generated/template";
+import type { TemplateData } from "../../types/template";
 import type {
   EditorArea,
   EditorModel,
   EditorRow,
   PageNumbersValue,
 } from "../state/editorModel";
-import { selectControlClass } from "../forms/controls/fieldStyles";
+import { Checkbox, Select } from "../forms/controls";
 import { ColumnResizer } from "./ColumnResizer";
 import { gridTemplateForWidths } from "./columns";
 import { PageSheet } from "./PageSheet";
 import { SortableBlock } from "./SortableBlock";
 
-const pageNumbersSelectClass = `${selectControlClass} text-sm font-normal normal-case tracking-normal`;
-
 export interface BuilderCanvasProps {
-  schema: TemplateSchemaResponse;
   model: EditorModel;
   data: TemplateData;
   format: PageFormat;
@@ -28,18 +25,15 @@ export interface BuilderCanvasProps {
   footerRepeat: boolean;
   pageNumbers: PageNumbersValue;
   selectedBlockUid: string | null;
-  onChangeBlock: (blockUid: string, block: Block) => void;
   onRemoveBlock: (blockUid: string) => void;
   onSelectBlock: (blockUid: string) => void;
   onDeselect: () => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
-  onChangeData: (data: TemplateData) => void;
   onToggleFooterRepeat: (repeat: boolean) => void;
   onChangePageNumbers: (value: PageNumbersValue) => void;
 }
 
 export function BuilderCanvas({
-  schema,
   model,
   data,
   format,
@@ -47,18 +41,16 @@ export function BuilderCanvas({
   footerRepeat,
   pageNumbers,
   selectedBlockUid,
-  onChangeBlock,
   onRemoveBlock,
   onSelectBlock,
   onDeselect,
   onSetRowWidths,
-  onChangeData,
   onToggleFooterRepeat,
   onChangePageNumbers,
 }: BuilderCanvasProps) {
   return (
     <div
-      className="col-start-1 row-start-3 min-w-0 min-h-0 overflow-auto bg-stone-200 px-4 pb-8 pt-6 max-[760px]:col-span-1 max-[760px]:row-auto"
+      className="col-start-1 row-start-3 min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6 max-[760px]:col-span-1 max-[760px]:row-auto"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
           onDeselect();
@@ -69,36 +61,31 @@ export function BuilderCanvas({
         <CanvasArea
           area="body"
           rows={model.rows}
-          schema={schema}
           data={data}
           selectedBlockUid={selectedBlockUid}
           newRowId="new-row"
           emptyLabel="Drop a block here to begin"
           fillLabel="Drop a block here to add a new row"
-          onChangeBlock={onChangeBlock}
           onRemoveBlock={onRemoveBlock}
           onSelectBlock={onSelectBlock}
           onSetRowWidths={onSetRowWidths}
-          onChangeData={onChangeData}
         />
 
         <section
-          className="mt-6 grid gap-3 border-0 border-t border-dashed border-stone-200 pt-4"
+          className="mt-6 grid gap-3 border-0 border-t border-dashed border-border pt-4"
           aria-label="Page footer"
         >
           <header className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="m-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-stone-400">
+              <h2 className="m-0 text-2xs font-semibold uppercase tracking-[0.06em] text-fg-subtle">
                 Footer
               </h2>
-              <p className="mt-0.5 m-0 text-[11px] text-stone-400">
+              <p className="mt-0.5 m-0 text-2xs text-fg-subtle">
                 Repeated content rendered in the page footer area.
               </p>
             </div>
-            <label className="inline-flex items-center gap-2 text-xs font-medium text-stone-500">
-              <input
-                type="checkbox"
-                className="h-3.5 w-3.5 accent-indigo-600"
+            <label className="inline-flex items-center gap-2 text-xs font-medium text-fg-muted">
+              <Checkbox
                 checked={footerRepeat}
                 onChange={(event) => onToggleFooterRepeat(event.currentTarget.checked)}
               />
@@ -109,24 +96,21 @@ export function BuilderCanvas({
           <CanvasArea
             area="footer"
             rows={model.footerRows}
-            schema={schema}
             data={data}
             selectedBlockUid={selectedBlockUid}
             newRowId="new-footer-row"
             emptyLabel="Drop a block here to start the footer"
             fillLabel="Drop a block here to add a footer row"
-            onChangeBlock={onChangeBlock}
             onRemoveBlock={onRemoveBlock}
             onSelectBlock={onSelectBlock}
             onSetRowWidths={onSetRowWidths}
-            onChangeData={onChangeData}
           />
 
-          <footer className="mt-2 flex justify-center border-0 border-t border-dashed border-stone-200 pt-3">
-            <label className="inline-flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.06em] text-stone-500">
+          <footer className="mt-2 flex justify-center border-0 border-t border-dashed border-border pt-3">
+            <label className="inline-flex items-center gap-3 text-2xs font-medium uppercase tracking-[0.06em] text-fg-muted">
               Page numbers
-              <select
-                className={pageNumbersSelectClass}
+              <Select
+                className="w-auto py-0 text-sm font-normal normal-case tracking-normal"
                 value={pageNumbers}
                 onChange={(event) =>
                   onChangePageNumbers(event.currentTarget.value as PageNumbersValue)
@@ -136,7 +120,7 @@ export function BuilderCanvas({
                 <option value="left">Left</option>
                 <option value="center">Center</option>
                 <option value="right">Right</option>
-              </select>
+              </Select>
             </label>
           </footer>
         </section>
@@ -148,33 +132,27 @@ export function BuilderCanvas({
 interface CanvasAreaProps {
   area: EditorArea;
   rows: EditorRow[];
-  schema: TemplateSchemaResponse;
   data: TemplateData;
   selectedBlockUid: string | null;
   newRowId: string;
   emptyLabel: string;
   fillLabel: string;
-  onChangeBlock: (blockUid: string, block: Block) => void;
   onRemoveBlock: (blockUid: string) => void;
   onSelectBlock: (blockUid: string) => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
-  onChangeData: (data: TemplateData) => void;
 }
 
 function CanvasArea({
   area,
   rows,
-  schema,
   data,
   selectedBlockUid,
   newRowId,
   emptyLabel,
   fillLabel,
-  onChangeBlock,
   onRemoveBlock,
   onSelectBlock,
   onSetRowWidths,
-  onChangeData,
 }: CanvasAreaProps) {
   const { setNodeRef: setNewRowRef, isOver: isNewRowOver } = useDroppable({
     id: newRowId,
@@ -192,14 +170,11 @@ function CanvasArea({
             key={row.uid}
             row={row}
             area={area}
-            schema={schema}
             data={data}
             selectedBlockUid={selectedBlockUid}
-            onChangeBlock={onChangeBlock}
             onRemoveBlock={onRemoveBlock}
             onSelectBlock={onSelectBlock}
             onSetRowWidths={onSetRowWidths}
-            onChangeData={onChangeData}
           />
         ))}
       </SortableContext>
@@ -208,8 +183,8 @@ function CanvasArea({
         ref={setNewRowRef}
         className={
           isNewRowOver
-            ? "grid min-h-10 place-items-center rounded-lg border border-dashed border-indigo-600 bg-indigo-50 p-3 text-sm text-indigo-600 transition-[border-color,background,color]"
-            : "grid min-h-10 place-items-center rounded-lg border border-dashed border-stone-300 bg-transparent p-3 text-sm text-stone-400 transition-[border-color,background,color]"
+            ? "grid min-h-10 place-items-center rounded-lg border border-dashed border-accent bg-accent-soft p-3 text-sm text-accent transition-[border-color,background,color]"
+            : "grid min-h-10 place-items-center rounded-lg border border-dashed border-border-strong bg-transparent p-3 text-sm text-fg-subtle transition-[border-color,background,color]"
         }
       >
         {rows.length === 0 ? emptyLabel : fillLabel}
@@ -221,27 +196,21 @@ function CanvasArea({
 interface CanvasRowProps {
   row: EditorRow;
   area: EditorArea;
-  schema: TemplateSchemaResponse;
   data: TemplateData;
   selectedBlockUid: string | null;
-  onChangeBlock: (blockUid: string, block: Block) => void;
   onRemoveBlock: (blockUid: string) => void;
   onSelectBlock: (blockUid: string) => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
-  onChangeData: (data: TemplateData) => void;
 }
 
 function CanvasRow({
   row,
   area,
-  schema,
   data,
   selectedBlockUid,
-  onChangeBlock,
   onRemoveBlock,
   onSelectBlock,
   onSetRowWidths,
-  onChangeData,
 }: CanvasRowProps) {
   const rowRef = useRef<HTMLDivElement | null>(null);
   const {
@@ -285,7 +254,7 @@ function CanvasRow({
         <button
           ref={setActivatorNodeRef}
           type="button"
-          className="inline-flex h-[22px] cursor-grab items-center border-0 bg-transparent px-2 font-mono text-[11px] text-stone-400 hover:text-stone-900"
+          className="inline-flex h-[22px] cursor-grab items-center border-0 bg-transparent px-2 font-mono text-2xs text-fg-subtle hover:text-fg"
           aria-label="Drag to move row"
           {...attributes}
           {...listeners}
@@ -305,13 +274,10 @@ function CanvasRow({
                 rowUid={row.uid}
                 area={area}
                 editorBlock={editorBlock}
-                schema={schema}
                 data={data}
                 selected={editorBlock.uid === selectedBlockUid}
-                onChangeBlock={onChangeBlock}
                 onRemoveBlock={onRemoveBlock}
                 onSelect={onSelectBlock}
-                onChangeData={onChangeData}
               />
               {canResizeColumns && index < row.blocks.length - 1 ? (
                 <ColumnResizer

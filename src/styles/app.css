@@ -2,72 +2,78 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
+/*
+ * Semantic color tokens. Every color the builder paints comes from one of these
+ * variables, so the whole UI can be re-themed by overriding them — globally on
+ * :root, or scoped to a wrapper element. They default to the Tailwind palette.
+ *
+ *   :root { --pdfua-accent: oklch(0.6 0.2 250); }   // re-brand the accent
+ */
 :root {
-  /* Color */
-  --bg: #fafaf9;
-  --surface: #ffffff;
-  --surface-2: #f4f4f3;
-  --surface-sunk: #eeeeec;
+  --pdfua-app: var(--color-stone-50);
+  --pdfua-canvas: var(--color-stone-200);
+  --pdfua-surface: var(--color-white);
+  --pdfua-surface-muted: var(--color-stone-100);
 
-  --border: #eaeaea;
-  --border-strong: #d4d4d2;
-  --border-focus: #4f46e5;
+  --pdfua-border: var(--color-stone-200);
+  --pdfua-border-strong: var(--color-stone-300);
 
-  --ink: #1a1a1a;
-  --ink-muted: #6b6b6b;
-  --ink-subtle: #9a9a98;
+  --pdfua-fg: var(--color-stone-900);
+  --pdfua-fg-muted: var(--color-stone-500);
+  --pdfua-fg-subtle: var(--color-stone-400);
+  --pdfua-on-dark: var(--color-white);
 
-  --accent: #2e2e2e;
-  --accent-ink: #ffffff;
-  --accent-hover: #0a0a0a;
+  --pdfua-accent: var(--color-indigo-600);
+  --pdfua-accent-soft: var(--color-indigo-50);
 
-  --indigo: #4f46e5;
-  --indigo-soft: #eef0ff;
+  --pdfua-primary: var(--color-stone-800);
+  --pdfua-primary-strong: var(--color-stone-950);
 
-  --danger: #b42318;
-  --danger-soft: #fff4f2;
+  --pdfua-danger: var(--color-red-700);
+  --pdfua-danger-soft: var(--color-red-50);
 
-  /* Typography */
-  --font-sans:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --pdfua-success: var(--color-emerald-700);
+  --pdfua-success-soft: var(--color-emerald-100);
+}
 
-  --text-xs: 11px;
-  --text-sm: 12px;
-  --text-base: 14px;
-  --text-md: 15px;
-  --text-lg: 17px;
+/* Register the semantic tokens as Tailwind colors (bg-surface, text-accent, …).
+ * `inline` makes utilities emit `var(--pdfua-*)` directly, so overriding a token
+ * on any ancestor element retints everything beneath it at runtime. */
+@theme inline {
+  --color-app: var(--pdfua-app);
+  --color-canvas: var(--pdfua-canvas);
+  --color-surface: var(--pdfua-surface);
+  --color-surface-muted: var(--pdfua-surface-muted);
+  --color-border: var(--pdfua-border);
+  --color-border-strong: var(--pdfua-border-strong);
+  --color-fg: var(--pdfua-fg);
+  --color-fg-muted: var(--pdfua-fg-muted);
+  --color-fg-subtle: var(--pdfua-fg-subtle);
+  --color-on-dark: var(--pdfua-on-dark);
+  --color-accent: var(--pdfua-accent);
+  --color-accent-soft: var(--pdfua-accent-soft);
+  --color-primary: var(--pdfua-primary);
+  --color-primary-strong: var(--pdfua-primary-strong);
+  --color-danger: var(--pdfua-danger);
+  --color-danger-soft: var(--pdfua-danger-soft);
+  --color-success: var(--pdfua-success);
+  --color-success-soft: var(--pdfua-success-soft);
+}
 
-  /* Spacing */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
+@theme {
+  --text-2xs: 11px;
 
-  /* Radius */
-  --radius-sm: 4px;
-  --radius: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-
-  /* Shadow */
   --shadow-page: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -12px rgba(0, 0, 0, 0.1);
-  --shadow-drag: 0 12px 24px -8px rgba(0, 0, 0, 0.18);
   --shadow-pop: 0 4px 12px -4px rgba(0, 0, 0, 0.12);
+  --drop-shadow-drag: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
 
-  /* Motion */
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --dur-fast: 120ms;
-  --dur: 200ms;
-  --dur-slow: 280ms;
-
-  /* Body baseline */
-  color: var(--ink);
-  background: var(--bg);
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
+:root {
+  color: var(--pdfua-fg);
+  background: var(--pdfua-app);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -96,7 +102,7 @@ textarea {
 }
 
 a {
-  color: var(--indigo);
+  color: var(--pdfua-accent);
   font-weight: 500;
   text-decoration: none;
 }
@@ -105,9 +111,9 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 2px solid var(--border-focus);
+  outline: 2px solid var(--pdfua-accent);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {

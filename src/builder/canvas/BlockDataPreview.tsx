@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   Block,
   DividerBlock,
@@ -16,11 +17,14 @@ export interface BlockDataPreviewProps {
   rowData?: unknown;
 }
 
-const emptyClass = "m-0 text-sm text-stone-400";
 const copyClass =
-  "m-0 line-clamp-3 overflow-hidden text-sm leading-[1.45] text-stone-500 [display:-webkit-box] [-webkit-box-orient:vertical]";
+  "m-0 line-clamp-3 overflow-hidden text-sm leading-[1.45] text-fg-muted [display:-webkit-box] [-webkit-box-orient:vertical]";
 const headingCopyClass =
-  "m-0 line-clamp-2 overflow-hidden text-[17px] font-semibold leading-[1.25] text-stone-900 [display:-webkit-box] [-webkit-box-orient:vertical]";
+  "m-0 line-clamp-2 overflow-hidden text-[17px] font-semibold leading-[1.25] text-fg [display:-webkit-box] [-webkit-box-orient:vertical]";
+
+function EmptyPreview({ children }: { children: ReactNode }) {
+  return <p className="m-0 text-sm text-fg-subtle">{children}</p>;
+}
 
 export function BlockDataPreview({ block, rowData }: BlockDataPreviewProps) {
   switch (block.type) {
@@ -55,7 +59,7 @@ function TextPreview({
   const text = block.text.trim();
 
   if (text.length === 0) {
-    return <p className={emptyClass}>No text yet</p>;
+    return <EmptyPreview>No text yet</EmptyPreview>;
   }
 
   return <p className={variant === "heading" ? headingCopyClass : copyClass}>{text}</p>;
@@ -65,7 +69,7 @@ function HtmlPreview({ block }: { block: HtmlBlock }) {
   const text = stripMarkup(block.html).trim();
 
   if (text.length === 0) {
-    return <p className={emptyClass}>No HTML content yet</p>;
+    return <EmptyPreview>No HTML content yet</EmptyPreview>;
   }
 
   return <p className={copyClass}>{text}</p>;
@@ -75,11 +79,11 @@ function ImagePreview({ block }: { block: ImageBlock }) {
   const src = block.src.trim();
 
   if (src.length === 0) {
-    return <p className={emptyClass}>No image selected</p>;
+    return <EmptyPreview>No image selected</EmptyPreview>;
   }
 
   return (
-    <div className="grid min-h-[72px] place-items-center overflow-hidden rounded-md border border-solid border-stone-200 bg-stone-100">
+    <div className="grid min-h-[72px] place-items-center overflow-hidden rounded-md border border-solid border-border bg-surface-muted">
       <img
         className="block max-h-[120px] max-w-full object-contain"
         src={src}
@@ -106,7 +110,7 @@ function KeyValuePreview({ block, rowData }: { block: KeyValueBlock; rowData?: u
         }));
 
   if (entries.length === 0) {
-    return <p className={emptyClass}>No fields yet</p>;
+    return <EmptyPreview>No fields yet</EmptyPreview>;
   }
 
   return (
@@ -116,10 +120,10 @@ function KeyValuePreview({ block, rowData }: { block: KeyValueBlock; rowData?: u
           key={entry.key}
           className="grid min-w-0 items-baseline gap-2 grid-cols-[minmax(72px,0.42fr)_minmax(0,1fr)]"
         >
-          <dt className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-stone-400">
+          <dt className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-2xs text-fg-subtle">
             {entry.label}
           </dt>
-          <dd className="m-0 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm text-stone-900">
+          <dd className="m-0 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm text-fg">
             {entry.value || "—"}
           </dd>
         </div>
@@ -133,18 +137,18 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
   const rows = Array.isArray(rowData) ? rowData.filter(isRecord) : [];
 
   if (columns.length === 0) {
-    return <p className={emptyClass}>No columns yet</p>;
+    return <EmptyPreview>No columns yet</EmptyPreview>;
   }
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-md border border-solid border-stone-200">
-      <table className="w-full table-fixed border-collapse text-[11px]">
+    <div className="min-w-0 overflow-hidden rounded-md border border-solid border-border">
+      <table className="w-full table-fixed border-collapse text-2xs">
         <thead>
           <tr>
             {columns.slice(0, 4).map((column) => (
               <th
                 key={column.key}
-                className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-stone-200 bg-stone-100 px-2 py-[5px] text-left font-semibold text-stone-900"
+                className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-border bg-surface-muted px-2 py-[5px] text-left font-semibold text-fg"
               >
                 {column.label || column.key}
               </th>
@@ -158,7 +162,7 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
                 {columns.slice(0, 4).map((column) => (
                   <td
                     key={column.key}
-                    className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-stone-200 px-2 py-[5px] text-left text-stone-500"
+                    className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-border px-2 py-[5px] text-left text-fg-muted"
                   >
                     {stringifyPreviewValue(row[column.key]) || "—"}
                   </td>
@@ -169,7 +173,7 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
             <tr>
               <td
                 colSpan={Math.min(columns.length, 4)}
-                className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 px-2 py-[5px] text-left text-stone-500"
+                className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 px-2 py-[5px] text-left text-fg-muted"
               >
                 No runtime rows yet
               </td>
@@ -185,7 +189,7 @@ function SpacerPreview({ block }: { block: SpacerBlock }) {
   const height = block.config?.height;
 
   return (
-    <div className="grid h-9 place-items-center rounded-md border border-dashed border-stone-300 text-[11px] text-stone-400">
+    <div className="grid h-9 place-items-center rounded-md border border-dashed border-border-strong text-2xs text-fg-subtle">
       {typeof height === "number" ? `${height}mm spacer` : "Spacer"}
     </div>
   );
@@ -193,7 +197,6 @@ function SpacerPreview({ block }: { block: SpacerBlock }) {
 
 function DividerPreview({ block }: { block: DividerBlock }) {
   const style = block.config?.style ?? "solid";
-  const baseClass = "my-2 border-0 border-t border-stone-300";
   const styleClass =
     style === "dashed"
       ? "border-dashed"
@@ -205,7 +208,7 @@ function DividerPreview({ block }: { block: DividerBlock }) {
             ? "border-t-transparent"
             : "border-solid";
 
-  return <div className={`${baseClass} ${styleClass}`} />;
+  return <div className={`my-2 border-0 border-t border-border-strong ${styleClass}`} />;
 }
 
 function mergeRecordValues(

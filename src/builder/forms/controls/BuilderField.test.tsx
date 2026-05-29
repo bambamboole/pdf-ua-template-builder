@@ -194,7 +194,7 @@ type TestElement = ReactElement<Record<string, unknown>>;
 function requireControl(node: ReactNode, name: string): TestElement {
   const control = findElement(
     node,
-    (element) => isNativeElement(element) && element.props.name === name,
+    (element) => element.props.name === name && typeof element.props.onChange === "function",
   );
 
   if (!control) {
@@ -268,8 +268,4 @@ function getCheckboxChangeHandler(
 
 function isReactElement(node: ReactNode): node is TestElement {
   return typeof node === "object" && node !== null && "props" in node;
-}
-
-function isNativeElement(element: TestElement): boolean {
-  return typeof element.type === "string";
 }

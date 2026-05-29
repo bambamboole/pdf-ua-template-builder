@@ -1,16 +1,11 @@
 import type { ReactNode } from "react";
 import type { Orientation, PageFormat, Template } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
-import { docChipClass } from "../blocks/chipStyles";
+import { Chip } from "../primitives/Chip";
 import { CheckboxField, SelectField } from "../forms/controls";
 import { PAGE_SIZES_MM } from "../lib/pageSizes";
 import type { PageNumbersValue } from "../state/editorModel";
-import {
-  inspectorClass,
-  inspectorSectionClass,
-  inspectorSectionHeadingClass,
-  inspectorTitleClass,
-} from "./inspectorStyles";
+import { InspectorHeader, InspectorSection, InspectorShell } from "./InspectorShell";
 import { SpacingControls } from "./SpacingControls";
 import { TypographyControls } from "./TypographyControls";
 
@@ -59,24 +54,15 @@ export function DocumentSettingsInspector({
   onChangePageNumbers,
 }: DocumentSettingsInspectorProps): ReactNode {
   return (
-    <aside className={inspectorClass} aria-label="Document settings inspector">
-      <header className="flex min-w-0 items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-auto items-start gap-2">
-          <span className={docChipClass} aria-hidden="true">
-            Doc
-          </span>
-          <div>
-            <h2 className={inspectorTitleClass}>Document settings</h2>
-            <p className="mt-0.5 mb-0 break-words text-xs text-stone-500">
-              Changes apply to the whole template.
-            </p>
-          </div>
-        </div>
-      </header>
+    <InspectorShell ariaLabel="Document settings inspector">
+      <InspectorHeader
+        chip={<Chip wide>Doc</Chip>}
+        title="Document settings"
+        subtitle="Changes apply to the whole template."
+      />
 
       <div className="grid gap-2" aria-label="Document settings sections">
-        <section className={inspectorSectionClass}>
-          <h3 className={inspectorSectionHeadingClass}>Page setup</h3>
+        <InspectorSection title="Page setup">
           <div className="grid gap-2">
             <SelectField
               name="document.page.size.format"
@@ -101,14 +87,13 @@ export function DocumentSettingsInspector({
               }}
             />
           </div>
-        </section>
+        </InspectorSection>
 
-        <section className={inspectorSectionClass}>
+        <InspectorSection>
           <SpacingControls scope="page" template={template} onChangeTemplate={onChangeTemplate} />
-        </section>
+        </InspectorSection>
 
-        <section className={inspectorSectionClass}>
-          <h3 className={inspectorSectionHeadingClass}>Footer</h3>
+        <InspectorSection title="Footer">
           <div className="grid gap-2">
             <CheckboxField
               name="document.page.footer.repeat"
@@ -125,9 +110,9 @@ export function DocumentSettingsInspector({
               onChange={(value) => onChangePageNumbers(value ?? "disabled")}
             />
           </div>
-        </section>
+        </InspectorSection>
 
-        <section className={inspectorSectionClass}>
+        <InspectorSection>
           <TypographyControls
             target="template"
             template={template}
@@ -135,8 +120,8 @@ export function DocumentSettingsInspector({
             title="Template typography"
             onChangeTemplate={onChangeTemplate}
           />
-        </section>
+        </InspectorSection>
       </div>
-    </aside>
+    </InspectorShell>
   );
 }

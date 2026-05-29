@@ -15,10 +15,10 @@ export function PageSheet({ format, orientation, children }: PageSheetProps) {
 
   return (
     <div
-      className="mx-auto grid w-full gap-3 rounded-xl border border-solid border-stone-200 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.1)] transition-[max-width] duration-200"
+      className="mx-auto grid w-full gap-3 rounded-xl border border-solid border-border bg-surface p-6 shadow-page transition-[max-width] duration-200"
       style={style}
     >
-      <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.06em] text-stone-400">
+      <div className="mb-2 flex items-center justify-between text-2xs uppercase tracking-[0.06em] text-fg-subtle">
         <span>
           {format} · {orientation}
         </span>

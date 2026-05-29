@@ -1,33 +1,13 @@
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import type { CSSProperties, ReactNode } from "react";
-import type { Align, Block, KeyValueBlock } from "../../types/generated/template";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import type { ReactNode } from "react";
+import type { Block, KeyValueBlock } from "../../types/generated/template";
+import { isRecord, omitKey, renameKey } from "../lib/records";
+import { useBuilderSensors } from "../lib/sensors";
+import { AddButton } from "../primitives/Button";
 import type { BlockEditorProps } from "./blockEditors";
-import {
-  arrayAddClass,
-  arrayFieldClass,
-  arrayHandleClass,
-  arrayItemSortableClass,
-  arrayLegendClass,
-  arrayRemoveClass,
-  controlClass,
-  fieldLabelClass,
-} from "./controls/fieldStyles";
+import { SortableRow } from "./SortableRow";
+import { Field, FieldGroup, Input } from "./controls";
 
 interface KeyValueField {
   key: string;
@@ -119,37 +99,20 @@ export function reorderFields(
   return applyFields(block, moveField(getFields(block), sourceIndex, targetIndex), getValues(block));
 }
 
-export function KeyValueBlockEditor({
-  block,
-  onChangeBlock,
-  showLayoutControls = true,
-}: BlockEditorProps): ReactNode {
+export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps): ReactNode {
   const kvBlock = block as KeyValueBlock;
   const fields = getFields(kvBlock);
   const values = getValues(kvBlock);
-  const width = (kvBlock.config?.width ?? "") as string;
-  const align = (kvBlock.config?.align ?? "") as Align | "";
-
-  function handleChangeWidth(nextWidth: string): void {
-    onChangeBlock(setConfigField(kvBlock, "width", nextWidth || undefined));
-  }
-
-  function handleChangeAlign(nextAlign: string): void {
-    onChangeBlock(setConfigField(kvBlock, "align", nextAlign === "" ? undefined : nextAlign));
-  }
 
   return (
     <div className="grid gap-3 [container-type:inline-size]">
       <FieldsEditor block={kvBlock} fields={fields} onChangeBlock={onChangeBlock} />
 
       {fields.length > 0 ? (
-        <fieldset className={arrayFieldClass}>
-          <legend className={arrayLegendClass}>Values</legend>
+        <FieldGroup legend="Values">
           {fields.map((field) => (
-            <label key={field.key} className={fieldLabelClass}>
-              {field.label || field.key}
-              <input
-                className={controlClass}
+            <Field key={field.key} label={field.label || field.key}>
+              <Input
                 name={`values.${field.key}`}
                 type="text"
                 value={String(values[field.key] ?? "")}
@@ -157,39 +120,9 @@ export function KeyValueBlockEditor({
                   onChangeBlock(setValue(kvBlock, field.key, event.currentTarget.value))
                 }
               />
-            </label>
+            </Field>
           ))}
-        </fieldset>
-      ) : null}
-
-      {showLayoutControls ? (
-        <>
-          <label className={fieldLabelClass}>
-            Width
-            <input
-              className={controlClass}
-              name="config.width"
-              type="text"
-              value={width}
-              onChange={(event) => handleChangeWidth(event.currentTarget.value)}
-            />
-          </label>
-
-          <label className={fieldLabelClass}>
-            Align
-            <select
-              className={controlClass}
-              name="config.align"
-              value={align}
-              onChange={(event) => handleChangeAlign(event.currentTarget.value)}
-            >
-              <option value="" />
-              <option value="left">left</option>
-              <option value="center">center</option>
-              <option value="right">right</option>
-            </select>
-          </label>
-        </>
+        </FieldGroup>
       ) : null}
     </div>
   );
@@ -202,10 +135,7 @@ interface FieldsEditorProps {
 }
 
 function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const sensors = useBuilderSensors();
 
   function handleDragEnd(event: DragEndEvent): void {
     const { active, over } = event;
@@ -227,8 +157,7 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
   const sortableIds = fields.map((_, index) => String(index));
 
   return (
-    <fieldset className={arrayFieldClass}>
-      <legend className={arrayLegendClass}>Fields</legend>
+    <FieldGroup legend="Fields">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -248,15 +177,10 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
           ))}
         </SortableContext>
       </DndContext>
-      <button
-        type="button"
-        data-name="add-field"
-        className={arrayAddClass}
-        onClick={() => onChangeBlock(addField(block))}
-      >
+      <AddButton data-name="add-field" onClick={() => onChangeBlock(addField(block))}>
         Add field
-      </button>
-    </fieldset>
+      </AddButton>
+    </FieldGroup>
   );
 }
 
@@ -270,63 +194,31 @@ interface FieldRowProps {
 }
 
 function FieldRow({ id, index, field, onChangeKey, onChangeLabel, onRemove }: FieldRowProps) {
-  const {
-    attributes,
-    listeners,
-    setActivatorNodeRef,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-  };
-
   return (
-    <div ref={setNodeRef} className={arrayItemSortableClass} style={style}>
-      <button
-        ref={setActivatorNodeRef}
-        type="button"
-        className={arrayHandleClass}
-        aria-label={`Drag to reorder field ${index + 1}`}
-        {...attributes}
-        {...listeners}
-      >
-        ⋮⋮
-      </button>
-      <label className={fieldLabelClass}>
-        Key
-        <input
-          className={controlClass}
+    <SortableRow
+      id={id}
+      dragLabel={`Drag to reorder field ${index + 1}`}
+      removeLabel={`Remove field ${index + 1}`}
+      removeName={`remove-field-${index}`}
+      onRemove={onRemove}
+    >
+      <Field label="Key">
+        <Input
           name={`field-key-${index}`}
           type="text"
           value={field.key}
           onChange={(event) => onChangeKey(event.currentTarget.value)}
         />
-      </label>
-      <label className={fieldLabelClass}>
-        Label
-        <input
-          className={controlClass}
+      </Field>
+      <Field label="Label">
+        <Input
           name={`field-label-${index}`}
           type="text"
           value={field.label}
           onChange={(event) => onChangeLabel(event.currentTarget.value)}
         />
-      </label>
-      <button
-        type="button"
-        data-name={`remove-field-${index}`}
-        className={arrayRemoveClass}
-        aria-label={`Remove field ${index + 1}`}
-        onClick={onRemove}
-      >
-        ✕
-      </button>
-    </div>
+      </Field>
+    </SortableRow>
   );
 }
 
@@ -343,7 +235,7 @@ function getFields(block: KeyValueBlock): KeyValueField[] {
 function getValues(block: KeyValueBlock): KeyValueValues {
   const candidate = block.values;
 
-  return isPlainObject(candidate) ? (candidate as KeyValueValues) : {};
+  return isRecord(candidate) ? (candidate as KeyValueValues) : {};
 }
 
 function nextFieldIndex(fields: KeyValueField[]): number {
@@ -385,55 +277,4 @@ function applyFields(
   }
 
   return nextBlock;
-}
-
-function setConfigField(block: KeyValueBlock, key: string, value: unknown): Block {
-  const config = { ...block.config } as Record<string, unknown>;
-
-  if (value === undefined) {
-    delete config[key];
-  } else {
-    config[key] = value;
-  }
-
-  const nextBlock: KeyValueBlock = {
-    ...block,
-    config: Object.keys(config).length === 0 ? undefined : (config as KeyValueBlock["config"]),
-  };
-
-  if (nextBlock.config === undefined) {
-    delete (nextBlock as { config?: KeyValueBlock["config"] }).config;
-  }
-
-  return nextBlock as Block;
-}
-
-function omitKey(values: KeyValueValues, key: string): KeyValueValues {
-  if (!(key in values)) {
-    return values;
-  }
-
-  const next = { ...values };
-  delete next[key];
-  return next;
-}
-
-function renameKey(
-  values: KeyValueValues,
-  previousKey: string,
-  nextKey: string,
-): KeyValueValues {
-  if (!(previousKey in values)) {
-    return values;
-  }
-
-  const next: KeyValueValues = {};
-  for (const [key, value] of Object.entries(values)) {
-    next[key === previousKey ? nextKey : key] = value;
-  }
-  return next;
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

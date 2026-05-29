@@ -51,44 +51,6 @@ describe("ImageBlockEditor", () => {
     expect(changes[0]).toEqual({ ...baseBlock, src: "data:image/svg+xml;base64,Zm9v" });
   });
 
-  it("updates config.maxHeight when the number input changes", () => {
-    const changes: Block[] = [];
-    const element = ImageBlockEditor({
-      block: baseBlock,
-      onChangeBlock: (block) => changes.push(block),
-    });
-    const control = requireControl(element, "config.maxHeight");
-
-    getChangeHandler(control)({
-      currentTarget: { value: "42", valueAsNumber: 42 },
-    });
-
-    expect(changes[0]).toEqual({
-      ...baseBlock,
-      config: { maxHeight: 42 },
-    });
-  });
-
-  it("removes config.maxHeight when the value is cleared", () => {
-    const changes: Block[] = [];
-    const element = ImageBlockEditor({
-      block: baseBlock,
-      onChangeBlock: (block) => changes.push(block),
-    });
-    const control = requireControl(element, "config.maxHeight");
-
-    getChangeHandler(control)({
-      currentTarget: { value: "", valueAsNumber: Number.NaN },
-    });
-
-    expect(changes[0]).toEqual({
-      type: "image",
-      id: "logo",
-      src: baseBlock.src,
-      alt: "Company logo",
-    });
-  });
-
   it("falls back to a placeholder when src is empty", () => {
     const emptyBlock = { type: "image", src: "" } satisfies ImageBlock;
     const html = renderToStaticMarkup(
