@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 const chipClass =
-  "inline-grid h-[22px] place-items-center rounded bg-stone-100 font-mono text-2xs font-semibold text-stone-500";
+  "inline-grid h-[22px] place-items-center rounded bg-surface-muted font-mono text-2xs font-semibold text-fg-muted";
 
 export interface ChipProps {
   children: ReactNode;

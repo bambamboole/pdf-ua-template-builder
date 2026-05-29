@@ -289,17 +289,17 @@ export function BuilderField({
 
   return (
     <div className={classNames("grid min-w-0 gap-1", className)}>
-      <label className="text-2xs font-medium text-stone-500" htmlFor={fieldState.id}>
+      <label className="text-2xs font-medium text-fg-muted" htmlFor={fieldState.id}>
         {label}
       </label>
       <div className="min-w-0">{children}</div>
       {help ? (
-        <p className="m-0 text-2xs text-stone-500" id={helpId}>
+        <p className="m-0 text-2xs text-fg-muted" id={helpId}>
           {help}
         </p>
       ) : null}
       {error ? (
-        <p className="m-0 text-2xs text-red-700" id={errorId} role="alert">
+        <p className="m-0 text-2xs text-danger" id={errorId} role="alert">
           {error}
         </p>
       ) : null}

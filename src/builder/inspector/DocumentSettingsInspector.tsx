@@ -65,7 +65,7 @@ export function DocumentSettingsInspector({
           <Chip wide>Doc</Chip>
           <div>
             <h2 className={inspectorTitleClass}>Document settings</h2>
-            <p className="mt-0.5 mb-0 break-words text-xs text-stone-500">
+            <p className="mt-0.5 mb-0 break-words text-xs text-fg-muted">
               Changes apply to the whole template.
             </p>
           </div>

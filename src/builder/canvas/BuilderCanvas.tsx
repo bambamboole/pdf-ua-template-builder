@@ -52,7 +52,7 @@ export function BuilderCanvas({
 }: BuilderCanvasProps) {
   return (
     <div
-      className="col-start-1 row-start-3 min-w-0 min-h-0 overflow-auto bg-stone-200 px-4 pb-8 pt-6 max-[760px]:col-span-1 max-[760px]:row-auto"
+      className="col-start-1 row-start-3 min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6 max-[760px]:col-span-1 max-[760px]:row-auto"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
           onDeselect();
@@ -74,19 +74,19 @@ export function BuilderCanvas({
         />
 
         <section
-          className="mt-6 grid gap-3 border-0 border-t border-dashed border-stone-200 pt-4"
+          className="mt-6 grid gap-3 border-0 border-t border-dashed border-border pt-4"
           aria-label="Page footer"
         >
           <header className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="m-0 text-2xs font-semibold uppercase tracking-[0.06em] text-stone-400">
+              <h2 className="m-0 text-2xs font-semibold uppercase tracking-[0.06em] text-fg-subtle">
                 Footer
               </h2>
-              <p className="mt-0.5 m-0 text-2xs text-stone-400">
+              <p className="mt-0.5 m-0 text-2xs text-fg-subtle">
                 Repeated content rendered in the page footer area.
               </p>
             </div>
-            <label className="inline-flex items-center gap-2 text-xs font-medium text-stone-500">
+            <label className="inline-flex items-center gap-2 text-xs font-medium text-fg-muted">
               <Checkbox
                 checked={footerRepeat}
                 onChange={(event) => onToggleFooterRepeat(event.currentTarget.checked)}
@@ -108,8 +108,8 @@ export function BuilderCanvas({
             onSetRowWidths={onSetRowWidths}
           />
 
-          <footer className="mt-2 flex justify-center border-0 border-t border-dashed border-stone-200 pt-3">
-            <label className="inline-flex items-center gap-3 text-2xs font-medium uppercase tracking-[0.06em] text-stone-500">
+          <footer className="mt-2 flex justify-center border-0 border-t border-dashed border-border pt-3">
+            <label className="inline-flex items-center gap-3 text-2xs font-medium uppercase tracking-[0.06em] text-fg-muted">
               Page numbers
               <Select
                 className={pageNumbersSelectClass}
@@ -185,8 +185,8 @@ function CanvasArea({
         ref={setNewRowRef}
         className={
           isNewRowOver
-            ? "grid min-h-10 place-items-center rounded-lg border border-dashed border-indigo-600 bg-indigo-50 p-3 text-sm text-indigo-600 transition-[border-color,background,color]"
-            : "grid min-h-10 place-items-center rounded-lg border border-dashed border-stone-300 bg-transparent p-3 text-sm text-stone-400 transition-[border-color,background,color]"
+            ? "grid min-h-10 place-items-center rounded-lg border border-dashed border-accent bg-accent-soft p-3 text-sm text-accent transition-[border-color,background,color]"
+            : "grid min-h-10 place-items-center rounded-lg border border-dashed border-border-strong bg-transparent p-3 text-sm text-fg-subtle transition-[border-color,background,color]"
         }
       >
         {rows.length === 0 ? emptyLabel : fillLabel}
@@ -256,7 +256,7 @@ function CanvasRow({
         <button
           ref={setActivatorNodeRef}
           type="button"
-          className="inline-flex h-[22px] cursor-grab items-center border-0 bg-transparent px-2 font-mono text-2xs text-stone-400 hover:text-stone-900"
+          className="inline-flex h-[22px] cursor-grab items-center border-0 bg-transparent px-2 font-mono text-2xs text-fg-subtle hover:text-fg"
           aria-label="Drag to move row"
           {...attributes}
           {...listeners}

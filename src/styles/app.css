@@ -2,6 +2,64 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
+/*
+ * Semantic color tokens. Every color the builder paints comes from one of these
+ * variables, so the whole UI can be re-themed by overriding them — globally on
+ * :root, or scoped to a wrapper element. They default to the Tailwind palette.
+ *
+ *   :root { --pdfua-accent: oklch(0.6 0.2 250); }   // re-brand the accent
+ */
+:root {
+  --pdfua-app: var(--color-stone-50);
+  --pdfua-canvas: var(--color-stone-200);
+  --pdfua-surface: var(--color-white);
+  --pdfua-surface-muted: var(--color-stone-100);
+
+  --pdfua-border: var(--color-stone-200);
+  --pdfua-border-strong: var(--color-stone-300);
+
+  --pdfua-fg: var(--color-stone-900);
+  --pdfua-fg-muted: var(--color-stone-500);
+  --pdfua-fg-subtle: var(--color-stone-400);
+  --pdfua-on-dark: var(--color-white);
+
+  --pdfua-accent: var(--color-indigo-600);
+  --pdfua-accent-soft: var(--color-indigo-50);
+
+  --pdfua-primary: var(--color-stone-800);
+  --pdfua-primary-strong: var(--color-stone-950);
+
+  --pdfua-danger: var(--color-red-700);
+  --pdfua-danger-soft: var(--color-red-50);
+
+  --pdfua-success: var(--color-emerald-700);
+  --pdfua-success-soft: var(--color-emerald-100);
+}
+
+/* Register the semantic tokens as Tailwind colors (bg-surface, text-accent, …).
+ * `inline` makes utilities emit `var(--pdfua-*)` directly, so overriding a token
+ * on any ancestor element retints everything beneath it at runtime. */
+@theme inline {
+  --color-app: var(--pdfua-app);
+  --color-canvas: var(--pdfua-canvas);
+  --color-surface: var(--pdfua-surface);
+  --color-surface-muted: var(--pdfua-surface-muted);
+  --color-border: var(--pdfua-border);
+  --color-border-strong: var(--pdfua-border-strong);
+  --color-fg: var(--pdfua-fg);
+  --color-fg-muted: var(--pdfua-fg-muted);
+  --color-fg-subtle: var(--pdfua-fg-subtle);
+  --color-on-dark: var(--pdfua-on-dark);
+  --color-accent: var(--pdfua-accent);
+  --color-accent-soft: var(--pdfua-accent-soft);
+  --color-primary: var(--pdfua-primary);
+  --color-primary-strong: var(--pdfua-primary-strong);
+  --color-danger: var(--pdfua-danger);
+  --color-danger-soft: var(--pdfua-danger-soft);
+  --color-success: var(--pdfua-success);
+  --color-success-soft: var(--pdfua-success-soft);
+}
+
 @theme {
   --text-2xs: 11px;
 
@@ -11,8 +69,8 @@
 }
 
 :root {
-  color: #1a1a1a;
-  background: #fafaf9;
+  color: var(--pdfua-fg);
+  background: var(--pdfua-app);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px;
@@ -44,7 +102,7 @@ textarea {
 }
 
 a {
-  color: #4f46e5;
+  color: var(--pdfua-accent);
   font-weight: 500;
   text-decoration: none;
 }
@@ -53,7 +111,7 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--pdfua-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }

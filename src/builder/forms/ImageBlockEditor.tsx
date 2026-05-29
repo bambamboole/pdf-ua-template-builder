@@ -28,13 +28,13 @@ export function ImageBlockEditor({ block, onChangeBlock }: BlockEditorProps): Re
   return (
     <div className="grid gap-3 [container-type:inline-size]">
       <div
-        className="grid min-h-24 place-items-center rounded-md border border-solid border-stone-200 bg-stone-100 p-3"
+        className="grid min-h-24 place-items-center rounded-md border border-solid border-border bg-surface-muted p-3"
         data-name="preview"
       >
         {src ? (
           <img src={src} alt={alt} className="max-h-[120px] max-w-full object-contain" />
         ) : (
-          <div className="text-2xs text-stone-500">No image selected</div>
+          <div className="text-2xs text-fg-muted">No image selected</div>
         )}
       </div>
 
@@ -59,7 +59,7 @@ export function ImageBlockEditor({ block, onChangeBlock }: BlockEditorProps): Re
           onChange={(event) => onChangeBlock({ ...imageBlock, alt: event.currentTarget.value })}
         />
       </Field>
-      <p className="-mt-2 m-0 text-2xs text-stone-500">
+      <p className="-mt-2 m-0 text-2xs text-fg-muted">
         Alt text is required for PDF/UA accessibility. Describe what the image conveys.
       </p>
     </div>

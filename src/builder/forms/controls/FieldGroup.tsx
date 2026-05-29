@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
 const fieldGroupClass =
-  "col-span-full grid min-w-0 gap-2 rounded-md border border-solid border-stone-200 p-3";
+  "col-span-full grid min-w-0 gap-2 rounded-md border border-solid border-border p-3";
 
-const legendClass = "px-2 text-2xs font-medium uppercase tracking-wide text-stone-500";
+const legendClass = "px-2 text-2xs font-medium uppercase tracking-wide text-fg-muted";
 
 export interface FieldGroupProps {
   legend: string;

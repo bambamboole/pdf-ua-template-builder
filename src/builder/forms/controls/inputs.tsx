@@ -5,12 +5,12 @@ import type {
 } from "react";
 
 const focusRing =
-  "outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+  "outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20";
 
-const fieldBase = `min-w-0 rounded-md border border-solid border-stone-200 bg-white text-stone-900 ${focusRing}`;
+const fieldBase = `min-w-0 rounded-md border border-solid border-border bg-surface text-fg ${focusRing}`;
 
 const selectChevron =
-  "appearance-none bg-[linear-gradient(45deg,transparent_50%,#6b6b6b_50%),linear-gradient(135deg,#6b6b6b_50%,transparent_50%)] bg-[length:5px_5px,5px_5px] bg-[position:calc(100%-14px)_50%,calc(100%-9px)_50%] bg-no-repeat";
+  "appearance-none bg-[linear-gradient(45deg,transparent_50%,var(--pdfua-fg-muted)_50%),linear-gradient(135deg,var(--pdfua-fg-muted)_50%,transparent_50%)] bg-[length:5px_5px,5px_5px] bg-[position:calc(100%-14px)_50%,calc(100%-9px)_50%] bg-no-repeat";
 
 function cx(...names: Array<string | undefined>): string {
   return names.filter(Boolean).join(" ");
@@ -33,5 +33,5 @@ export function Select({ className, ...rest }: SelectHTMLAttributes<HTMLSelectEl
 }
 
 export function Checkbox({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input type="checkbox" className={cx("h-3.5 w-3.5 accent-indigo-600", className)} {...rest} />;
+  return <input type="checkbox" className={cx("h-3.5 w-3.5 accent-accent", className)} {...rest} />;
 }

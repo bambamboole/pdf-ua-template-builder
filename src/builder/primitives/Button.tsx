@@ -3,17 +3,17 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 export type ButtonVariant = "default" | "primary" | "danger" | "ghost";
 
 const base =
-  "inline-flex h-8 cursor-pointer items-center rounded-md border border-solid font-medium transition-colors disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-indigo-600/20";
+  "inline-flex h-8 cursor-pointer items-center rounded-md border border-solid font-medium transition-colors disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/20";
 
 const variantClass: Record<ButtonVariant, string> = {
   default:
-    "border-stone-200 bg-white text-stone-900 hover:border-stone-300 hover:bg-stone-100 focus-visible:border-indigo-600 disabled:bg-white disabled:text-stone-400",
+    "border-border bg-surface text-fg hover:border-border-strong hover:bg-surface-muted focus-visible:border-accent disabled:bg-surface disabled:text-fg-subtle",
   primary:
-    "border-stone-800 bg-stone-800 font-semibold text-white hover:border-stone-950 hover:bg-stone-950 disabled:border-stone-300 disabled:bg-stone-100 disabled:text-stone-400",
+    "border-primary bg-primary font-semibold text-on-dark hover:border-primary-strong hover:bg-primary-strong disabled:border-border-strong disabled:bg-surface-muted disabled:text-fg-subtle",
   danger:
-    "border-red-700 bg-red-50 text-red-700 hover:border-red-700 hover:bg-red-700 hover:text-white",
+    "border-danger bg-danger-soft text-danger hover:border-danger hover:bg-danger hover:text-on-dark",
   ghost:
-    "border-transparent bg-transparent text-stone-900 hover:border-stone-200 hover:bg-stone-100 focus-visible:border-indigo-600",
+    "border-transparent bg-transparent text-fg hover:border-border hover:bg-surface-muted focus-visible:border-accent",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -42,7 +42,7 @@ export function Button({
 }
 
 const addButtonClass =
-  "h-7 w-fit cursor-pointer rounded-md border border-dashed border-stone-300 bg-transparent px-3 text-2xs text-stone-500 transition-colors hover:border-indigo-600 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-7 w-fit cursor-pointer rounded-md border border-dashed border-border-strong bg-transparent px-3 text-2xs text-fg-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50";
 
 export function AddButton({
   type = "button",

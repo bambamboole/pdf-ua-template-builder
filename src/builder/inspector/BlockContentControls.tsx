@@ -92,7 +92,7 @@ export function BlockContentControls({
       );
     case "spacer":
     case "divider":
-      return <p className="m-0 text-xs text-stone-500">No content fields for this block.</p>;
+      return <p className="m-0 text-xs text-fg-muted">No content fields for this block.</p>;
   }
 }
 

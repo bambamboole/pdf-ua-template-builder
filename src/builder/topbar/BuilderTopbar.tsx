@@ -41,18 +41,18 @@ export function BuilderTopbar({
 }: BuilderTopbarProps) {
   return (
     <header
-      className="col-span-full flex min-w-0 h-14 items-center gap-3 border-0 border-b border-solid border-stone-200 bg-white px-4"
+      className="col-span-full flex min-w-0 h-14 items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4"
       aria-label="Template builder toolbar"
     >
-      <div className="flex items-center gap-2 whitespace-nowrap text-[17px] font-semibold tracking-tight text-stone-900">
+      <div className="flex items-center gap-2 whitespace-nowrap text-[17px] font-semibold tracking-tight text-fg">
         <span
-          className="inline-grid h-[22px] w-[22px] place-items-center rounded bg-stone-800 text-2xs font-semibold text-white"
+          className="inline-grid h-[22px] w-[22px] place-items-center rounded bg-primary text-2xs font-semibold text-on-dark"
           aria-hidden="true"
         >
           ◳
         </span>
         <span>Template Builder</span>
-        <span className="text-[15px] font-medium text-stone-500">· pdf-ua</span>
+        <span className="text-[15px] font-medium text-fg-muted">· pdf-ua</span>
       </div>
 
       <div className="flex-auto" />
@@ -154,11 +154,11 @@ function SettingsPopover({
       </Button>
       {open ? (
         <div
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-10 grid w-80 gap-2 rounded-lg border border-solid border-stone-200 bg-white p-3 shadow-pop"
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-10 grid w-80 gap-2 rounded-lg border border-solid border-border bg-surface p-3 shadow-pop"
           role="dialog"
           aria-label="Settings"
         >
-          <label className="grid gap-1 text-2xs font-medium uppercase tracking-wide text-stone-500">
+          <label className="grid gap-1 text-2xs font-medium uppercase tracking-wide text-fg-muted">
             API URL
             <Input
               value={apiUrl}

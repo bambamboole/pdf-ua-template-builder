@@ -9,7 +9,7 @@ import type { BlockEditorProps } from "./blockEditors";
 import { SortableRow } from "./SortableRow";
 import { AlignSelect, Field, FieldGroup, Input } from "./controls";
 
-const hintClass = "m-0 text-2xs text-stone-500";
+const hintClass = "m-0 text-2xs text-fg-muted";
 
 interface TableColumn {
   key: string;
