@@ -405,7 +405,7 @@ export function TemplateBuilder({
         onDragCancel={handleDragCancel}
       >
         <section
-          className="grid min-w-0 min-h-0 border-0 border-r border-solid border-border bg-app grid-cols-[minmax(360px,1fr)_minmax(320px,360px)] grid-rows-[auto_auto_minmax(0,1fr)] max-[760px]:grid-cols-1"
+          className="grid min-w-0 min-h-0 border-0 border-r border-solid border-border bg-app grid-cols-[minmax(320px,360px)_minmax(360px,1fr)] grid-rows-[auto_auto_minmax(0,1fr)] max-[760px]:grid-cols-1"
           aria-label="Template authoring"
         >
           <BuilderTopbar
@@ -453,7 +453,7 @@ export function TemplateBuilder({
               onChangePageNumbers={handleChangePageNumbers}
             />
           ) : (
-            <div className="col-start-1 row-start-3 min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6 max-[760px]:col-span-1 max-[760px]:row-auto">
+            <div className="col-span-full row-start-3 min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6 max-[760px]:row-auto">
               <div className="grid h-full place-items-center text-sm text-fg-muted">
                 {schemaLoading ? "Loading schema…" : "Load the schema to start building."}
               </div>

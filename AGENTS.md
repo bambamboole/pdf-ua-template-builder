@@ -4,21 +4,20 @@ Instructions for coding agents working in this repository.
 
 ## Project Snapshot
 
-- This is a standalone React 19, TypeScript 5.9, Vite 7 frontend for PDF/UA template building.
+- This is a standalone React 19, TypeScript 5.9, Vite 8 frontend for PDF/UA template building.
 - It talks directly to `pdf-ua-api`, normally running at `http://localhost:8080`.
-- It succeeds the builder that lives in `../pdf-ua-client`, but it should not inherit Laravel, Inertia, Tailwind, Pest, Boost, or PHP package rules from that project.
+- It styles with Tailwind CSS v4, configured CSS-first (see Styling Guidance). It is built both as an app and as a component library (`vite build --mode lib`).
 - Backend schema and rendering behavior are owned by `../pdf-ua-api`. Frontend code should adapt to that contract, not fork it.
 
 ## Repository Map
 
 - `src/api/pdfUaApi.ts`: centralized API client for schema loading and PDF rendering.
-- `src/components/TemplateBuilderShell.tsx`: current starter UI.
-- `src/styles/app.css`: current plain CSS styling.
+- `src/builder/`: the builder UI — `TemplateBuilder.tsx` root plus `canvas/`, `inspector/`, `forms/` (with `forms/controls/` primitives), `blocks/`, `state/`, `schema/`, `lib/`.
+- `src/index.ts`: library entry that re-exports `TemplateBuilder` and editor/schema/API helpers.
+- `src/styles/app.css`: Tailwind v4 entry plus the semantic theme tokens.
 - `src/types/template.ts`: local public template/data/render types.
 - `src/types/generated/template.d.ts`: generated declarations from JSON Schema. Do not edit by hand.
 - `schemas/template.schema.json`: copied backend schema.
-- `docs/PORTING_PLAN.md`: plan for porting the old builder.
-- `../pdf-ua-client/resources/js/builder`: old portable React builder source and tests.
 - `../pdf-ua-api`: Kotlin/Ktor backend and canonical API/schema implementation.
 
 ## Common Commands
@@ -35,14 +34,14 @@ Instructions for coding agents working in this repository.
 
 ## Development Rules
 
-- Check nearby files and the predecessor builder before adding new patterns.
+- Check nearby files and existing patterns before adding new ones.
 - Keep API calls inside `src/api/pdfUaApi.ts` or a small API module beside it.
 - Prefer generated template types and explicit adapters over duplicated hand-written DTOs.
 - Do not edit generated files directly. Change the backend schema or generation flow, then regenerate.
 - Keep editor-only fields internal. Persist or send only the backend template shape plus separate `data`.
 - Do not expose UI for unsupported backend features unless it is clearly disabled or guarded by schema metadata.
 - Do not introduce new dependencies without a clear reason and user approval.
-- Avoid broad refactors while porting. Move one coherent slice at a time and keep tests focused.
+- Prefer small, coherent changes with focused tests over broad refactors.
 
 ## React And TypeScript Guidance
 
@@ -53,7 +52,7 @@ Instructions for coding agents working in this repository.
 - Revoke Blob object URLs and clean up effects.
 - Fetch independent resources in parallel when adding multiple API reads.
 - Avoid broad barrel imports for heavy libraries when direct imports are clearer and smaller.
-- Preserve dnd-kit accessibility behavior when porting drag-and-drop from `pdf-ua-client`.
+- Preserve dnd-kit keyboard and screen-reader accessibility behavior in the canvas drag-and-drop.
 
 ## API Contract
 
@@ -63,23 +62,23 @@ Instructions for coding agents working in this repository.
 - Compact runtime schema metadata and full JSON Schema are different concerns. Use `GET /schema` for runtime hints and `schemas/template.schema.json` for generated TypeScript declarations.
 - Add API-key support through a single wrapper path if the backend is configured with `API_KEY`.
 
-## Porting From `pdf-ua-client`
+## Schema And Preview
 
-- Good candidates to port: builder components, dnd-kit canvas behavior, RJSF templates, block editors, state utilities, `useLatest`, page-size helpers, image helpers, and frontend tests.
-- Reimplement adapters that were Laravel-specific: Inertia page props, CSRF, `/html`, `/pdf`, Storybook fixture data, PHP schema export commands, and workbench routes.
-- The old builder expects an HTML preview. This repo should use backend PDF rendering unless a backend HTML endpoint is added.
 - Reconcile block coverage against the backend schema before exposing heading, image, key-value, table, footer rows, fonts, attachments, or page settings.
+- Preview PDFs through the backend `POST /render/template`; there is no authoritative in-browser HTML preview unless a backend endpoint is added.
 
 ## Styling Guidance
 
-- Current styling is plain CSS. Do not add Tailwind or another framework by default.
+- Styling is Tailwind CSS v4 via `@tailwindcss/vite`; theme config is CSS-first in `src/styles/app.css` (no `tailwind.config.js`).
+- Use utility classes with the semantic color tokens (`bg-surface`, `text-fg-muted`, `border-border`, `text-accent`, …), the `text-2xs` size, and named shadows (`shadow-page`, `shadow-pop`, `drop-shadow-drag`) instead of raw palette colors, so the UI stays re-themeable through the `--pdfua-*` variables.
+- Do not add a component library or another CSS framework by default.
 - Build the app as an operational editor: stable toolbar, panes, inspectors, tabs, canvas, and preview areas.
 - Keep controls accessible and predictable. Use native form semantics where practical.
 - Avoid decorative landing-page patterns; the first screen should be the working builder.
 
 ## Testing Guidance
 
-- Port or add Vitest tests for schema adapters, editor model transforms, data-layer behavior, and component controls.
+- Add Vitest tests for schema adapters, editor model transforms, data-layer behavior, and component controls.
 - Mock `fetch` for API wrapper behavior and error parsing.
 - Run focused tests while iterating once tests exist.
 - Before reporting completion, run `npm run typecheck` and `npm run lint`; run `npm run build` for UI, schema, or bundling changes.

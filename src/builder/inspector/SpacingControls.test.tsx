@@ -18,7 +18,6 @@ describe("SpacingControls", () => {
       />,
     );
 
-    expect(html).toContain("Block spacing");
     expect(html).toContain("Top (mm)");
     expect(html).toContain("Right (mm)");
     expect(html).toContain("Bottom (mm)");

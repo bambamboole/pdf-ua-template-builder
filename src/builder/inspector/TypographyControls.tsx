@@ -5,7 +5,6 @@ import {
   BuilderField,
   ColorField,
   createFieldId,
-  FieldGroup,
   Input,
   NumberField,
   SelectField,
@@ -16,7 +15,6 @@ type TypographyAlign = Exclude<TypographyConfig["align"], null | undefined>;
 
 interface TypographyControlsBaseProps {
   metadata?: Pick<TemplateSchemaMetadata, "bundledFonts">;
-  title?: string;
 }
 
 export interface BlockTypographyControlsProps extends TypographyControlsBaseProps {
@@ -60,46 +58,48 @@ export function TypographyControls(props: TypographyControlsProps): ReactNode {
   }
 
   return (
-    <FieldGroup legend={props.title ?? "Typography"}>
+    <div className="grid min-w-0 gap-2">
       <FontFamilyField
         name={`${namePrefix}.family`}
         value={typography?.family ?? undefined}
         fontOptions={fontOptions}
         onChange={(value) => handleChange("family", value)}
       />
-      <NumberField
-        name={`${namePrefix}.size`}
-        label="Size"
-        value={typography?.size ?? undefined}
-        min={1}
-        step={1}
-        placeholder="12"
-        onChange={(value) => handleChange("size", value)}
-      />
-      <NumberField
-        name={`${namePrefix}.weight`}
-        label="Weight"
-        value={typography?.weight ?? undefined}
-        min={1}
-        step={1}
-        placeholder="400"
-        onChange={(value) => handleChange("weight", value)}
-      />
-      <SelectField
-        name={`${namePrefix}.align`}
-        label="Align"
-        value={typography?.align ?? undefined}
-        optional
-        options={alignOptions}
-        onChange={(value) => handleChange("align", value)}
-      />
-      <ColorField
-        name={`${namePrefix}.color`}
-        label="Color"
-        value={typography?.color ?? undefined}
-        onChange={(value) => handleChange("color", value)}
-      />
-    </FieldGroup>
+      <div className="grid grid-cols-2 gap-2">
+        <NumberField
+          name={`${namePrefix}.size`}
+          label="Size"
+          value={typography?.size ?? undefined}
+          min={1}
+          step={1}
+          placeholder="12"
+          onChange={(value) => handleChange("size", value)}
+        />
+        <NumberField
+          name={`${namePrefix}.weight`}
+          label="Weight"
+          value={typography?.weight ?? undefined}
+          min={1}
+          step={1}
+          placeholder="400"
+          onChange={(value) => handleChange("weight", value)}
+        />
+        <SelectField
+          name={`${namePrefix}.align`}
+          label="Align"
+          value={typography?.align ?? undefined}
+          optional
+          options={alignOptions}
+          onChange={(value) => handleChange("align", value)}
+        />
+        <ColorField
+          name={`${namePrefix}.color`}
+          label="Color"
+          value={typography?.color ?? undefined}
+          onChange={(value) => handleChange("color", value)}
+        />
+      </div>
+    </div>
   );
 }
 

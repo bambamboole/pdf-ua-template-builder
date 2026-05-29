@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 export function InspectorShell({ ariaLabel, children }: { ariaLabel: string; children: ReactNode }) {
   return (
     <aside
-      className="col-start-2 row-start-3 grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto border-0 border-l border-solid border-border bg-surface p-4 max-[760px]:col-start-1 max-[760px]:row-auto max-[760px]:border-l-0 max-[760px]:border-t"
+      className="col-start-1 row-start-3 grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto border-0 border-r border-solid border-border bg-surface p-4 max-[760px]:col-start-1 max-[760px]:row-auto max-[760px]:border-r-0 max-[760px]:border-t"
       aria-label={ariaLabel}
     >
       {children}
@@ -35,11 +35,13 @@ export function InspectorHeader({ title, chip, subtitle, action }: InspectorHead
   );
 }
 
-export function InspectorSection({ title, children }: { title?: string; children: ReactNode }) {
+export function InspectorSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="grid min-w-0 gap-1 overflow-hidden rounded-md border border-solid border-border bg-surface-muted p-3">
-      {title ? <h3 className="m-0 text-xs font-semibold text-fg">{title}</h3> : null}
+    <fieldset className="grid min-w-0 gap-2 overflow-hidden rounded-md border border-solid border-border bg-surface-muted p-3">
+      <legend className="px-1 text-2xs font-semibold uppercase tracking-wide text-fg-muted">
+        {title}
+      </legend>
       {children}
-    </section>
+    </fieldset>
   );
 }

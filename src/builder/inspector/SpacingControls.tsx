@@ -22,34 +22,30 @@ interface PageMarginControlsProps {
 export type SpacingControlsProps = BlockSpacingControlsProps | PageMarginControlsProps;
 
 export function SpacingControls(props: SpacingControlsProps): ReactNode {
-  const title = props.scope === "block" ? "Block spacing" : "Page margins";
   const spacing =
     props.scope === "block" ? props.block.config?.spacing : props.template.config?.page?.margins;
 
   return (
-    <fieldset className="m-0 grid min-w-0 gap-2 border-0 p-0" aria-label={title}>
-      <legend className="p-0 text-2xs font-semibold text-fg-subtle">{title}</legend>
-      <div className="grid grid-cols-2 gap-2">
-        {spacingSides.map((side) => (
-          <NumberField
-            key={side}
-            name={fieldName(props.scope, side)}
-            label={sideLabel(side)}
-            value={fieldValue(spacing, side)}
-            min={0}
-            step={0.5}
-            onChange={(value) => {
-              if (props.scope === "block") {
-                props.onChangeBlock(setBlockSpacingField(props.block, side, value));
-                return;
-              }
+    <div className="grid min-w-0 grid-cols-2 gap-2">
+      {spacingSides.map((side) => (
+        <NumberField
+          key={side}
+          name={fieldName(props.scope, side)}
+          label={sideLabel(side)}
+          value={fieldValue(spacing, side)}
+          min={0}
+          step={0.5}
+          onChange={(value) => {
+            if (props.scope === "block") {
+              props.onChangeBlock(setBlockSpacingField(props.block, side, value));
+              return;
+            }
 
-              props.onChangeTemplate(setTemplatePageMargin(props.template, side, value));
-            }}
-          />
-        ))}
-      </div>
-    </fieldset>
+            props.onChangeTemplate(setTemplatePageMargin(props.template, side, value));
+          }}
+        />
+      ))}
+    </div>
   );
 }
 

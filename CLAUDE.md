@@ -4,21 +4,22 @@ Guidance for Claude Code when working in this repository.
 
 ## Project Snapshot
 
-- Standalone Vite + React 19 + TypeScript frontend for building PDF/UA templates.
-- Successor to `../pdf-ua-client`'s Laravel workbench builder, but this repo is not a Laravel, Inertia, Tailwind, PHP, or Boost project.
+- Standalone Vite 8 + React 19 + TypeScript frontend for building PDF/UA templates.
+- Styled with Tailwind CSS v4 (see Styling). Built both as an app and as a component library (`vite build --mode lib`).
 - Runtime backend is `../pdf-ua-api`, expected locally at `http://localhost:8080` unless `VITE_PDF_UA_API_URL` is set.
 - The backend owns the template rendering contract. Treat `schemas/template.schema.json` and `src/types/generated/template.d.ts` as generated artifacts derived from `pdf-ua-api`.
-- Current UI is starter boilerplate in `src/components/TemplateBuilderShell.tsx`; the full builder should be ported from `../pdf-ua-client/resources/js/builder` through an API-aware adapter.
+- The builder lives under `src/builder/` (`TemplateBuilder.tsx` plus `canvas/`, `inspector/`, `forms/`, `blocks/`, `state/`, `schema/`); `src/index.ts` re-exports it as the library entry.
 
 ## Important Paths
 
 - `src/api/pdfUaApi.ts`: fetch wrapper for `GET /schema` and `POST /render/template`.
-- `src/components/TemplateBuilderShell.tsx`: temporary starter UI and smoke-test surface.
+- `src/builder/TemplateBuilder.tsx`: root builder component; composes topbar, block palette, canvas, inspectors, and PDF pane.
+- `src/builder/`: builder feature code — `canvas/`, `inspector/`, `forms/` (with `forms/controls/` form primitives), `blocks/`, `state/` (editor model + serialization), `schema/` (schema adapter + example), `lib/`.
+- `src/index.ts`: library entry re-exporting `TemplateBuilder` and editor/schema/API helpers.
+- `src/styles/app.css`: Tailwind v4 entry and the semantic theme tokens (see Styling).
 - `src/types/template.ts`: local API-facing type aliases around generated schema types.
 - `src/types/generated/template.d.ts`: generated TypeScript declarations. Do not hand-edit.
 - `schemas/template.schema.json`: backend-owned JSON Schema copied from `../pdf-ua-api`.
-- `docs/PORTING_PLAN.md`: migration notes for moving builder code from `../pdf-ua-client`.
-- `../pdf-ua-client/resources/js/builder`: source for portable builder components, state utilities, RJSF templates, dnd-kit usage, and frontend tests.
 - `../pdf-ua-api/app/src/main/kotlin/bambamboole/pdf/api/routes`: source for current backend endpoint behavior.
 - `../pdf-ua-api/app/src/main/kotlin/bambamboole/pdf/api/models/template`: source for backend template model and schema generation.
 
@@ -45,14 +46,11 @@ Guidance for Claude Code when working in this repository.
 - If `pdf-ua-api` runs with `API_KEY`, add auth support deliberately through the API wrapper and environment config.
 - The backend renders authoritative PDFs. Do not recreate compliance-sensitive PDF/UA behavior in the browser.
 
-## Porting Rules
+## Editor Model And Schema
 
-- Port from `../pdf-ua-client/resources/js/builder` only after checking current source and tests there.
-- Portable pieces include React builder components, state/model utilities, RJSF templates, dnd-kit patterns, image helpers, page sizing helpers, and pure frontend Vitest tests.
-- Do not copy Laravel workbench adapters directly. Replace `/html`, `/pdf`, CSRF, Inertia page props, Storybook fixture loading, and PHP schema commands with API-backed code for this repo.
-- Old builder types may contain editor-only fields such as `uid`, `gap`, `footerRows`, and layered data. Keep those internal to the editor model and serialize only the backend template shape plus separate `data`.
+- Editor-only fields such as `uid`, `gap`, `footerRows`, and layered data stay internal to the editor model. Serialize only the backend template shape plus separate `data` (`serializeTemplate` in `src/builder/state/editorModel.ts`).
 - Hide or gate UI for block types and features that the backend schema does not currently support.
-- The old HTML preview is not authoritative here. Use PDF preview through `POST /render/template` unless the backend adds a dedicated HTML preview endpoint.
+- Preview PDFs through `POST /render/template`; there is no authoritative in-browser HTML preview unless the backend adds a dedicated endpoint.
 
 ## TypeScript And React
 
@@ -68,16 +66,17 @@ Guidance for Claude Code when working in this repository.
 
 ## Styling
 
-- This project currently uses plain CSS in `src/styles/app.css`.
-- Do not introduce Tailwind, Inertia, a component library, or a CSS framework unless explicitly requested or required by the task.
-- Match existing CSS structure before creating new styling patterns.
+- This project styles with Tailwind CSS v4, wired through `@tailwindcss/vite` in `vite.config.ts`. There is no `tailwind.config.js`; theme config is CSS-first in `src/styles/app.css`.
+- Style with utility classes in JSX. Use the semantic color tokens (`bg-surface`, `bg-surface-muted`, `text-fg`, `text-fg-muted`, `text-fg-subtle`, `border-border`, `text-accent`, `bg-danger-soft`, …), the `text-2xs` size, and the named shadows (`shadow-page`, `shadow-pop`, `drop-shadow-drag`) instead of hardcoded palette values, so the UI stays re-themeable.
+- Semantic tokens are backed by `--pdfua-*` CSS variables on `:root`. Re-theme by overriding those variables (globally or scoped to a wrapper element), not by rewriting utility classes everywhere.
+- Do not introduce a component library or another CSS framework. Match the existing utility patterns before inventing new ones.
 - Builder UI should be dense, work-focused, and predictable. Favor clear panes, toolbars, tabs, inspectors, and stable canvas dimensions over marketing-style layouts.
 
 ## Testing Expectations
 
-- Add or port Vitest tests for pure editor model changes, schema adapters, data transforms, and specialized controls.
+- Add Vitest tests for pure editor model changes, schema adapters, data transforms, and specialized controls.
 - For API wrapper changes, test success and error parsing with mocked `fetch` where practical.
-- For visual builder behavior, port existing focused component tests before broad rewrites.
+- For visual builder behavior, prefer focused component tests over broad rewrites.
 - Run the narrowest useful command while iterating, then run at least `npm run typecheck` and `npm run lint` before claiming completion. Run `npm run build` for changes affecting bundling, schema generation, or public UI behavior.
 - When schema changes come from `../pdf-ua-api`, run `npm run sync:schema` and `npm run generate:types`, then verify typecheck.
 

@@ -89,7 +89,7 @@ export function DocumentSettingsInspector({
           </div>
         </InspectorSection>
 
-        <InspectorSection>
+        <InspectorSection title="Page margins">
           <SpacingControls scope="page" template={template} onChangeTemplate={onChangeTemplate} />
         </InspectorSection>
 
@@ -112,12 +112,11 @@ export function DocumentSettingsInspector({
           </div>
         </InspectorSection>
 
-        <InspectorSection>
+        <InspectorSection title="Template typography">
           <TypographyControls
             target="template"
             template={template}
             metadata={metadata}
-            title="Template typography"
             onChangeTemplate={onChangeTemplate}
           />
         </InspectorSection>

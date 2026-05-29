@@ -50,7 +50,7 @@ export function BuilderCanvas({
 }: BuilderCanvasProps) {
   return (
     <div
-      className="col-start-1 row-start-3 min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6 max-[760px]:col-span-1 max-[760px]:row-auto"
+      className="col-start-2 row-start-3 min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6 max-[760px]:col-start-1 max-[760px]:col-span-1 max-[760px]:row-auto"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
           onDeselect();
