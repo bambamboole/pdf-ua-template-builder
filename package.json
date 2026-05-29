@@ -44,11 +44,11 @@
     "wysiwyg"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "docker compose up -d --force-recreate && vite",
     "build": "tsc --noEmit && vite build --mode lib",
     "build:app": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "sync:schema": "curl -fsS ${PDF_UA_SCHEMA_URL:-http://localhost:8080/schema} -o schemas/template.schema.json",
+    "sync:schema": "curl -fsS ${PDF_UA_SCHEMA_URL:-http://localhost:9999/schema} -o schemas/template.schema.json",
     "generate:types": "json2ts --input schemas/template.schema.json --output src/types/generated/template.d.ts --unreachableDefinitions",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",

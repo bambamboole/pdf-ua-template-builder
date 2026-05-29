@@ -5,7 +5,7 @@ import dts from "vite-plugin-dts";
 
 declare const process: { env: Record<string, string | undefined> };
 
-const proxyTarget = process.env.PDF_UA_API_PROXY_URL ?? "http://localhost:8080";
+const proxyTarget = process.env.PDF_UA_API_PROXY_URL ?? "http://localhost:9999";
 
 export default defineConfig(({ mode }) => {
   const isLib = mode === "lib";
