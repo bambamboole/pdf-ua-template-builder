@@ -7,14 +7,12 @@ export interface BlockPaletteProps {
   onAdd?: (type: string) => void;
 }
 
-const paletteListClass = "flex min-w-0 gap-1 overflow-x-auto [scrollbar-width:thin]";
-
-const paletteItemClass =
-  "flex flex-none cursor-grab items-center gap-3 m-0 min-h-8 rounded-md border border-solid border-transparent bg-transparent px-2 py-1 text-left text-xs font-medium text-fg transition-colors hover:border-border hover:bg-surface-muted active:scale-[0.98] active:cursor-grabbing active:bg-surface-muted";
-
 export function BlockPalette({ blockTypes, onAdd }: BlockPaletteProps) {
   return (
-    <div className={paletteListClass} aria-label="Block palette">
+    <div
+      className="flex min-w-0 gap-1 overflow-x-auto [scrollbar-width:thin]"
+      aria-label="Block palette"
+    >
       {blockTypes.map((type) => (
         <PaletteItem key={type} type={type} onAdd={onAdd} />
       ))}
@@ -41,7 +39,7 @@ function PaletteItem({ type, onAdd }: PaletteItemProps) {
     <button
       ref={setNodeRef}
       type="button"
-      className={paletteItemClass}
+      className="flex flex-none cursor-grab items-center gap-3 m-0 min-h-8 rounded-md border border-solid border-transparent bg-transparent px-2 py-1 text-left text-xs font-medium text-fg transition-colors hover:border-border hover:bg-surface-muted active:scale-[0.98] active:cursor-grabbing active:bg-surface-muted"
       style={{
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         opacity: isDragging ? 0 : undefined,

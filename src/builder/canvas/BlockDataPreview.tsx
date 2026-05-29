@@ -193,7 +193,6 @@ function SpacerPreview({ block }: { block: SpacerBlock }) {
 
 function DividerPreview({ block }: { block: DividerBlock }) {
   const style = block.config?.style ?? "solid";
-  const baseClass = "my-2 border-0 border-t border-border-strong";
   const styleClass =
     style === "dashed"
       ? "border-dashed"
@@ -205,7 +204,7 @@ function DividerPreview({ block }: { block: DividerBlock }) {
             ? "border-t-transparent"
             : "border-solid";
 
-  return <div className={`${baseClass} ${styleClass}`} />;
+  return <div className={`my-2 border-0 border-t border-border-strong ${styleClass}`} />;
 }
 
 function mergeRecordValues(

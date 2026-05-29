@@ -19,9 +19,6 @@ const tabBaseClass =
 
 const tabActiveClass = "text-fg border-fg";
 
-const statusPillBaseClass =
-  "inline-flex items-center gap-2 rounded-full px-3 py-1 text-2xs font-medium";
-
 const statusPillVariantClass: Record<OutputStatus, string> = {
   ready: "bg-success-soft text-success",
   rendering: "bg-accent-soft text-accent",
@@ -67,7 +64,9 @@ export function PdfPane({ pdfUrl, error, loading, template, data }: PdfPaneProps
           </button>
           {tab === "data" ? <CopyJsonButton template={template} data={data} /> : null}
         </div>
-        <span className={`${statusPillBaseClass} ${statusPillVariantClass[status]}`}>
+        <span
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-2xs font-medium ${statusPillVariantClass[status]}`}
+        >
           <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" aria-hidden="true" />
           {statusLabel}
         </span>

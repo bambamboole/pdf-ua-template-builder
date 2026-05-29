@@ -1,8 +1,5 @@
 import type { ReactNode } from "react";
 
-const fieldLabelClass =
-  "grid min-w-0 gap-1 text-2xs font-medium uppercase tracking-wide text-fg-muted";
-
 export interface FieldProps {
   label: ReactNode;
   children: ReactNode;
@@ -10,7 +7,7 @@ export interface FieldProps {
 
 export function Field({ label, children }: FieldProps) {
   return (
-    <label className={fieldLabelClass}>
+    <label className="grid min-w-0 gap-1 text-2xs font-medium uppercase tracking-wide text-fg-muted">
       {label}
       {children}
     </label>

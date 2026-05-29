@@ -4,10 +4,8 @@ import type {
   TextareaHTMLAttributes,
 } from "react";
 
-const focusRing =
-  "outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20";
-
-const fieldBase = `min-w-0 rounded-md border border-solid border-border bg-surface text-fg ${focusRing}`;
+const fieldBase =
+  "min-w-0 rounded-md border border-solid border-border bg-surface text-fg outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20";
 
 const selectChevron =
   "appearance-none bg-[linear-gradient(45deg,transparent_50%,var(--pdfua-fg-muted)_50%),linear-gradient(135deg,var(--pdfua-fg-muted)_50%,transparent_50%)] bg-[length:5px_5px,5px_5px] bg-[position:calc(100%-14px)_50%,calc(100%-9px)_50%] bg-no-repeat";

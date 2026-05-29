@@ -27,9 +27,6 @@ export interface BlockInspectorProps {
 
 const shellSections = ["Content", "Layout", "Typography", "Spacing"] as const;
 
-const iconButtonClass =
-  "inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border border-solid border-border bg-surface/90 p-0 text-fg-muted transition-colors hover:border-border-strong hover:text-fg";
-
 export function BlockInspector({
   block,
   schema,
@@ -70,7 +67,7 @@ export function BlockInspector({
         </div>
         <button
           type="button"
-          className={iconButtonClass}
+          className="inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border border-solid border-border bg-surface/90 p-0 text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
           aria-label="Close inspector"
           onClick={onClose}
         >

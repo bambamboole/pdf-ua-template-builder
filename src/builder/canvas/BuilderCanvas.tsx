@@ -17,8 +17,6 @@ import { gridTemplateForWidths } from "./columns";
 import { PageSheet } from "./PageSheet";
 import { SortableBlock } from "./SortableBlock";
 
-const pageNumbersSelectClass = "w-auto py-0 text-sm font-normal normal-case tracking-normal";
-
 export interface BuilderCanvasProps {
   model: EditorModel;
   data: TemplateData;
@@ -112,7 +110,7 @@ export function BuilderCanvas({
             <label className="inline-flex items-center gap-3 text-2xs font-medium uppercase tracking-[0.06em] text-fg-muted">
               Page numbers
               <Select
-                className={pageNumbersSelectClass}
+                className="w-auto py-0 text-sm font-normal normal-case tracking-normal"
                 value={pageNumbers}
                 onChange={(event) =>
                   onChangePageNumbers(event.currentTarget.value as PageNumbersValue)

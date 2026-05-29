@@ -41,17 +41,21 @@ export function Button({
   );
 }
 
-const addButtonClass =
-  "h-7 w-fit cursor-pointer rounded-md border border-dashed border-border-strong bg-transparent px-3 text-2xs text-fg-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50";
-
 export function AddButton({
   type = "button",
   className,
   children,
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement>) {
+  const classes = [
+    "h-7 w-fit cursor-pointer rounded-md border border-dashed border-border-strong bg-transparent px-3 text-2xs text-fg-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <button type={type} className={[addButtonClass, className].filter(Boolean).join(" ")} {...rest}>
+    <button type={type} className={classes} {...rest}>
       {children}
     </button>
   );
