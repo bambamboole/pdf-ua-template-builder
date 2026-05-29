@@ -50,23 +50,25 @@ type NumberRowsValue = "show" | "hide";
 export function BlockLayoutControls({ block, onChangeBlock }: BlockLayoutControlsProps): ReactNode {
   return (
     <div className="grid gap-2">
-      <UnitField
-        name="config.width"
-        label="Width"
-        value={block.config?.width ?? undefined}
-        placeholder="Full width"
-        readOnly
-        help="Drag the column divider on the canvas to resize."
-      />
-      <SelectField
-        name="config.align"
-        label="Align"
-        value={block.config?.align ?? undefined}
-        options={alignOptions}
-        optional
-        emptyLabel="Default"
-        onChange={(value) => onChangeBlock(setCommonConfigField(block, "align", value))}
-      />
+      <div className="grid grid-cols-2 items-start gap-2">
+        <UnitField
+          name="config.width"
+          label="Width"
+          value={block.config?.width ?? undefined}
+          placeholder="Full width"
+          readOnly
+          help="Drag the column divider on the canvas to resize."
+        />
+        <SelectField
+          name="config.align"
+          label="Align"
+          value={block.config?.align ?? undefined}
+          options={alignOptions}
+          optional
+          emptyLabel="Default"
+          onChange={(value) => onChangeBlock(setCommonConfigField(block, "align", value))}
+        />
+      </div>
       {renderTypeSpecificControls(block, onChangeBlock)}
     </div>
   );

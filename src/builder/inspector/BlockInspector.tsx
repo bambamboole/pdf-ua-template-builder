@@ -88,11 +88,7 @@ export function BlockInspector({
       </dl>
 
       <div className="grid gap-2" aria-label="Inspector sections">
-        {block.block.type === "key-value" ? (
-          contentControls
-        ) : (
-          <InspectorSection title="Content">{contentControls}</InspectorSection>
-        )}
+        {contentControls}
         {detailSections.map((section) => (
           <InspectorSection key={section} title={section}>
             {section === "Layout" ? (

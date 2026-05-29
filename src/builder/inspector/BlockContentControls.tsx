@@ -5,6 +5,7 @@ import { KeyValueBlockEditor } from "../forms/KeyValueBlockEditor";
 import { TableBlockEditor } from "../forms/TableBlockEditor";
 import { SelectField, TextAreaField, TextField, type SelectFieldOption } from "../forms/controls";
 import { setBlockConfigField } from "../state/configUpdates";
+import { InspectorSection } from "./InspectorShell";
 
 export interface BlockContentControlsProps {
   block: Block;
@@ -24,7 +25,15 @@ const headingLevelOptions = [
   { value: "6", label: "Heading 6" },
 ] as const satisfies readonly SelectFieldOption<HeadingLevelValue>[];
 
-export function BlockContentControls({
+export function BlockContentControls(props: BlockContentControlsProps): ReactNode {
+  if (props.block.type === "key-value") {
+    return <KeyValueBlockEditor block={props.block} onChangeBlock={props.onChangeBlock} />;
+  }
+
+  return <InspectorSection title="Content">{renderContentFields(props)}</InspectorSection>;
+}
+
+function renderContentFields({
   block,
   rowData,
   onChangeBlock,
@@ -80,7 +89,7 @@ export function BlockContentControls({
     case "image":
       return <ImageBlockEditor block={block} onChangeBlock={onChangeBlock} />;
     case "key-value":
-      return <KeyValueBlockEditor block={block} onChangeBlock={onChangeBlock} />;
+      return null;
     case "table":
       return (
         <TableBlockEditor
