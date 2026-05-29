@@ -14,9 +14,6 @@ export interface PdfPaneProps {
   data?: TemplateData;
 }
 
-const surfacePanelClass =
-  "h-full w-full min-h-0 rounded-lg border border-solid border-border bg-surface shadow-page";
-
 function Tab({
   active,
   onClick,
@@ -109,7 +106,7 @@ function PdfView({ pdfUrl, loading }: { pdfUrl: string | null; loading: boolean 
       <object
         data={pdfUrl}
         type="application/pdf"
-        className={`${surfacePanelClass} max-[1080px]:h-[34rem]`}
+        className="h-full w-full min-h-0 rounded-lg border border-solid border-border bg-surface shadow-page max-[1080px]:h-[34rem]"
       />
     );
   }
@@ -127,7 +124,7 @@ function DataView({ template, data }: { template?: Template; data?: TemplateData
 
   return (
     <pre
-      className={`${surfacePanelClass} m-0 overflow-auto p-4 font-mono text-sm leading-normal text-fg [tab-size:2] whitespace-pre max-[1080px]:h-[34rem]`}
+      className="h-full w-full min-h-0 rounded-lg border border-solid border-border bg-surface shadow-page m-0 overflow-auto p-4 font-mono text-sm leading-normal text-fg [tab-size:2] whitespace-pre max-[1080px]:h-[34rem]"
     >
       <code>{JSON.stringify(payload, null, 2)}</code>
     </pre>
