@@ -4,12 +4,15 @@ import {
   addBlockToNewRow,
   addBlockToRow,
   createEditorModel,
+  createNextBlockId,
   getFooterRepeat,
   getPageNumbers,
   getPageSize,
   moveBlock,
   moveRow,
+  reconcileSelectedBlockUid,
   removeBlock,
+  resolveSelectedEditorBlock,
   serializeTemplate,
   setFooterRepeat,
   setPageNumbers,
@@ -318,5 +321,56 @@ describe("editor model", () => {
       { ...headingBlock, config: { level: 2, width: "60%" } },
       { ...textBlock, config: { align: "center", width: "40%" } },
     ]);
+  });
+});
+
+describe("createNextBlockId", () => {
+  it("creates ids from the current serialized model", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [
+        {
+          blocks: [
+            { type: "heading", id: "heading-1", text: "Title" },
+            { type: "text", id: "text-1", text: "Body" },
+          ],
+        },
+      ],
+    });
+
+    expect(createNextBlockId(model, "heading")).toBe("heading-2");
+    expect(createNextBlockId(model, "divider")).toBe("divider-1");
+  });
+});
+
+describe("resolveSelectedEditorBlock", () => {
+  it("resolves a known uid and returns null otherwise", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
+    });
+    const uid = model.rows[0]?.blocks[0]?.uid ?? "";
+
+    expect(resolveSelectedEditorBlock(model, uid)?.block.id).toBe("heading-1");
+    expect(resolveSelectedEditorBlock(model, "missing")).toBeNull();
+    expect(resolveSelectedEditorBlock(model, null)).toBeNull();
+  });
+});
+
+describe("reconcileSelectedBlockUid", () => {
+  it("keeps a uid that still exists and clears one that does not", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
+    });
+    const uid = model.rows[0]?.blocks[0]?.uid ?? "";
+    const without = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [{ type: "text", id: "text-1", text: "Body" }] }],
+    });
+
+    expect(reconcileSelectedBlockUid(model, uid)).toBe(uid);
+    expect(reconcileSelectedBlockUid(without, uid)).toBeNull();
+    expect(reconcileSelectedBlockUid(model, null)).toBeNull();
   });
 });
