@@ -1,4 +1,5 @@
 import type { ChangeEvent, ReactNode } from "react";
+import { selectChevronClass } from "./fieldStyles";
 
 export type EmptyTextValue = "empty-string" | "undefined";
 
@@ -85,7 +86,8 @@ const inputClass =
 const textareaClass =
   "min-h-24 w-full min-w-0 rounded-md border border-solid border-stone-200 bg-white px-3 py-2 font-mono text-xs text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
 
-const selectClass = inputClass;
+const selectClass =
+  `h-8 w-full min-w-0 cursor-pointer rounded-md border border-solid border-stone-200 bg-white pl-3 pr-7 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20 ${selectChevronClass}`;
 
 export function TextField({
   value,
