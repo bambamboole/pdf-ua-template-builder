@@ -7,7 +7,9 @@ import { useBuilderSensors } from "../lib/sensors";
 import { AddButton } from "../primitives/Button";
 import type { BlockEditorProps } from "./blockEditors";
 import { SortableRow } from "./SortableRow";
-import { Field, FieldGroup, Input } from "./controls";
+import { Field, Input } from "./controls";
+
+const groupLabelClass = "text-2xs font-medium uppercase tracking-wide text-fg-muted";
 
 interface KeyValueField {
   key: string;
@@ -109,7 +111,8 @@ export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps):
       <FieldsEditor block={kvBlock} fields={fields} onChangeBlock={onChangeBlock} />
 
       {fields.length > 0 ? (
-        <FieldGroup legend="Values">
+        <div className="grid gap-2">
+          <span className={groupLabelClass}>Values</span>
           {fields.map((field) => (
             <Field key={field.key} label={field.label || field.key}>
               <Input
@@ -122,7 +125,7 @@ export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps):
               />
             </Field>
           ))}
-        </FieldGroup>
+        </div>
       ) : null}
     </div>
   );
@@ -157,7 +160,8 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
   const sortableIds = fields.map((_, index) => String(index));
 
   return (
-    <FieldGroup legend="Fields">
+    <div className="grid gap-2">
+      <span className={groupLabelClass}>Fields</span>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -180,7 +184,7 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
       <AddButton data-name="add-field" onClick={() => onChangeBlock(addField(block))}>
         Add field
       </AddButton>
-    </FieldGroup>
+    </div>
   );
 }
 
@@ -202,22 +206,24 @@ function FieldRow({ id, index, field, onChangeKey, onChangeLabel, onRemove }: Fi
       removeName={`remove-field-${index}`}
       onRemove={onRemove}
     >
-      <Field label="Key">
-        <Input
-          name={`field-key-${index}`}
-          type="text"
-          value={field.key}
-          onChange={(event) => onChangeKey(event.currentTarget.value)}
-        />
-      </Field>
-      <Field label="Label">
-        <Input
-          name={`field-label-${index}`}
-          type="text"
-          value={field.label}
-          onChange={(event) => onChangeLabel(event.currentTarget.value)}
-        />
-      </Field>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Key">
+          <Input
+            name={`field-key-${index}`}
+            type="text"
+            value={field.key}
+            onChange={(event) => onChangeKey(event.currentTarget.value)}
+          />
+        </Field>
+        <Field label="Label">
+          <Input
+            name={`field-label-${index}`}
+            type="text"
+            value={field.label}
+            onChange={(event) => onChangeLabel(event.currentTarget.value)}
+          />
+        </Field>
+      </div>
     </SortableRow>
   );
 }
