@@ -67,14 +67,14 @@ describe("TypographyControls", () => {
     });
 
     getChangeHandler(requireControl(element, "config.typography.family"))({
-      currentTarget: { value: "Custom Display" },
+      currentTarget: { value: "Source Sans 3" },
     });
     getChangeHandler(requireControl(element, "config.typography.size"))({
       currentTarget: { value: "18", valueAsNumber: 18 },
     });
 
     expect(changes).toEqual([
-      { ...block, config: { level: 2, typography: { family: "Custom Display" } } },
+      { ...block, config: { level: 2, typography: { family: "Source Sans 3" } } },
       { ...block, config: { level: 2, typography: { size: 18 } } },
     ]);
 
@@ -122,7 +122,7 @@ describe("TypographyControls", () => {
     ]);
   });
 
-  it("renders bundled font options when metadata is passed", () => {
+  it("renders bundled font options as a select when metadata is passed", () => {
     const html = renderToStaticMarkup(
       <TypographyControls
         target="template"
@@ -132,7 +132,8 @@ describe("TypographyControls", () => {
       />,
     );
 
-    expect(html).toContain("<datalist");
+    expect(html).toContain("<select");
+    expect(html).not.toContain("<datalist");
     expect(html).toContain('value="Inter"');
     expect(html).toContain('value="Source Sans 3"');
   });
