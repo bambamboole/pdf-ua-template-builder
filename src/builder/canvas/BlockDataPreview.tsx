@@ -13,7 +13,7 @@ import type {
 } from "../../types/generated/template";
 import { setBlockConfigField } from "../state/configUpdates";
 import { ColumnResizer } from "./ColumnResizer";
-import { formatWidths, labelWidthPercent } from "./columns";
+import { formatWidths, labelWidthPercent, tableColumnTracks } from "./columns";
 
 export interface BlockDataPreviewProps {
   block: Block;
@@ -43,7 +43,7 @@ export function BlockDataPreview({ block, rowData, onChange }: BlockDataPreviewP
     case "key-value":
       return <KeyValuePreview block={block} rowData={rowData} onChange={onChange} />;
     case "table":
-      return <TablePreview block={block} rowData={rowData} />;
+      return <TablePreview block={block} rowData={rowData} onChange={onChange} />;
     case "spacer":
       return <SpacerPreview block={block} />;
     case "divider":
@@ -160,7 +160,16 @@ function KeyValuePreview({
   );
 }
 
-function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown }) {
+function TablePreview({
+  block,
+  rowData,
+  onChange,
+}: {
+  block: TableBlock;
+  rowData?: unknown;
+  onChange?: (block: Block) => void;
+}) {
+  const tableRef = useRef<HTMLDivElement | null>(null);
   const columns = block.config?.columns ?? [];
   const numberRows = block.config?.numberRows === true;
   const rows = Array.isArray(rowData) ? rowData.filter(isRecord) : [];
@@ -169,19 +178,33 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
     return <EmptyPreview>No columns yet</EmptyPreview>;
   }
 
-  const visibleColumns = columns.slice(0, 4);
+  const { tracks, data } = tableColumnTracks(
+    columns.map((column) => column.width),
+    numberRows,
+  );
+  const trackStrings = formatWidths(tracks);
+  const trackOffset = numberRows ? 1 : 0;
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-md border border-solid border-border">
+    <div
+      ref={tableRef}
+      className="relative min-w-0 overflow-hidden rounded-md border border-solid border-border"
+    >
       <table className="w-full table-fixed border-collapse text-2xs">
+        <colgroup>
+          {numberRows ? <col style={{ width: `${tracks[0]}%` }} /> : null}
+          {data.map((width, index) => (
+            <col key={columns[index].key} style={{ width: `${width}%` }} />
+          ))}
+        </colgroup>
         <thead>
           <tr>
             {numberRows ? (
-              <th className="w-7 border-0 border-b border-solid border-border bg-surface-muted px-2 py-[5px] text-left font-semibold text-fg-subtle">
+              <th className="border-0 border-b border-solid border-border bg-surface-muted px-2 py-[5px] text-left font-semibold text-fg-subtle">
                 #
               </th>
             ) : null}
-            {visibleColumns.map((column) => (
+            {columns.map((column) => (
               <th
                 key={column.key}
                 className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-border bg-surface-muted px-2 py-[5px] text-left font-semibold text-fg"
@@ -200,7 +223,7 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
                     {rowIndex + 1}
                   </td>
                 ) : null}
-                {visibleColumns.map((column) => (
+                {columns.map((column) => (
                   <td
                     key={column.key}
                     className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-border px-2 py-[5px] text-left text-fg-muted"
@@ -213,7 +236,7 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
           ) : (
             <tr>
               <td
-                colSpan={visibleColumns.length + (numberRows ? 1 : 0)}
+                colSpan={columns.length + trackOffset}
                 className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 px-2 py-[5px] text-left text-fg-muted"
               >
                 No runtime rows yet
@@ -222,6 +245,42 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
           )}
         </tbody>
       </table>
+      {onChange
+        ? columns.slice(0, -1).map((column, index) => {
+            const leftIndex = trackOffset + index;
+            const boundaryPercent = tracks
+              .slice(0, leftIndex + 1)
+              .reduce((total, value) => total + value, 0);
+
+            return (
+              <div
+                key={`${column.key}:resizer`}
+                className="absolute inset-y-0 flex -translate-x-1/2"
+                style={{ left: `${boundaryPercent}%` }}
+              >
+                <ColumnResizer
+                  widths={trackStrings}
+                  count={tracks.length}
+                  leftIndex={leftIndex}
+                  containerRef={tableRef}
+                  label={`Resize column ${index + 1}`}
+                  onResize={(next) =>
+                    onChange(
+                      setBlockConfigField(
+                        block,
+                        "columns",
+                        columns.map((current, columnIndex) => ({
+                          ...current,
+                          width: (numberRows ? next.slice(1) : next)[columnIndex],
+                        })),
+                      ),
+                    )
+                  }
+                />
+              </div>
+            );
+          })
+        : null}
     </div>
   );
 }

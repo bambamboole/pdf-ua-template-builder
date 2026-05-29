@@ -124,4 +124,42 @@ describe("BlockDataPreview", () => {
 
     expect(html).not.toContain(">#<");
   });
+
+  it("overlays a column resizer at each interior boundary when editable", () => {
+    const block: Block = {
+      type: "table",
+      id: "lineItems",
+      config: {
+        columns: [
+          { key: "description", label: "Description" },
+          { key: "qty", label: "Qty" },
+          { key: "total", label: "Total" },
+        ],
+      },
+    };
+
+    const html = renderToStaticMarkup(<BlockDataPreview block={block} onChange={() => {}} />);
+
+    expect(html).toContain("<colgroup");
+    expect(html).toContain('aria-label="Resize column 1"');
+    expect(html).toContain('aria-label="Resize column 2"');
+    expect(html).not.toContain('aria-label="Resize column 3"');
+  });
+
+  it("omits table column resizers when the preview is read-only", () => {
+    const block: Block = {
+      type: "table",
+      id: "lineItems",
+      config: {
+        columns: [
+          { key: "description", label: "Description" },
+          { key: "qty", label: "Qty" },
+        ],
+      },
+    };
+
+    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+
+    expect(html).not.toContain("Resize column");
+  });
 });

@@ -13,6 +13,7 @@ import {
   UnitField,
   type SelectFieldOption,
 } from "../forms/controls";
+import { setTableNumberRows } from "../forms/TableBlockEditor";
 import { setBlockConfigField } from "../state/configUpdates";
 
 export interface BlockLayoutControlsProps {
@@ -151,7 +152,7 @@ function renderTypeSpecificControls(
             optional
             emptyLabel="Default"
             onChange={(value) =>
-              onChangeBlock(setBlockConfigField(block, "numberRows", booleanFromNumberRows(value)))
+              onChangeBlock(setTableNumberRows(block, booleanFromNumberRows(value)))
             }
           />
         </div>

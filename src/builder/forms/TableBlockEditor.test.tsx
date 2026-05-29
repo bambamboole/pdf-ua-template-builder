@@ -14,7 +14,7 @@ import {
   setCellValue,
   setColumnAlign,
   setColumnLabel,
-  setColumnWidth,
+  setTableNumberRows,
 } from "./TableBlockEditor";
 
 const baseBlock = {
@@ -141,12 +141,51 @@ describe("TableBlockEditor column helpers", () => {
     expect(next.config?.columns?.[0]).toEqual({ key: "description", label: "Description" });
   });
 
-  it("setColumnWidth sets and unsets width", () => {
-    const withWidth = setColumnWidth(baseBlock, 0, "30%");
-    expect(withWidth.config?.columns?.[0]).toMatchObject({ width: "30%" });
+  it("reserves 5% from the first column when enabling row numbers", () => {
+    const block = {
+      type: "table",
+      id: "t",
+      config: {
+        columns: [
+          { key: "a", label: "A", width: "60%" },
+          { key: "b", label: "B", width: "40%" },
+        ],
+      },
+    } satisfies TableBlock;
 
-    const cleared = setColumnWidth(withWidth, 0, "");
-    expect(cleared.config?.columns?.[0]).not.toHaveProperty("width");
+    const enabled = setTableNumberRows(block, true);
+    expect(enabled.config?.numberRows).toBe(true);
+    expect(enabled.config?.columns).toEqual([
+      { key: "a", label: "A", width: "55%" },
+      { key: "b", label: "B", width: "40%" },
+    ]);
+
+    const disabled = setTableNumberRows(enabled, undefined);
+    expect(disabled.config?.numberRows).toBeUndefined();
+    expect(disabled.config?.columns).toEqual([
+      { key: "a", label: "A", width: "60%" },
+      { key: "b", label: "B", width: "40%" },
+    ]);
+  });
+
+  it("leaves columns untouched when widths are not all percentages", () => {
+    const block = {
+      type: "table",
+      id: "t",
+      config: {
+        columns: [
+          { key: "a", label: "A" },
+          { key: "b", label: "B" },
+        ],
+      },
+    } satisfies TableBlock;
+
+    const enabled = setTableNumberRows(block, true);
+    expect(enabled.config?.numberRows).toBe(true);
+    expect(enabled.config?.columns).toEqual([
+      { key: "a", label: "A" },
+      { key: "b", label: "B" },
+    ]);
   });
 });
 

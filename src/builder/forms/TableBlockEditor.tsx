@@ -2,10 +2,12 @@ import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { ReactNode } from "react";
 import type { Align, Block, TableBlock } from "../../types/generated/template";
+import { NUMBER_COLUMN_RESERVE, percentWidth } from "../canvas/columns";
 import { isRecord, omitKey, renameKey } from "../lib/records";
 import { useBuilderSensors } from "../lib/sensors";
 import { AddButton } from "../primitives/Button";
 import { InspectorSection } from "../inspector/InspectorShell";
+import { setBlockConfigField } from "../state/configUpdates";
 import type { BlockEditorProps } from "./blockEditors";
 import { SortableRow } from "./SortableRow";
 import { AlignSelect, Field, Input } from "./controls";
@@ -121,27 +123,36 @@ export function setColumnAlign(
   );
 }
 
-export function setColumnWidth(
-  block: TableBlock,
-  index: number,
-  nextWidth: string,
-): TableBlock {
+export function setTableNumberRows(block: TableBlock, value: boolean | undefined): TableBlock {
+  const previousOn = block.config?.numberRows === true;
+  const nextOn = value === true;
+  const withFlag = setBlockConfigField(block, "numberRows", value);
+
+  if (previousOn === nextOn) {
+    return withFlag;
+  }
+
+  return adjustFirstColumnWidth(withFlag, nextOn ? -NUMBER_COLUMN_RESERVE : NUMBER_COLUMN_RESERVE);
+}
+
+function adjustFirstColumnWidth(block: TableBlock, delta: number): TableBlock {
   const columns = getColumns(block);
+
+  if (columns.length === 0 || !columns.every((column) => percentWidth(column.width) !== null)) {
+    return block;
+  }
 
   return applyColumns(
     block,
-    columns.map((column, currentIndex) => {
-      if (currentIndex !== index) {
+    columns.map((column, index) => {
+      if (index !== 0) {
         return column;
       }
 
-      const next: TableColumn = { ...column };
-      if (nextWidth === "") {
-        delete next.width;
-      } else {
-        next.width = nextWidth;
-      }
-      return next;
+      const current = percentWidth(column.width) ?? 0;
+      const next = Math.max(NUMBER_COLUMN_RESERVE, current + delta);
+
+      return { ...column, width: `${next}%` };
     }),
   );
 }
@@ -303,7 +314,6 @@ function ColumnsEditor({
               onChangeKey={(value) => onRenameColumnKey(index, value)}
               onChangeLabel={(value) => onChangeBlock(setColumnLabel(block, index, value))}
               onChangeAlign={(value) => onChangeBlock(setColumnAlign(block, index, value))}
-              onChangeWidth={(value) => onChangeBlock(setColumnWidth(block, index, value))}
               onRemove={() => onRemoveColumn(index)}
             />
           ))}
@@ -323,7 +333,6 @@ interface ColumnRowProps {
   onChangeKey: (value: string) => void;
   onChangeLabel: (value: string) => void;
   onChangeAlign: (value: string) => void;
-  onChangeWidth: (value: string) => void;
   onRemove: () => void;
 }
 
@@ -334,7 +343,6 @@ function ColumnRow({
   onChangeKey,
   onChangeLabel,
   onChangeAlign,
-  onChangeWidth,
   onRemove,
 }: ColumnRowProps) {
   return (
@@ -367,14 +375,6 @@ function ColumnRow({
           value={(column.align ?? "") as string}
           onChange={onChangeAlign}
         />
-        <Field label="Width">
-          <Input
-            name={`column-width-${index}`}
-            type="text"
-            value={column.width ?? ""}
-            onChange={(event) => onChangeWidth(event.currentTarget.value)}
-          />
-        </Field>
       </div>
     </SortableRow>
   );
