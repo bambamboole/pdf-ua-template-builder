@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { Orientation, PageFormat } from "../../types/generated/template";
 import { Button } from "../primitives/Button";
-import { inputClass, selectControlClass } from "../forms/controls/fieldStyles";
+import { Input, Select } from "../forms/controls";
 import { PAGE_SIZES_MM } from "../lib/pageSizes";
+
+const compactSelectClass = "w-auto py-0";
 
 const PAGE_FORMATS = Object.keys(PAGE_SIZES_MM) as PageFormat[];
 
@@ -56,8 +58,8 @@ export function BuilderTopbar({
       <div className="flex-auto" />
 
       <div className="flex items-center gap-2">
-        <select
-          className={`${selectControlClass} min-w-[88px]`}
+        <Select
+          className={`${compactSelectClass} min-w-[88px]`}
           value={format}
           onChange={(event) => onChangeFormat(event.currentTarget.value as PageFormat)}
           aria-label="Page format"
@@ -67,16 +69,16 @@ export function BuilderTopbar({
               {value}
             </option>
           ))}
-        </select>
-        <select
-          className={`${selectControlClass} min-w-[112px]`}
+        </Select>
+        <Select
+          className={`${compactSelectClass} min-w-[112px]`}
           value={orientation}
           onChange={(event) => onChangeOrientation(event.currentTarget.value as Orientation)}
           aria-label="Orientation"
         >
           <option value="portrait">Portrait</option>
           <option value="landscape">Landscape</option>
-        </select>
+        </Select>
       </div>
 
       <div className="flex items-center gap-2">
@@ -158,8 +160,7 @@ function SettingsPopover({
         >
           <label className="grid gap-1 text-2xs font-medium uppercase tracking-wide text-stone-500">
             API URL
-            <input
-              className={inputClass}
+            <Input
               value={apiUrl}
               onChange={(event) => onApiUrlChange(event.currentTarget.value)}
             />

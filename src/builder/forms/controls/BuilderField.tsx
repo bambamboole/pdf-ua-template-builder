@@ -1,5 +1,5 @@
 import type { ChangeEvent, ReactNode } from "react";
-import { checkboxClass, inputClass, selectClass, textareaClass } from "./fieldStyles";
+import { Checkbox, Input, Select, Textarea } from "./inputs";
 
 export type EmptyTextValue = "empty-string" | "undefined";
 
@@ -92,9 +92,8 @@ export function TextField({
 
   return (
     <BuilderField {...fieldProps}>
-      <input
+      <Input
         id={fieldState.id}
-        className={inputClass}
         name={fieldProps.name}
         type="text"
         value={value ?? ""}
@@ -121,9 +120,8 @@ export function TextAreaField({
 
   return (
     <BuilderField {...fieldProps}>
-      <textarea
+      <Textarea
         id={fieldState.id}
-        className={textareaClass}
         name={fieldProps.name}
         value={value ?? ""}
         placeholder={placeholder}
@@ -150,9 +148,8 @@ export function NumberField({
 
   return (
     <BuilderField {...fieldProps}>
-      <input
+      <Input
         id={fieldState.id}
-        className={inputClass}
         name={fieldProps.name}
         type="number"
         value={value ?? ""}
@@ -181,9 +178,9 @@ export function SelectField<Value extends string>({
 
   return (
     <BuilderField {...fieldProps}>
-      <select
+      <Select
         id={fieldState.id}
-        className={selectClass}
+        className="w-full"
         name={fieldProps.name}
         value={value ?? ""}
         disabled={fieldProps.disabled}
@@ -197,7 +194,7 @@ export function SelectField<Value extends string>({
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
     </BuilderField>
   );
 }
@@ -211,11 +208,9 @@ export function CheckboxField({
 
   return (
     <BuilderField {...fieldProps} className={fieldProps.className}>
-      <input
+      <Checkbox
         id={fieldState.id}
-        className={checkboxClass}
         name={fieldProps.name}
-        type="checkbox"
         checked={checked}
         disabled={fieldProps.disabled}
         aria-describedby={fieldState.describedBy}
@@ -236,9 +231,9 @@ export function ColorField({
 
   return (
     <BuilderField {...fieldProps}>
-      <input
+      <Input
         id={fieldState.id}
-        className={`${inputClass} p-1`}
+        className="p-1"
         name={fieldProps.name}
         type="color"
         value={value ?? fallbackValue}
@@ -262,9 +257,8 @@ export function UnitField({
 
   return (
     <BuilderField {...fieldProps}>
-      <input
+      <Input
         id={fieldState.id}
-        className={inputClass}
         name={fieldProps.name}
         type="text"
         inputMode="text"

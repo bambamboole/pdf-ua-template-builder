@@ -40,3 +40,19 @@ export function Button({
     </button>
   );
 }
+
+const addButtonClass =
+  "h-7 w-fit cursor-pointer rounded-md border border-dashed border-stone-300 bg-transparent px-3 text-2xs text-stone-500 transition-colors hover:border-indigo-600 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50";
+
+export function AddButton({
+  type = "button",
+  className,
+  children,
+  ...rest
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button type={type} className={[addButtonClass, className].filter(Boolean).join(" ")} {...rest}>
+      {children}
+    </button>
+  );
+}

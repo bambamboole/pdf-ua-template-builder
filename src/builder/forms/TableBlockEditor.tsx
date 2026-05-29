@@ -4,20 +4,10 @@ import type { ReactNode } from "react";
 import type { Align, Block, TableBlock } from "../../types/generated/template";
 import { isRecord, omitKey, renameKey } from "../lib/records";
 import { useBuilderSensors } from "../lib/sensors";
-import { setBlockConfigValue, type BlockEditorProps } from "./blockEditors";
+import { AddButton } from "../primitives/Button";
+import type { BlockEditorProps } from "./blockEditors";
 import { SortableRow } from "./SortableRow";
-import { AlignSelect } from "./controls";
-import {
-  arrayAddClass as arrayAddBaseClass,
-  arrayFieldClass,
-  arrayLegendClass,
-  checkboxClass,
-  checkboxLabelClass,
-  controlClass,
-  fieldLabelClass,
-} from "./controls/fieldStyles";
-
-const arrayAddClass = `${arrayAddBaseClass} disabled:cursor-not-allowed disabled:opacity-50`;
+import { AlignSelect, Field, FieldGroup, Input } from "./controls";
 
 const hintClass = "m-0 text-2xs text-stone-500";
 
@@ -204,13 +194,10 @@ export function TableBlockEditor({
   rowData,
   onChangeBlock,
   onChangeRowData,
-  showLayoutControls = true,
 }: BlockEditorProps): ReactNode {
   const tableBlock = block as TableBlock;
   const columns = getColumns(tableBlock);
   const rows = getRows(rowData);
-  const width = (tableBlock.config?.width ?? "") as string;
-  const align = (tableBlock.config?.align ?? "") as Align | "";
   const blockId = typeof tableBlock.id === "string" ? tableBlock.id : "";
   const canEditRows = blockId !== "" && onChangeRowData !== undefined;
 
@@ -242,18 +229,6 @@ export function TableBlockEditor({
     }
   }
 
-  function handleChangeWidth(nextWidth: string): void {
-    onChangeBlock(setBlockConfigValue(tableBlock, "width", nextWidth || undefined));
-  }
-
-  function handleChangeAlign(nextAlign: string): void {
-    onChangeBlock(setBlockConfigValue(tableBlock, "align", nextAlign === "" ? undefined : nextAlign));
-  }
-
-  function handleToggleNumberRows(checked: boolean): void {
-    onChangeBlock(setBlockConfigValue(tableBlock, "numberRows", checked || undefined));
-  }
-
   return (
     <div className="grid gap-3 [container-type:inline-size]">
       <ColumnsEditor
@@ -270,34 +245,6 @@ export function TableBlockEditor({
         columns={columns}
         onChangeRowData={onChangeRowData}
       />
-
-      {showLayoutControls ? (
-        <>
-          <label className={checkboxLabelClass}>
-            <input
-              className={checkboxClass}
-              name="config.numberRows"
-              type="checkbox"
-              checked={tableBlock.config?.numberRows === true}
-              onChange={(event) => handleToggleNumberRows(event.currentTarget.checked)}
-            />
-            Number rows
-          </label>
-
-          <label className={fieldLabelClass}>
-            Width
-            <input
-              className={controlClass}
-              name="config.width"
-              type="text"
-              value={width}
-              onChange={(event) => handleChangeWidth(event.currentTarget.value)}
-            />
-          </label>
-
-          <AlignSelect name="config.align" value={align} onChange={handleChangeAlign} />
-        </>
-      ) : null}
     </div>
   );
 }
@@ -339,8 +286,7 @@ function ColumnsEditor({
   const sortableIds = columns.map((_, index) => String(index));
 
   return (
-    <fieldset className={arrayFieldClass}>
-      <legend className={arrayLegendClass}>Columns</legend>
+    <FieldGroup legend="Columns">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -362,15 +308,10 @@ function ColumnsEditor({
           ))}
         </SortableContext>
       </DndContext>
-      <button
-        type="button"
-        data-name="add-column"
-        className={arrayAddClass}
-        onClick={() => onChangeBlock(addColumn(block))}
-      >
+      <AddButton data-name="add-column" onClick={() => onChangeBlock(addColumn(block))}>
         Add column
-      </button>
-    </fieldset>
+      </AddButton>
+    </FieldGroup>
   );
 }
 
@@ -403,41 +344,35 @@ function ColumnRow({
       removeName={`remove-column-${index}`}
       onRemove={onRemove}
     >
-      <label className={fieldLabelClass}>
-        Key
-        <input
-          className={controlClass}
+      <Field label="Key">
+        <Input
           name={`column-key-${index}`}
           type="text"
           value={column.key}
           onChange={(event) => onChangeKey(event.currentTarget.value)}
         />
-      </label>
-      <label className={fieldLabelClass}>
-        Label
-        <input
-          className={controlClass}
+      </Field>
+      <Field label="Label">
+        <Input
           name={`column-label-${index}`}
           type="text"
           value={column.label}
           onChange={(event) => onChangeLabel(event.currentTarget.value)}
         />
-      </label>
+      </Field>
       <AlignSelect
         name={`column-align-${index}`}
         value={(column.align ?? "") as string}
         onChange={onChangeAlign}
       />
-      <label className={fieldLabelClass}>
-        Width
-        <input
-          className={controlClass}
+      <Field label="Width">
+        <Input
           name={`column-width-${index}`}
           type="text"
           value={column.width ?? ""}
           onChange={(event) => onChangeWidth(event.currentTarget.value)}
         />
-      </label>
+      </Field>
     </SortableRow>
   );
 }
@@ -471,18 +406,16 @@ function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorP
 
   if (!canEditRows) {
     return (
-      <fieldset className={arrayFieldClass}>
-        <legend className={arrayLegendClass}>Rows</legend>
+      <FieldGroup legend="Rows">
         <p className={hintClass}>Give this block an id to edit runtime row data here.</p>
-      </fieldset>
+      </FieldGroup>
     );
   }
 
   const sortableIds = rows.map((_, index) => String(index));
 
   return (
-    <fieldset className={arrayFieldClass}>
-      <legend className={arrayLegendClass}>Rows</legend>
+    <FieldGroup legend="Rows">
       {rows.length === 0 ? (
         <p className={hintClass}>No rows yet. Add one to seed runtime data for this table.</p>
       ) : (
@@ -508,16 +441,14 @@ function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorP
           </SortableContext>
         </DndContext>
       )}
-      <button
-        type="button"
+      <AddButton
         data-name="add-row"
-        className={arrayAddClass}
         disabled={columns.length === 0}
         onClick={() => onChangeRowData?.(addRow(rows, columns))}
       >
         Add row
-      </button>
-    </fieldset>
+      </AddButton>
+    </FieldGroup>
   );
 }
 
@@ -540,16 +471,14 @@ function DataRow({ id, index, row, columns, onChangeCell, onRemove }: DataRowPro
       onRemove={onRemove}
     >
       {columns.map((column) => (
-        <label key={column.key} className={fieldLabelClass}>
-          {column.label || column.key}
-          <input
-            className={controlClass}
+        <Field key={column.key} label={column.label || column.key}>
+          <Input
             name={`row-${index}.${column.key}`}
             type="text"
             value={row[column.key] ?? ""}
             onChange={(event) => onChangeCell(column.key, event.currentTarget.value)}
           />
-        </label>
+        </Field>
       ))}
     </SortableRow>
   );

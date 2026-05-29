@@ -4,10 +4,10 @@ import type { ReactNode } from "react";
 import type { Block, KeyValueBlock } from "../../types/generated/template";
 import { isRecord, omitKey, renameKey } from "../lib/records";
 import { useBuilderSensors } from "../lib/sensors";
-import { setBlockConfigValue, type BlockEditorProps } from "./blockEditors";
+import { AddButton } from "../primitives/Button";
+import type { BlockEditorProps } from "./blockEditors";
 import { SortableRow } from "./SortableRow";
-import { AlignSelect } from "./controls";
-import { arrayAddClass, arrayFieldClass, arrayLegendClass, controlClass, fieldLabelClass } from "./controls/fieldStyles";
+import { Field, FieldGroup, Input } from "./controls";
 
 interface KeyValueField {
   key: string;
@@ -99,37 +99,20 @@ export function reorderFields(
   return applyFields(block, moveField(getFields(block), sourceIndex, targetIndex), getValues(block));
 }
 
-export function KeyValueBlockEditor({
-  block,
-  onChangeBlock,
-  showLayoutControls = true,
-}: BlockEditorProps): ReactNode {
+export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps): ReactNode {
   const kvBlock = block as KeyValueBlock;
   const fields = getFields(kvBlock);
   const values = getValues(kvBlock);
-  const width = (kvBlock.config?.width ?? "") as string;
-  const align = (kvBlock.config?.align ?? "") as string;
-
-  function handleChangeWidth(nextWidth: string): void {
-    onChangeBlock(setBlockConfigValue(kvBlock, "width", nextWidth || undefined));
-  }
-
-  function handleChangeAlign(nextAlign: string): void {
-    onChangeBlock(setBlockConfigValue(kvBlock, "align", nextAlign === "" ? undefined : nextAlign));
-  }
 
   return (
     <div className="grid gap-3 [container-type:inline-size]">
       <FieldsEditor block={kvBlock} fields={fields} onChangeBlock={onChangeBlock} />
 
       {fields.length > 0 ? (
-        <fieldset className={arrayFieldClass}>
-          <legend className={arrayLegendClass}>Values</legend>
+        <FieldGroup legend="Values">
           {fields.map((field) => (
-            <label key={field.key} className={fieldLabelClass}>
-              {field.label || field.key}
-              <input
-                className={controlClass}
+            <Field key={field.key} label={field.label || field.key}>
+              <Input
                 name={`values.${field.key}`}
                 type="text"
                 value={String(values[field.key] ?? "")}
@@ -137,26 +120,9 @@ export function KeyValueBlockEditor({
                   onChangeBlock(setValue(kvBlock, field.key, event.currentTarget.value))
                 }
               />
-            </label>
+            </Field>
           ))}
-        </fieldset>
-      ) : null}
-
-      {showLayoutControls ? (
-        <>
-          <label className={fieldLabelClass}>
-            Width
-            <input
-              className={controlClass}
-              name="config.width"
-              type="text"
-              value={width}
-              onChange={(event) => handleChangeWidth(event.currentTarget.value)}
-            />
-          </label>
-
-          <AlignSelect name="config.align" value={align} onChange={handleChangeAlign} />
-        </>
+        </FieldGroup>
       ) : null}
     </div>
   );
@@ -191,8 +157,7 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
   const sortableIds = fields.map((_, index) => String(index));
 
   return (
-    <fieldset className={arrayFieldClass}>
-      <legend className={arrayLegendClass}>Fields</legend>
+    <FieldGroup legend="Fields">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -212,15 +177,10 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
           ))}
         </SortableContext>
       </DndContext>
-      <button
-        type="button"
-        data-name="add-field"
-        className={arrayAddClass}
-        onClick={() => onChangeBlock(addField(block))}
-      >
+      <AddButton data-name="add-field" onClick={() => onChangeBlock(addField(block))}>
         Add field
-      </button>
-    </fieldset>
+      </AddButton>
+    </FieldGroup>
   );
 }
 
@@ -242,26 +202,22 @@ function FieldRow({ id, index, field, onChangeKey, onChangeLabel, onRemove }: Fi
       removeName={`remove-field-${index}`}
       onRemove={onRemove}
     >
-      <label className={fieldLabelClass}>
-        Key
-        <input
-          className={controlClass}
+      <Field label="Key">
+        <Input
           name={`field-key-${index}`}
           type="text"
           value={field.key}
           onChange={(event) => onChangeKey(event.currentTarget.value)}
         />
-      </label>
-      <label className={fieldLabelClass}>
-        Label
-        <input
-          className={controlClass}
+      </Field>
+      <Field label="Label">
+        <Input
           name={`field-label-${index}`}
           type="text"
           value={field.label}
           onChange={(event) => onChangeLabel(event.currentTarget.value)}
         />
-      </label>
+      </Field>
     </SortableRow>
   );
 }

@@ -1,4 +1,5 @@
-import { controlClass, fieldLabelClass } from "./fieldStyles";
+import { Field } from "./Field";
+import { Select } from "./inputs";
 
 export interface AlignSelectProps {
   name: string;
@@ -9,10 +10,9 @@ export interface AlignSelectProps {
 
 export function AlignSelect({ name, value, label = "Align", onChange }: AlignSelectProps) {
   return (
-    <label className={fieldLabelClass}>
-      {label}
-      <select
-        className={controlClass}
+    <Field label={label}>
+      <Select
+        className="w-full"
         name={name}
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
@@ -21,7 +21,7 @@ export function AlignSelect({ name, value, label = "Align", onChange }: AlignSel
         <option value="left">left</option>
         <option value="center">center</option>
         <option value="right">right</option>
-      </select>
-    </label>
+      </Select>
+    </Field>
   );
 }

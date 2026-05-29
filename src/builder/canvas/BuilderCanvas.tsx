@@ -11,13 +11,13 @@ import type {
   EditorRow,
   PageNumbersValue,
 } from "../state/editorModel";
-import { checkboxClass, selectControlClass } from "../forms/controls/fieldStyles";
+import { Checkbox, Select } from "../forms/controls";
 import { ColumnResizer } from "./ColumnResizer";
 import { gridTemplateForWidths } from "./columns";
 import { PageSheet } from "./PageSheet";
 import { SortableBlock } from "./SortableBlock";
 
-const pageNumbersSelectClass = `${selectControlClass} text-sm font-normal normal-case tracking-normal`;
+const pageNumbersSelectClass = "w-auto py-0 text-sm font-normal normal-case tracking-normal";
 
 export interface BuilderCanvasProps {
   model: EditorModel;
@@ -87,9 +87,7 @@ export function BuilderCanvas({
               </p>
             </div>
             <label className="inline-flex items-center gap-2 text-xs font-medium text-stone-500">
-              <input
-                type="checkbox"
-                className={checkboxClass}
+              <Checkbox
                 checked={footerRepeat}
                 onChange={(event) => onToggleFooterRepeat(event.currentTarget.checked)}
               />
@@ -113,7 +111,7 @@ export function BuilderCanvas({
           <footer className="mt-2 flex justify-center border-0 border-t border-dashed border-stone-200 pt-3">
             <label className="inline-flex items-center gap-3 text-2xs font-medium uppercase tracking-[0.06em] text-stone-500">
               Page numbers
-              <select
+              <Select
                 className={pageNumbersSelectClass}
                 value={pageNumbers}
                 onChange={(event) =>
@@ -124,7 +122,7 @@ export function BuilderCanvas({
                 <option value="left">Left</option>
                 <option value="center">Center</option>
                 <option value="right">Right</option>
-              </select>
+              </Select>
             </label>
           </footer>
         </section>

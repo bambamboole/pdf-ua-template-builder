@@ -1,7 +1,15 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties, ReactNode } from "react";
-import { arrayHandleClass, arrayItemSortableClass, arrayRemoveClass } from "./controls/fieldStyles";
+
+const rowClass =
+  "relative grid gap-2 rounded-md border border-solid border-stone-200 bg-stone-100 py-3 pr-8 pl-8";
+
+const handleClass =
+  "absolute top-2 left-2 inline-grid h-[22px] w-[22px] cursor-grab place-items-center rounded border-0 bg-transparent p-0 font-mono text-xs tracking-tighter text-stone-500 hover:bg-white hover:text-stone-900 active:cursor-grabbing";
+
+const removeClass =
+  "absolute top-2 right-2 inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border-0 bg-transparent p-0 text-xs text-stone-500 hover:bg-red-50 hover:text-red-700";
 
 export interface SortableRowProps {
   id: string;
@@ -36,11 +44,11 @@ export function SortableRow({
   };
 
   return (
-    <div ref={setNodeRef} className={arrayItemSortableClass} style={style}>
+    <div ref={setNodeRef} className={rowClass} style={style}>
       <button
         ref={setActivatorNodeRef}
         type="button"
-        className={arrayHandleClass}
+        className={handleClass}
         aria-label={dragLabel}
         {...attributes}
         {...listeners}
@@ -51,7 +59,7 @@ export function SortableRow({
       <button
         type="button"
         data-name={removeName}
-        className={arrayRemoveClass}
+        className={removeClass}
         aria-label={removeLabel}
         onClick={onRemove}
       >

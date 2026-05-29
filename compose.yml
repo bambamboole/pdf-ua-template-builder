@@ -1,0 +1,7 @@
+services:
+  pdf-ua-api:
+    image: bambamboole/pdf-ua-api:1.7
+    environment:
+      PORT: 9999
+    ports:
+      - "9999:9999"

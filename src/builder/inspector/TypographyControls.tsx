@@ -1,8 +1,15 @@
 import type { ChangeEvent, ReactNode } from "react";
 import type { Block, Template, TypographyConfig } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
-import { BuilderField, ColorField, createFieldId, NumberField, SelectField } from "../forms/controls";
-import { arrayFieldClass, arrayLegendClass, controlClass } from "../forms/controls/fieldStyles";
+import {
+  BuilderField,
+  ColorField,
+  createFieldId,
+  FieldGroup,
+  Input,
+  NumberField,
+  SelectField,
+} from "../forms/controls";
 import { setBlockTypographyField, setTemplateTypographyField } from "../state/configUpdates";
 
 type TypographyAlign = Exclude<TypographyConfig["align"], null | undefined>;
@@ -53,8 +60,7 @@ export function TypographyControls(props: TypographyControlsProps): ReactNode {
   }
 
   return (
-    <fieldset className={arrayFieldClass}>
-      <legend className={arrayLegendClass}>{props.title ?? "Typography"}</legend>
+    <FieldGroup legend={props.title ?? "Typography"}>
       <FontFamilyField
         name={`${namePrefix}.family`}
         value={typography?.family ?? undefined}
@@ -93,7 +99,7 @@ export function TypographyControls(props: TypographyControlsProps): ReactNode {
         value={typography?.color ?? undefined}
         onChange={(value) => handleChange("color", value)}
       />
-    </fieldset>
+    </FieldGroup>
   );
 }
 
@@ -117,9 +123,8 @@ function FontFamilyField({ name, value, fontOptions, onChange }: FontFamilyField
         fontOptions.length > 0 ? "Choose a bundled font or type another family name." : undefined
       }
     >
-      <input
+      <Input
         id={id}
-        className={controlClass}
         name={name}
         type="text"
         list={listId}
