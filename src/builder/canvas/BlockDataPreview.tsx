@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   Block,
   DividerBlock,
@@ -16,11 +17,14 @@ export interface BlockDataPreviewProps {
   rowData?: unknown;
 }
 
-const emptyClass = "m-0 text-sm text-fg-subtle";
 const copyClass =
   "m-0 line-clamp-3 overflow-hidden text-sm leading-[1.45] text-fg-muted [display:-webkit-box] [-webkit-box-orient:vertical]";
 const headingCopyClass =
   "m-0 line-clamp-2 overflow-hidden text-[17px] font-semibold leading-[1.25] text-fg [display:-webkit-box] [-webkit-box-orient:vertical]";
+
+function EmptyPreview({ children }: { children: ReactNode }) {
+  return <p className="m-0 text-sm text-fg-subtle">{children}</p>;
+}
 
 export function BlockDataPreview({ block, rowData }: BlockDataPreviewProps) {
   switch (block.type) {
@@ -55,7 +59,7 @@ function TextPreview({
   const text = block.text.trim();
 
   if (text.length === 0) {
-    return <p className={emptyClass}>No text yet</p>;
+    return <EmptyPreview>No text yet</EmptyPreview>;
   }
 
   return <p className={variant === "heading" ? headingCopyClass : copyClass}>{text}</p>;
@@ -65,7 +69,7 @@ function HtmlPreview({ block }: { block: HtmlBlock }) {
   const text = stripMarkup(block.html).trim();
 
   if (text.length === 0) {
-    return <p className={emptyClass}>No HTML content yet</p>;
+    return <EmptyPreview>No HTML content yet</EmptyPreview>;
   }
 
   return <p className={copyClass}>{text}</p>;
@@ -75,7 +79,7 @@ function ImagePreview({ block }: { block: ImageBlock }) {
   const src = block.src.trim();
 
   if (src.length === 0) {
-    return <p className={emptyClass}>No image selected</p>;
+    return <EmptyPreview>No image selected</EmptyPreview>;
   }
 
   return (
@@ -106,7 +110,7 @@ function KeyValuePreview({ block, rowData }: { block: KeyValueBlock; rowData?: u
         }));
 
   if (entries.length === 0) {
-    return <p className={emptyClass}>No fields yet</p>;
+    return <EmptyPreview>No fields yet</EmptyPreview>;
   }
 
   return (
@@ -133,7 +137,7 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
   const rows = Array.isArray(rowData) ? rowData.filter(isRecord) : [];
 
   if (columns.length === 0) {
-    return <p className={emptyClass}>No columns yet</p>;
+    return <EmptyPreview>No columns yet</EmptyPreview>;
   }
 
   return (

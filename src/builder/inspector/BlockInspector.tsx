@@ -6,12 +6,7 @@ import { getBlockChrome, getBlockSummary } from "../blocks/blockChrome";
 import type { EditorBlock } from "../state/editorModel";
 import { BlockContentControls } from "./BlockContentControls";
 import { BlockLayoutControls } from "./BlockLayoutControls";
-import {
-  inspectorClass,
-  inspectorSectionClass,
-  inspectorSectionHeadingClass,
-  inspectorTitleClass,
-} from "./inspectorStyles";
+import { InspectorHeader, InspectorSection, InspectorShell } from "./InspectorShell";
 import { SpacingControls } from "./SpacingControls";
 import { TypographyControls } from "./TypographyControls";
 
@@ -38,12 +33,10 @@ export function BlockInspector({
 }: BlockInspectorProps) {
   if (!block) {
     return (
-      <aside className={inspectorClass} aria-label="Block inspector">
-        <div className="grid gap-2 text-xs text-fg-muted">
-          <h2 className={inspectorTitleClass}>Inspector</h2>
-          <p className="m-0">Select a block to inspect it.</p>
-        </div>
-      </aside>
+      <InspectorShell ariaLabel="Block inspector">
+        <InspectorHeader title="Inspector" />
+        <p className="m-0 text-xs text-fg-muted">Select a block to inspect it.</p>
+      </InspectorShell>
     );
   }
 
@@ -54,26 +47,22 @@ export function BlockInspector({
   const schemaSupportsBlock = schema["x-pdfUa"].blockOrder.includes(block.block.type);
 
   return (
-    <aside className={inspectorClass} aria-label="Block inspector">
-      <header className="flex min-w-0 items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-auto items-start gap-2">
-          <Chip>{chrome.chip}</Chip>
-          <div>
-            <h2 className={inspectorTitleClass}>{chrome.label}</h2>
-            {summary ? (
-              <p className="mt-0.5 mb-0 break-words text-xs text-fg-muted">{summary}</p>
-            ) : null}
-          </div>
-        </div>
-        <button
-          type="button"
-          className="inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border border-solid border-border bg-surface/90 p-0 text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
-          aria-label="Close inspector"
-          onClick={onClose}
-        >
-          ✕
-        </button>
-      </header>
+    <InspectorShell ariaLabel="Block inspector">
+      <InspectorHeader
+        chip={<Chip>{chrome.chip}</Chip>}
+        title={chrome.label}
+        subtitle={summary || undefined}
+        action={
+          <button
+            type="button"
+            className="inline-grid h-[22px] w-[22px] cursor-pointer place-items-center rounded border border-solid border-border bg-surface/90 p-0 text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+            aria-label="Close inspector"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        }
+      />
 
       <dl className="m-0 grid gap-2">
         <MetaRow label="Type" value={block.block.type} />
@@ -88,8 +77,7 @@ export function BlockInspector({
 
       <div className="grid gap-2" aria-label="Inspector sections">
         {shellSections.map((section) => (
-          <section key={section} className={inspectorSectionClass}>
-            <h3 className={inspectorSectionHeadingClass}>{section}</h3>
+          <InspectorSection key={section} title={section}>
             {section === "Content" ? (
               <BlockContentControls
                 block={block.block}
@@ -120,7 +108,7 @@ export function BlockInspector({
                 onChangeBlock={(nextBlock) => onChangeBlock(block.uid, nextBlock)}
               />
             )}
-          </section>
+          </InspectorSection>
         ))}
       </div>
 
@@ -129,7 +117,7 @@ export function BlockInspector({
           Remove block
         </Button>
       </footer>
-    </aside>
+    </InspectorShell>
   );
 }
 

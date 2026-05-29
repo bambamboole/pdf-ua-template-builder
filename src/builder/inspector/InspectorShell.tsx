@@ -1,0 +1,45 @@
+import type { ReactNode } from "react";
+
+export function InspectorShell({ ariaLabel, children }: { ariaLabel: string; children: ReactNode }) {
+  return (
+    <aside
+      className="col-start-2 row-start-3 grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto border-0 border-l border-solid border-border bg-surface p-4 max-[760px]:col-start-1 max-[760px]:row-auto max-[760px]:border-l-0 max-[760px]:border-t"
+      aria-label={ariaLabel}
+    >
+      {children}
+    </aside>
+  );
+}
+
+export interface InspectorHeaderProps {
+  title: string;
+  chip?: ReactNode;
+  subtitle?: string;
+  action?: ReactNode;
+}
+
+export function InspectorHeader({ title, chip, subtitle, action }: InspectorHeaderProps) {
+  return (
+    <header className="flex min-w-0 items-start justify-between gap-2">
+      <div className="flex min-w-0 flex-auto items-start gap-2">
+        {chip}
+        <div>
+          <h2 className="m-0 text-[15px] font-semibold text-fg">{title}</h2>
+          {subtitle ? (
+            <p className="mt-0.5 mb-0 break-words text-xs text-fg-muted">{subtitle}</p>
+          ) : null}
+        </div>
+      </div>
+      {action}
+    </header>
+  );
+}
+
+export function InspectorSection({ title, children }: { title?: string; children: ReactNode }) {
+  return (
+    <section className="grid min-w-0 gap-1 overflow-hidden rounded-md border border-solid border-border bg-surface-muted p-3">
+      {title ? <h3 className="m-0 text-xs font-semibold text-fg">{title}</h3> : null}
+      {children}
+    </section>
+  );
+}

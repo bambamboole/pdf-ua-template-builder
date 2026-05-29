@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { Template } from "../../types/generated/template";
 import type { TemplateData } from "../../types/template";
 
@@ -14,10 +14,30 @@ export interface PdfPaneProps {
   data?: TemplateData;
 }
 
-const tabBaseClass =
-  "h-full m-0 cursor-pointer border-0 border-b-2 border-solid border-transparent bg-transparent px-3 text-sm font-medium tracking-[0.02em] text-fg-muted transition-colors hover:text-fg";
+const surfacePanelClass =
+  "h-full w-full min-h-0 rounded-lg border border-solid border-border bg-surface shadow-page";
 
-const tabActiveClass = "text-fg border-fg";
+function Tab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      className={`h-full m-0 cursor-pointer border-0 border-b-2 border-solid bg-transparent px-3 text-sm font-medium tracking-[0.02em] transition-colors hover:text-fg ${active ? "border-fg text-fg" : "border-transparent text-fg-muted"}`}
+      aria-selected={active}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
 
 const statusPillVariantClass: Record<OutputStatus, string> = {
   ready: "bg-success-soft text-success",
@@ -25,8 +45,16 @@ const statusPillVariantClass: Record<OutputStatus, string> = {
   empty: "bg-surface-muted text-fg-muted",
 };
 
-const surfacePanelClass =
-  "h-full w-full min-h-0 rounded-lg border border-solid border-border bg-surface shadow-page";
+function StatusPill({ status, children }: { status: OutputStatus; children: ReactNode }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-2xs font-medium ${statusPillVariantClass[status]}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" aria-hidden="true" />
+      {children}
+    </span>
+  );
+}
 
 export function PdfPane({ pdfUrl, error, loading, template, data }: PdfPaneProps) {
   const [tab, setTab] = useState<OutputTab>("pdf");
@@ -44,32 +72,15 @@ export function PdfPane({ pdfUrl, error, loading, template, data }: PdfPaneProps
     >
       <header className="row-start-1 flex items-center justify-between gap-3 border-0 border-b border-solid border-border bg-surface px-4">
         <div className="inline-flex h-full items-stretch gap-0.5" role="tablist" aria-label="Output view">
-          <button
-            type="button"
-            role="tab"
-            className={tab === "pdf" ? `${tabBaseClass} ${tabActiveClass}` : tabBaseClass}
-            aria-selected={tab === "pdf"}
-            onClick={() => setTab("pdf")}
-          >
+          <Tab active={tab === "pdf"} onClick={() => setTab("pdf")}>
             PDF
-          </button>
-          <button
-            type="button"
-            role="tab"
-            className={tab === "data" ? `${tabBaseClass} ${tabActiveClass}` : tabBaseClass}
-            aria-selected={tab === "data"}
-            onClick={() => setTab("data")}
-          >
+          </Tab>
+          <Tab active={tab === "data"} onClick={() => setTab("data")}>
             Data
-          </button>
+          </Tab>
           {tab === "data" ? <CopyJsonButton template={template} data={data} /> : null}
         </div>
-        <span
-          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-2xs font-medium ${statusPillVariantClass[status]}`}
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" aria-hidden="true" />
-          {statusLabel}
-        </span>
+        <StatusPill status={status}>{statusLabel}</StatusPill>
       </header>
 
       {error ? (
