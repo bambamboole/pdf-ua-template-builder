@@ -477,13 +477,9 @@ export function TemplateBuilder({
               metadata={schema["x-pdfUa"]}
               format={pageSize.format}
               orientation={pageSize.orientation}
-              footerRepeat={footerRepeat}
-              pageNumbers={pageNumbers}
               onChangeTemplate={handleChangeTemplateSettings}
               onChangeFormat={handleChangeFormat}
               onChangeOrientation={handleChangeOrientation}
-              onToggleFooterRepeat={handleToggleFooterRepeat}
-              onChangePageNumbers={handleChangePageNumbers}
             />
           ) : null}
         </section>

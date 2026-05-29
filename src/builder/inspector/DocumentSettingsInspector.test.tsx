@@ -25,13 +25,9 @@ describe("DocumentSettingsInspector", () => {
         metadata={metadata}
         format="A4"
         orientation="portrait"
-        footerRepeat
-        pageNumbers="disabled"
         onChangeTemplate={() => undefined}
         onChangeFormat={() => undefined}
         onChangeOrientation={() => undefined}
-        onToggleFooterRepeat={() => undefined}
-        onChangePageNumbers={() => undefined}
       />,
     );
 
@@ -40,8 +36,8 @@ describe("DocumentSettingsInspector", () => {
     expect(html).toContain("Changes apply to the whole template.");
     expect(html).toContain("Page setup");
     expect(html).toContain("Page margins");
-    expect(html).toContain("Footer");
     expect(html).toContain("Template typography");
+    expect(html).not.toContain("Footer");
     expect(html).not.toContain("Select a block to inspect it.");
   });
 
@@ -52,13 +48,9 @@ describe("DocumentSettingsInspector", () => {
       metadata,
       format: "A4",
       orientation: "portrait",
-      footerRepeat: true,
-      pageNumbers: "disabled",
       onChangeTemplate: (template) => changes.push(template),
       onChangeFormat: () => undefined,
       onChangeOrientation: () => undefined,
-      onToggleFooterRepeat: () => undefined,
-      onChangePageNumbers: () => undefined,
     });
 
     getChangeHandler(requireControl(element, "template.config.typography.family"))({
@@ -92,13 +84,9 @@ describe("DocumentSettingsInspector", () => {
       metadata,
       format: "A4",
       orientation: "portrait",
-      footerRepeat: false,
-      pageNumbers: "right",
       onChangeTemplate: (nextTemplate) => changes.push(nextTemplate),
       onChangeFormat: () => undefined,
       onChangeOrientation: () => undefined,
-      onToggleFooterRepeat: () => undefined,
-      onChangePageNumbers: () => undefined,
     });
 
     getNumberChangeHandler(requireControl(element, "config.page.margins.left"))({
@@ -122,23 +110,17 @@ describe("DocumentSettingsInspector", () => {
     ]);
   });
 
-  it("keeps page size and footer controls on document-level handlers", () => {
+  it("keeps page size and orientation on document-level handlers", () => {
     const onChangeFormat = vi.fn<(format: PageFormat) => void>();
     const onChangeOrientation = vi.fn<(orientation: Orientation) => void>();
-    const onToggleFooterRepeat = vi.fn<(repeat: boolean) => void>();
-    const onChangePageNumbers = vi.fn<(value: "disabled" | "left" | "center" | "right") => void>();
     const element = DocumentSettingsInspector({
       template: { version: 1 },
       metadata,
       format: "A4",
       orientation: "portrait",
-      footerRepeat: true,
-      pageNumbers: "disabled",
       onChangeTemplate: () => undefined,
       onChangeFormat,
       onChangeOrientation,
-      onToggleFooterRepeat,
-      onChangePageNumbers,
     });
 
     getSelectChangeHandler(requireControl(element, "document.page.size.format"))({
@@ -147,17 +129,9 @@ describe("DocumentSettingsInspector", () => {
     getSelectChangeHandler(requireControl(element, "document.page.size.orientation"))({
       currentTarget: { value: "landscape" },
     });
-    getCheckboxChangeHandler(requireControl(element, "document.page.footer.repeat"))({
-      currentTarget: { checked: false },
-    });
-    getSelectChangeHandler(requireControl(element, "document.page.pageNumbers"))({
-      currentTarget: { value: "center" },
-    });
 
     expect(onChangeFormat).toHaveBeenCalledWith("A5");
     expect(onChangeOrientation).toHaveBeenCalledWith("landscape");
-    expect(onToggleFooterRepeat).toHaveBeenCalledWith(false);
-    expect(onChangePageNumbers).toHaveBeenCalledWith("center");
   });
 });
 
@@ -259,18 +233,6 @@ function getSelectChangeHandler(
   }
 
   return onChange as (event: { currentTarget: { value: string } }) => void;
-}
-
-function getCheckboxChangeHandler(
-  element: TestElement,
-): (event: { currentTarget: { checked: boolean } }) => void {
-  const onChange = element.props.onChange;
-
-  if (typeof onChange !== "function") {
-    throw new Error("Control has no change handler");
-  }
-
-  return onChange as (event: { currentTarget: { checked: boolean } }) => void;
 }
 
 function isReactElement(node: ReactNode): node is TestElement {
