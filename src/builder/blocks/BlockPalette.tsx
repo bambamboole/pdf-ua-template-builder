@@ -1,14 +1,22 @@
 import { useDraggable } from "@dnd-kit/core";
 import { getBlockChrome } from "./blockChrome";
+import { paletteChipClass } from "./chipStyles";
 
 export interface BlockPaletteProps {
   blockTypes: string[];
   onAdd?: (type: string) => void;
 }
 
+const paletteListClass = "flex min-w-0 gap-1 overflow-x-auto [scrollbar-width:thin]";
+
+const paletteItemClass =
+  "flex flex-none cursor-grab items-center gap-3 m-0 min-h-8 rounded-md border border-solid border-transparent bg-transparent px-2 py-1 text-left text-xs font-medium text-stone-900 transition-colors hover:border-stone-200 hover:bg-stone-100 active:scale-[0.98] active:cursor-grabbing active:bg-stone-100";
+
+export { paletteChipClass };
+
 export function BlockPalette({ blockTypes, onAdd }: BlockPaletteProps) {
   return (
-    <div className="builder-palette__list" aria-label="Block palette">
+    <div className={paletteListClass} aria-label="Block palette">
       {blockTypes.map((type) => (
         <PaletteItem key={type} type={type} onAdd={onAdd} />
       ))}
@@ -35,7 +43,7 @@ function PaletteItem({ type, onAdd }: PaletteItemProps) {
     <button
       ref={setNodeRef}
       type="button"
-      className="builder-palette__item"
+      className={paletteItemClass}
       style={{
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         opacity: isDragging ? 0 : undefined,
@@ -45,7 +53,7 @@ function PaletteItem({ type, onAdd }: PaletteItemProps) {
       {...listeners}
       {...attributes}
     >
-      <span className="builder-chip" aria-hidden="true">
+      <span className={paletteChipClass} aria-hidden="true">
         {chrome.chip}
       </span>
       <span>{chrome.label}</span>

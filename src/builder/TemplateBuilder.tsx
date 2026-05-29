@@ -20,10 +20,12 @@ import type {
   Template,
 } from "../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../types/template";
-import { BlockPalette } from "./blocks/BlockPalette";
+import { BlockPalette, paletteChipClass } from "./blocks/BlockPalette";
 import { getBlockSummary } from "./blocks/blockChrome";
 import { BlockCardPreview } from "./canvas/BlockCardPreview";
 import { BuilderCanvas } from "./canvas/BuilderCanvas";
+import { BlockInspector } from "./inspector/BlockInspector";
+import { DocumentSettingsInspector } from "./inspector/DocumentSettingsInspector";
 import { PdfPane } from "./pdf/PdfPane";
 import { createInvoiceExample } from "./schema/invoiceExample";
 import {
@@ -46,6 +48,7 @@ import {
   setPageNumbers,
   setPageSize,
   setRowWidths,
+  updateTemplateSettings,
   updateBlock,
   type EditorArea,
   type EditorBlock,
@@ -113,6 +116,7 @@ export function TemplateBuilder({
   const [pdfLoading, setPdfLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeDrag, setActiveDrag] = useState<ActiveDrag>(null);
+  const [selectedBlockUid, setSelectedBlockUid] = useState<string | null>(null);
   const initialApiUrl = useRef(defaultApiUrl);
   const mounted = useRef(false);
   const schemaRequestId = useRef(0);
@@ -141,6 +145,10 @@ export function TemplateBuilder({
   const footerRepeat = getFooterRepeat(model);
   const pageNumbers = getPageNumbers(model);
   const serializedTemplate = useMemo(() => serializeTemplate(model), [model]);
+  const selectedBlock = useMemo(
+    () => resolveSelectedEditorBlock(model, selectedBlockUid),
+    [model, selectedBlockUid],
+  );
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 4 },
@@ -236,8 +244,21 @@ export function TemplateBuilder({
     setModel((currentModel) => updateBlock(currentModel, blockUid, block));
   }, []);
 
+  const handleChangeTemplateSettings = useCallback((template: Template) => {
+    setModel((currentModel) => updateTemplateSettings(currentModel, template));
+  }, []);
+
   const handleRemoveBlock = useCallback((blockUid: string) => {
+    setSelectedBlockUid((currentUid) => (currentUid === blockUid ? null : currentUid));
     setModel((currentModel) => removeBlock(currentModel, blockUid));
+  }, []);
+
+  const handleSelectBlock = useCallback((blockUid: string) => {
+    setSelectedBlockUid(blockUid);
+  }, []);
+
+  const handleCloseInspector = useCallback(() => {
+    setSelectedBlockUid(null);
   }, []);
 
   const handleSetRowWidths = useCallback((rowUid: string, widths: string[]) => {
@@ -365,9 +386,13 @@ export function TemplateBuilder({
     setActiveDrag(null);
   }, []);
 
-  const rootClassName = className
-    ? `template-builder-page ${className}`
-    : "template-builder-page";
+  useEffect(() => {
+    setSelectedBlockUid((currentUid) => reconcileSelectedBlockUid(model, currentUid));
+  }, [model]);
+
+  const shellClass =
+    "grid h-screen overflow-hidden bg-stone-50 text-stone-900 grid-cols-[minmax(40rem,1.55fr)_minmax(28rem,0.95fr)] max-[1080px]:h-auto max-[1080px]:grid-cols-1 max-[1080px]:overflow-visible";
+  const rootClassName = className ? `${shellClass} ${className}` : shellClass;
 
   return (
     <main className={rootClassName}>
@@ -379,7 +404,7 @@ export function TemplateBuilder({
         onDragCancel={handleDragCancel}
       >
         <section
-          className="template-builder-page__authoring"
+          className="grid min-w-0 min-h-0 border-0 border-r border-solid border-stone-200 bg-stone-50 grid-cols-[minmax(360px,1fr)_minmax(320px,360px)] grid-rows-[auto_auto_minmax(0,1fr)] max-[760px]:grid-cols-1"
           aria-label="Template authoring"
         >
           <BuilderTopbar
@@ -398,9 +423,14 @@ export function TemplateBuilder({
             rendering={pdfLoading}
           />
 
-          <aside className="builder-palette" aria-label="Block palette">
-            <div>
-              <h2 className="builder-palette__section-title">Blocks</h2>
+          <aside
+            className="col-span-full row-start-2 flex min-w-0 items-center overflow-hidden border-0 border-b border-solid border-stone-200 bg-white px-4 py-2 max-[760px]:col-span-1 max-[760px]:row-auto"
+            aria-label="Block palette"
+          >
+            <div className="flex w-full min-w-0 items-center gap-3">
+              <h2 className="m-0 flex-none text-[11px] font-medium uppercase tracking-[0.06em] text-stone-400">
+                Blocks
+              </h2>
               <BlockPalette blockTypes={blockTypes} onAdd={handleAddBlock} />
             </div>
           </aside>
@@ -409,23 +439,54 @@ export function TemplateBuilder({
             <BuilderCanvas
               schema={schema}
               model={model}
+              data={data}
               format={pageSize.format}
               orientation={pageSize.orientation}
               footerRepeat={footerRepeat}
               pageNumbers={pageNumbers}
+              selectedBlockUid={selectedBlockUid}
               onChangeBlock={handleChangeBlock}
               onRemoveBlock={handleRemoveBlock}
+              onSelectBlock={handleSelectBlock}
+              onDeselect={handleCloseInspector}
               onSetRowWidths={handleSetRowWidths}
+              onChangeData={setData}
               onToggleFooterRepeat={handleToggleFooterRepeat}
               onChangePageNumbers={handleChangePageNumbers}
             />
           ) : (
-            <div className="builder-canvas">
-              <div className="builder-canvas__empty">
+            <div className="col-start-1 row-start-3 min-w-0 min-h-0 overflow-auto bg-stone-200 px-4 pb-8 pt-6 max-[760px]:col-span-1 max-[760px]:row-auto">
+              <div className="grid h-full place-items-center text-sm text-stone-500">
                 {schemaLoading ? "Loading schema…" : "Load the schema to start building."}
               </div>
             </div>
           )}
+
+          {schema && selectedBlock ? (
+            <BlockInspector
+              block={selectedBlock}
+              schema={schema}
+              data={data}
+              onChangeBlock={handleChangeBlock}
+              onChangeData={setData}
+              onRemoveBlock={handleRemoveBlock}
+              onClose={handleCloseInspector}
+            />
+          ) : schema ? (
+            <DocumentSettingsInspector
+              template={serializedTemplate}
+              metadata={schema["x-pdfUa"]}
+              format={pageSize.format}
+              orientation={pageSize.orientation}
+              footerRepeat={footerRepeat}
+              pageNumbers={pageNumbers}
+              onChangeTemplate={handleChangeTemplateSettings}
+              onChangeFormat={handleChangeFormat}
+              onChangeOrientation={handleChangeOrientation}
+              onToggleFooterRepeat={handleToggleFooterRepeat}
+              onChangePageNumbers={handleChangePageNumbers}
+            />
+          ) : null}
         </section>
 
         <PdfPane
@@ -457,12 +518,12 @@ function ActiveDragPreview({ drag }: { drag: NonNullable<ActiveDrag> }) {
     );
   }
   return (
-    <div className="builder-drag-overlay">
-      <div className="builder-drag-overlay__card">
-        <span className="builder-chip" aria-hidden="true">
+    <div className="pointer-events-none origin-top-left rotate-[1.5deg] scale-[1.02] cursor-grabbing [filter:drop-shadow(0_12px_24px_rgba(0,0,0,0.18))]">
+      <div className="inline-flex min-w-[180px] max-w-[360px] items-center gap-2 rounded-lg border border-solid border-stone-300 bg-white px-3 py-2 text-sm font-medium">
+        <span className={paletteChipClass} aria-hidden="true">
           ⋮⋮
         </span>
-        <span style={{ fontWeight: 500 }}>Row</span>
+        <span className="font-medium">Row</span>
       </div>
     </div>
   );
@@ -553,6 +614,20 @@ function findEditorBlock(model: EditorModel, blockUid: string): EditorBlock | un
   return [...model.rows, ...model.footerRows]
     .flatMap((row) => row.blocks)
     .find((block) => block.uid === blockUid);
+}
+
+export function resolveSelectedEditorBlock(
+  model: EditorModel,
+  blockUid: string | null,
+): EditorBlock | null {
+  return blockUid ? (findEditorBlock(model, blockUid) ?? null) : null;
+}
+
+export function reconcileSelectedBlockUid(
+  model: EditorModel,
+  blockUid: string | null,
+): string | null {
+  return resolveSelectedEditorBlock(model, blockUid) ? blockUid : null;
 }
 
 export function createNextBlockId(model: EditorModel, blockType: string): string {

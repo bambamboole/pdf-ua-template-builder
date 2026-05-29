@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
@@ -12,6 +13,7 @@ export default defineConfig(({ mode }) => {
   if (isLib) {
     return {
       plugins: [
+        tailwindcss(),
         react(),
         dts({
           include: ["src/**/*"],
@@ -40,7 +42,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react()],
+    plugins: [tailwindcss(), react()],
     server: {
       port: 5174,
       strictPort: false,

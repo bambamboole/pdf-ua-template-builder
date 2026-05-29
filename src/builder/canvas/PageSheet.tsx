@@ -11,11 +11,14 @@ export interface PageSheetProps {
 
 export function PageSheet({ format, orientation, children }: PageSheetProps) {
   const [widthMm] = pageSizeForFormat(format, orientation);
-  const style = { "--page-width": `${mmToPx(widthMm)}px` } as CSSProperties;
+  const style: CSSProperties = { maxWidth: `${mmToPx(widthMm)}px` };
 
   return (
-    <div className="builder-page-sheet" style={style}>
-      <div className="builder-page-sheet__meta">
+    <div
+      className="mx-auto grid w-full gap-3 rounded-xl border border-solid border-stone-200 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.1)] transition-[max-width] duration-200"
+      style={style}
+    >
+      <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.06em] text-stone-400">
         <span>
           {format} · {orientation}
         </span>

@@ -2,6 +2,14 @@ import { useEffect, useState, type ChangeEvent, type ReactNode } from "react";
 import type { Block } from "../../types/generated/template";
 import type { JsonObject } from "../../types/template";
 import type { JsonSchemaObject } from "../schema/schemaAdapter";
+import {
+  arrayAddClass,
+  arrayFieldClass,
+  arrayLegendClass,
+  checkboxLabelClass,
+  controlClass,
+  fieldLabelClass,
+} from "./controls/fieldStyles";
 
 export interface InlineBlockFormProps {
   block: Block;
@@ -9,6 +17,11 @@ export interface InlineBlockFormProps {
   configSchema?: JsonSchemaObject;
   onChange: (block: Block) => void;
 }
+
+const textareaControlClass = `${controlClass} min-h-24 font-mono text-xs`;
+
+const arrayItemClass =
+  "relative grid gap-2 rounded-md border border-solid border-stone-200 bg-stone-100 p-3";
 
 export function InlineBlockForm({
   block,
@@ -20,7 +33,7 @@ export function InlineBlockForm({
   const configProperties = configSchema ? getProperties(configSchema) : {};
 
   return (
-    <div className="inline-block-form">
+    <div className="grid gap-3 [container-type:inline-size]">
       {Object.entries(fieldProperties).map(([field, schema]) =>
         renderControl({
           key: field,
@@ -73,9 +86,10 @@ function renderControl({
 
   if (enumValues.length > 0) {
     return (
-      <label key={key}>
+      <label key={key} className={fieldLabelClass}>
         {label}
         <select
+          className={controlClass}
           name={name}
           value={String(normalizedValue)}
           onChange={(event) => onChange(emptyToUndefined(event.currentTarget.value))}
@@ -93,12 +107,12 @@ function renderControl({
 
   if (isArraySchema(resolvedSchema)) {
     return (
-      <fieldset key={key} className="builder-array-field">
-        <legend>{label}</legend>
+      <fieldset key={key} className={arrayFieldClass}>
+        <legend className={arrayLegendClass}>{label}</legend>
         {renderArrayItems(name, resolvedSchema, value, onChange)}
         <button
           type="button"
-          className="builder-array-field__add"
+          className={arrayAddClass}
           onClick={() => onChange([...arrayValue(value), createDefaultArrayItem(resolvedSchema)])}
         >
           Add {label}
@@ -109,7 +123,7 @@ function renderControl({
 
   if (isObjectSchema(resolvedSchema)) {
     return (
-      <label key={key}>
+      <label key={key} className={fieldLabelClass}>
         {label}
         <JsonTextarea name={name} value={normalizedValue} onChange={onChange} />
       </label>
@@ -118,8 +132,9 @@ function renderControl({
 
   if (isBooleanSchema(resolvedSchema)) {
     return (
-      <label key={key} className="builder-field builder-field--checkbox">
+      <label key={key} className={checkboxLabelClass}>
         <input
+          className="h-3.5 w-3.5 accent-indigo-600"
           name={name}
           type="checkbox"
           checked={value === true}
@@ -132,9 +147,10 @@ function renderControl({
 
   if (isNumberSchema(resolvedSchema)) {
     return (
-      <label key={key}>
+      <label key={key} className={fieldLabelClass}>
         {label}
         <input
+          className={controlClass}
           name={name}
           type="number"
           value={String(normalizedValue)}
@@ -148,9 +164,10 @@ function renderControl({
     const stringValue = String(normalizedValue);
 
     return (
-      <label key={key}>
+      <label key={key} className={fieldLabelClass}>
         {label}
         <input
+          className={controlClass}
           name={name}
           type="text"
           value={stringValue}
@@ -183,7 +200,7 @@ function renderArrayItems(
     const itemRecord = isJsonObject(item) ? item : {};
 
     return (
-      <div key={getArrayItemKey(name, index)} className="builder-array-field__item">
+      <div key={getArrayItemKey(name, index)} className={arrayItemClass}>
         {Object.entries(itemProperties).map(([field, fieldSchema]) =>
           renderControl({
             key: `${name}.${index}.${field}`,
@@ -196,7 +213,11 @@ function renderArrayItems(
               onChange(replaceArrayItem(items, index, { ...itemRecord, [field]: nextValue })),
           }),
         )}
-        <button type="button" onClick={() => onChange(removeArrayItem(items, index))}>
+        <button
+          type="button"
+          className="w-fit cursor-pointer rounded border-0 bg-transparent px-1 text-[11px] text-stone-500 hover:text-red-700"
+          onClick={() => onChange(removeArrayItem(items, index))}
+        >
           Remove
         </button>
       </div>
@@ -441,6 +462,7 @@ function JsonTextarea({
 
   return (
     <textarea
+      className={textareaControlClass}
       name={name}
       value={draft}
       onChange={(event) => {

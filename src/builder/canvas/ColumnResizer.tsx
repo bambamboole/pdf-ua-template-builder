@@ -51,9 +51,11 @@ export function ColumnResizer({
   return (
     <button
       type="button"
-      className="column-resizer"
+      className="group/resizer min-h-full w-1.5 cursor-col-resize select-none self-stretch rounded-full border-0 bg-transparent p-0 transition-colors max-[480px]:hidden"
       aria-label={`Resize columns ${leftIndex + 1} and ${leftIndex + 2}`}
       onPointerDown={handlePointerDown}
-    />
+    >
+      <span className="mx-auto block h-full w-0.5 rounded-full bg-stone-300 transition-colors group-hover/resizer:bg-indigo-600" />
+    </button>
   );
 }
