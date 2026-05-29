@@ -1,14 +1,13 @@
-import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import type { ReactNode } from "react";
 import type { Align, Block, TableBlock } from "../../types/generated/template";
 import { NUMBER_COLUMN_RESERVE, percentWidth } from "../canvas/columns";
-import { isRecord, omitKey, renameKey } from "../lib/records";
-import { useBuilderSensors } from "../lib/sensors";
+import { isRecord, nextKeyIndex, omitKey, renameKey } from "../lib/records";
 import { AddButton } from "../primitives/Button";
 import { InspectorSection } from "../inspector/InspectorShell";
 import { setBlockConfigField } from "../state/configUpdates";
 import type { BlockEditorProps } from "./blockEditors";
+import { SortableList } from "./SortableList";
 import { SortableRow } from "./SortableRow";
 import { AlignSelect, Field, Input } from "./controls";
 
@@ -41,7 +40,10 @@ export function moveRow(
 
 export function addColumn(block: TableBlock): TableBlock {
   const columns = getColumns(block);
-  const nextIndex = nextColumnIndex(columns);
+  const nextIndex = nextKeyIndex(
+    columns.map((column) => column.key),
+    "column",
+  );
   const nextColumns: TableColumn[] = [
     ...columns,
     { key: `column${nextIndex}`, label: `Column ${nextIndex}` },
@@ -276,49 +278,25 @@ function ColumnsEditor({
   onRemoveColumn,
   onRenameColumnKey,
 }: ColumnsEditorProps) {
-  const sensors = useBuilderSensors();
-
-  function handleDragEnd(event: DragEndEvent): void {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) {
-      return;
-    }
-
-    const sourceIndex = Number(active.id);
-    const targetIndex = Number(over.id);
-
-    if (!Number.isFinite(sourceIndex) || !Number.isFinite(targetIndex)) {
-      return;
-    }
-
-    onChangeBlock(reorderColumns(block, sourceIndex, targetIndex));
-  }
-
-  const sortableIds = columns.map((_, index) => String(index));
-
   return (
     <InspectorSection title="Columns">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
+      <SortableList
+        count={columns.length}
+        onReorder={(source, target) => onChangeBlock(reorderColumns(block, source, target))}
       >
-        <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          {columns.map((column, index) => (
-            <ColumnRow
-              key={columnRowKey(column, index)}
-              id={String(index)}
-              index={index}
-              column={column}
-              onChangeKey={(value) => onRenameColumnKey(index, value)}
-              onChangeLabel={(value) => onChangeBlock(setColumnLabel(block, index, value))}
-              onChangeAlign={(value) => onChangeBlock(setColumnAlign(block, index, value))}
-              onRemove={() => onRemoveColumn(index)}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
+        {columns.map((column, index) => (
+          <ColumnRow
+            key={columnRowKey(column, index)}
+            id={String(index)}
+            index={index}
+            column={column}
+            onChangeKey={(value) => onRenameColumnKey(index, value)}
+            onChangeLabel={(value) => onChangeBlock(setColumnLabel(block, index, value))}
+            onChangeAlign={(value) => onChangeBlock(setColumnAlign(block, index, value))}
+            onRemove={() => onRemoveColumn(index)}
+          />
+        ))}
+      </SortableList>
       <AddButton data-name="add-column" onClick={() => onChangeBlock(addColumn(block))}>
         Add column
       </AddButton>
@@ -388,25 +366,6 @@ interface RowsEditorProps {
 }
 
 function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorProps) {
-  const sensors = useBuilderSensors();
-
-  function handleDragEnd(event: DragEndEvent): void {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id || !canEditRows) {
-      return;
-    }
-
-    const sourceIndex = Number(active.id);
-    const targetIndex = Number(over.id);
-
-    if (!Number.isFinite(sourceIndex) || !Number.isFinite(targetIndex)) {
-      return;
-    }
-
-    onChangeRowData?.(moveRow(rows, sourceIndex, targetIndex));
-  }
-
   if (!canEditRows) {
     return (
       <InspectorSection title="Rows">
@@ -415,34 +374,29 @@ function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorP
     );
   }
 
-  const sortableIds = rows.map((_, index) => String(index));
-
   return (
     <InspectorSection title="Rows">
       {rows.length === 0 ? (
         <p className={hintClass}>No rows yet. Add one to seed runtime data for this table.</p>
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+        <SortableList
+          count={rows.length}
+          onReorder={(source, target) => onChangeRowData?.(moveRow(rows, source, target))}
         >
-          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-            {rows.map((row, rowIndex) => (
-              <DataRow
-                key={dataRowKey(row, columns, rowIndex)}
-                id={String(rowIndex)}
-                index={rowIndex}
-                row={row}
-                columns={columns}
-                onChangeCell={(key, value) =>
-                  onChangeRowData?.(setCellValue(rows, rowIndex, key, value))
-                }
-                onRemove={() => onChangeRowData?.(removeRow(rows, rowIndex))}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
+          {rows.map((row, rowIndex) => (
+            <DataRow
+              key={dataRowKey(row, columns, rowIndex)}
+              id={String(rowIndex)}
+              index={rowIndex}
+              row={row}
+              columns={columns}
+              onChangeCell={(key, value) =>
+                onChangeRowData?.(setCellValue(rows, rowIndex, key, value))
+              }
+              onRemove={() => onChangeRowData?.(removeRow(rows, rowIndex))}
+            />
+          ))}
+        </SortableList>
       )}
       <AddButton
         data-name="add-row"
@@ -514,16 +468,6 @@ function getRows(rowData: unknown): TableRow[] {
   }
 
   return rowData.filter((entry): entry is TableRow => isRecord(entry)) as TableRow[];
-}
-
-function nextColumnIndex(columns: TableColumn[]): number {
-  let index = columns.length + 1;
-
-  while (columns.some((column) => column.key === `column${index}`)) {
-    index += 1;
-  }
-
-  return index;
 }
 
 function applyColumns(block: TableBlock, columns: TableColumn[]): TableBlock {

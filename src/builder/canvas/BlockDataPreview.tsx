@@ -11,6 +11,7 @@ import type {
   TableBlock,
   TextBlock,
 } from "../../types/generated/template";
+import { isRecord } from "../lib/records";
 import { setBlockConfigField } from "../state/configUpdates";
 import { ColumnResizer } from "./ColumnResizer";
 import { formatWidths, labelWidthPercent, tableColumnTracks } from "./columns";
@@ -343,8 +344,4 @@ function stringifyPreviewValue(value: unknown): string {
 
 function stripMarkup(value: string): string {
   return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
