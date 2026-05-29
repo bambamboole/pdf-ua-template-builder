@@ -1,6 +1,11 @@
 import { arrayMove } from "@dnd-kit/sortable";
 import type { ReactNode } from "react";
-import type { Block, KeyValueBlock } from "../../types/generated/template";
+import type {
+  Block,
+  KeyValueBlock,
+  KeyValueField,
+  KeyValueValues,
+} from "../../types/generated/template";
 import { isRecord, nextKeyIndex, omitKey, renameKey } from "../lib/records";
 import { AddButton } from "../primitives/Button";
 import type { BlockEditorProps } from "./blockEditors";
@@ -8,15 +13,6 @@ import { InspectorSection } from "../inspector/InspectorShell";
 import { SortableList } from "./SortableList";
 import { SortableRow } from "./SortableRow";
 import { Field, Input } from "./controls";
-
-interface KeyValueField {
-  key: string;
-  label: string;
-}
-
-interface KeyValueValues {
-  [key: string]: string | null;
-}
 
 export function moveField(
   fields: readonly KeyValueField[],
