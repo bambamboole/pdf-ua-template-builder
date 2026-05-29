@@ -1,5 +1,6 @@
-import type { ChangeEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Checkbox, Input, Select, Textarea } from "./inputs";
+import { numberValue, selectValue, textValue } from "./fieldConverters";
 
 export type EmptyTextValue = "empty-string" | "undefined";
 
@@ -161,7 +162,9 @@ export function NumberField({
         disabled={fieldProps.disabled}
         aria-describedby={fieldState.describedBy}
         aria-invalid={fieldState.invalid || undefined}
-        onChange={(event) => onChange(numberValue(event))}
+        onChange={(event) =>
+          onChange(numberValue(event.currentTarget.value, event.currentTarget.valueAsNumber))
+        }
       />
     </BuilderField>
   );
@@ -332,35 +335,6 @@ function createFieldState({
     describedBy,
     invalid,
   };
-}
-
-function textValue(value: string, emptyValue: EmptyTextValue): string | undefined {
-  if (value === "" && emptyValue === "undefined") {
-    return undefined;
-  }
-
-  return value;
-}
-
-function numberValue(event: ChangeEvent<HTMLInputElement>): number | undefined {
-  const { value, valueAsNumber } = event.currentTarget;
-
-  if (value === "" || Number.isNaN(valueAsNumber)) {
-    return undefined;
-  }
-
-  return valueAsNumber;
-}
-
-function selectValue<Value extends string>(
-  value: string,
-  options: readonly SelectFieldOption<Value>[],
-): Value | undefined {
-  if (value === "") {
-    return undefined;
-  }
-
-  return options.find((option) => option.value === value)?.value;
 }
 
 export function createFieldId(name: string): string {

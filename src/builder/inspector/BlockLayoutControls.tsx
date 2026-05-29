@@ -1,11 +1,5 @@
 import type { ReactNode } from "react";
-import type {
-  Align,
-  Block,
-  BlockConfig,
-  DividerStyle,
-  TableStyle,
-} from "../../types/generated/template";
+import type { Block, BlockConfig, DividerStyle, TableStyle } from "../../types/generated/template";
 import {
   NumberField,
   SelectField,
@@ -15,17 +9,12 @@ import {
 } from "../forms/controls";
 import { setTableNumberRows } from "../forms/TableBlockEditor";
 import { setBlockConfigField } from "../state/configUpdates";
+import { ALIGN_OPTIONS } from "./alignOptions";
 
 export interface BlockLayoutControlsProps {
   block: Block;
   onChangeBlock: (block: Block) => void;
 }
-
-const alignOptions = [
-  { value: "left", label: "Left" },
-  { value: "center", label: "Center" },
-  { value: "right", label: "Right" },
-] as const satisfies readonly SelectFieldOption<Align>[];
 
 const dividerStyleOptions = [
   { value: "solid", label: "Solid" },
@@ -64,7 +53,7 @@ export function BlockLayoutControls({ block, onChangeBlock }: BlockLayoutControl
           name="config.align"
           label="Align"
           value={block.config?.align ?? undefined}
-          options={alignOptions}
+          options={ALIGN_OPTIONS}
           optional
           emptyLabel="Default"
           onChange={(value) => onChangeBlock(setCommonConfigField(block, "align", value))}

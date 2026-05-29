@@ -3,8 +3,7 @@ import type { Block, Template, TypographyConfig } from "../../types/generated/te
 import type { TemplateSchemaMetadata } from "../../types/template";
 import { ColorField, NumberField, SelectField } from "../forms/controls";
 import { setBlockTypographyField, setTemplateTypographyField } from "../state/configUpdates";
-
-type TypographyAlign = Exclude<TypographyConfig["align"], null | undefined>;
+import { ALIGN_OPTIONS } from "./alignOptions";
 
 interface TypographyControlsBaseProps {
   metadata?: Pick<TemplateSchemaMetadata, "bundledFonts">;
@@ -25,12 +24,6 @@ export interface TemplateTypographyControlsProps extends TypographyControlsBaseP
 export type TypographyControlsProps =
   | BlockTypographyControlsProps
   | TemplateTypographyControlsProps;
-
-const alignOptions = [
-  { value: "left", label: "Left" },
-  { value: "center", label: "Center" },
-  { value: "right", label: "Right" },
-] as const satisfies ReadonlyArray<{ value: TypographyAlign; label: string }>;
 
 export function TypographyControls(props: TypographyControlsProps): ReactNode {
   const typography =
@@ -85,7 +78,7 @@ export function TypographyControls(props: TypographyControlsProps): ReactNode {
           label="Align"
           value={typography?.align ?? undefined}
           optional
-          options={alignOptions}
+          options={ALIGN_OPTIONS}
           onChange={(value) => handleChange("align", value)}
         />
         <ColorField

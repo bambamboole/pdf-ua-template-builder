@@ -1,12 +1,11 @@
-import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import type { ReactNode } from "react";
 import type { Block, KeyValueBlock } from "../../types/generated/template";
-import { isRecord, omitKey, renameKey } from "../lib/records";
-import { useBuilderSensors } from "../lib/sensors";
+import { isRecord, nextKeyIndex, omitKey, renameKey } from "../lib/records";
 import { AddButton } from "../primitives/Button";
 import type { BlockEditorProps } from "./blockEditors";
 import { InspectorSection } from "../inspector/InspectorShell";
+import { SortableList } from "./SortableList";
 import { SortableRow } from "./SortableRow";
 import { Field, Input } from "./controls";
 
@@ -30,7 +29,10 @@ export function moveField(
 export function addField(block: KeyValueBlock): KeyValueBlock {
   const fields = getFields(block);
   const values = getValues(block);
-  const nextIndex = nextFieldIndex(fields);
+  const nextIndex = nextKeyIndex(
+    fields.map((field) => field.key),
+    "field",
+  );
   const nextFields = [...fields, { key: `field${nextIndex}`, label: `Field ${nextIndex}` }];
 
   return applyFields(block, nextFields, values);
@@ -138,48 +140,24 @@ interface FieldsEditorProps {
 }
 
 function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
-  const sensors = useBuilderSensors();
-
-  function handleDragEnd(event: DragEndEvent): void {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) {
-      return;
-    }
-
-    const sourceIndex = Number(active.id);
-    const targetIndex = Number(over.id);
-
-    if (!Number.isFinite(sourceIndex) || !Number.isFinite(targetIndex)) {
-      return;
-    }
-
-    onChangeBlock(reorderFields(block, sourceIndex, targetIndex));
-  }
-
-  const sortableIds = fields.map((_, index) => String(index));
-
   return (
     <>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
+      <SortableList
+        count={fields.length}
+        onReorder={(source, target) => onChangeBlock(reorderFields(block, source, target))}
       >
-        <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          {fields.map((field, index) => (
-            <FieldRow
-              key={fieldRowKey(field, index)}
-              id={String(index)}
-              index={index}
-              field={field}
-              onChangeKey={(value) => onChangeBlock(renameFieldKey(block, index, value))}
-              onChangeLabel={(value) => onChangeBlock(setFieldLabel(block, index, value))}
-              onRemove={() => onChangeBlock(removeField(block, index))}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
+        {fields.map((field, index) => (
+          <FieldRow
+            key={fieldRowKey(field, index)}
+            id={String(index)}
+            index={index}
+            field={field}
+            onChangeKey={(value) => onChangeBlock(renameFieldKey(block, index, value))}
+            onChangeLabel={(value) => onChangeBlock(setFieldLabel(block, index, value))}
+            onRemove={() => onChangeBlock(removeField(block, index))}
+          />
+        ))}
+      </SortableList>
       <AddButton data-name="add-field" onClick={() => onChangeBlock(addField(block))}>
         Add field
       </AddButton>
@@ -241,16 +219,6 @@ function getValues(block: KeyValueBlock): KeyValueValues {
   const candidate = block.values;
 
   return isRecord(candidate) ? (candidate as KeyValueValues) : {};
-}
-
-function nextFieldIndex(fields: KeyValueField[]): number {
-  let index = fields.length + 1;
-
-  while (fields.some((field) => field.key === `field${index}`)) {
-    index += 1;
-  }
-
-  return index;
 }
 
 function applyFields(

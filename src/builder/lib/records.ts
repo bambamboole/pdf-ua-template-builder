@@ -30,3 +30,13 @@ export function renameKey<TValue>(
   }
   return next;
 }
+
+export function nextKeyIndex(keys: readonly string[], prefix: string): number {
+  let index = keys.length + 1;
+
+  while (keys.includes(`${prefix}${index}`)) {
+    index += 1;
+  }
+
+  return index;
+}
