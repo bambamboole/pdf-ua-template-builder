@@ -3,6 +3,18 @@ export type { Template } from "./generated/template";
 export type JsonObject = Record<string, unknown>;
 export type TemplateData = Record<string, unknown>;
 
+export type JsonSchemaValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonSchemaObject
+  | JsonSchemaValue[];
+
+export interface JsonSchemaObject {
+  [key: string]: unknown;
+}
+
 export interface RenderOptions {
   title?: string;
   baseUrl?: string;
@@ -26,7 +38,7 @@ export interface TemplateSchemaMetadata {
   pageFormats: TemplatePageFormat[];
 }
 
-export interface TemplateSchemaResponse {
+export interface TemplateSchemaResponse extends JsonSchemaObject {
   $schema?: string;
   $id?: string;
   title?: string;

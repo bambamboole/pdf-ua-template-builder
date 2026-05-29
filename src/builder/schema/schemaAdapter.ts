@@ -1,17 +1,11 @@
 import type { Block } from "../../types/generated/template";
-import type { TemplateSchemaMetadata } from "../../types/template";
+import type {
+  JsonSchemaObject,
+  JsonSchemaValue,
+  TemplateSchemaMetadata,
+} from "../../types/template";
 
-export type JsonSchemaValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonSchemaObject
-  | JsonSchemaValue[];
-
-export interface JsonSchemaObject {
-  [key: string]: unknown;
-}
+export type { JsonSchemaObject, JsonSchemaValue };
 
 export function getSchemaMetadata(schema: JsonSchemaObject): TemplateSchemaMetadata {
   return assertTemplateSchemaMetadata(schema["x-pdfUa"]);

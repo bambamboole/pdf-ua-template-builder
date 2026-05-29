@@ -94,7 +94,7 @@ export function TemplateBuilder({
     onChangeRef.current?.(serializeTemplate(model), data);
   }, [model, data]);
 
-  const schemaObject = schema as unknown as JsonSchemaObject | null;
+  const schemaObject: JsonSchemaObject | null = schema;
   const blockTypes = useMemo(
     () => (schemaObject ? getBlockTypes(schemaObject) : []),
     [schemaObject],
