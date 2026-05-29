@@ -1,5 +1,5 @@
 import type { ChangeEvent, ReactNode } from "react";
-import { selectChevronClass } from "./fieldStyles";
+import { checkboxClass, inputClass, selectClass, textareaClass } from "./fieldStyles";
 
 export type EmptyTextValue = "empty-string" | "undefined";
 
@@ -79,15 +79,6 @@ interface FieldControlState {
   describedBy?: string;
   invalid: boolean;
 }
-
-const inputClass =
-  "h-8 w-full min-w-0 rounded-md border border-solid border-stone-200 bg-white px-3 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
-
-const textareaClass =
-  "min-h-24 w-full min-w-0 rounded-md border border-solid border-stone-200 bg-white px-3 py-2 font-mono text-xs text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
-
-const selectClass =
-  `h-8 w-full min-w-0 cursor-pointer rounded-md border border-solid border-stone-200 bg-white pl-3 pr-7 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20 ${selectChevronClass}`;
 
 export function TextField({
   value,
@@ -222,7 +213,7 @@ export function CheckboxField({
     <BuilderField {...fieldProps} className={fieldProps.className}>
       <input
         id={fieldState.id}
-        className="h-3.5 w-3.5 accent-indigo-600"
+        className={checkboxClass}
         name={fieldProps.name}
         type="checkbox"
         checked={checked}
@@ -304,17 +295,17 @@ export function BuilderField({
 
   return (
     <div className={classNames("grid min-w-0 gap-1", className)}>
-      <label className="text-[11px] font-medium text-stone-500" htmlFor={fieldState.id}>
+      <label className="text-2xs font-medium text-stone-500" htmlFor={fieldState.id}>
         {label}
       </label>
       <div className="min-w-0">{children}</div>
       {help ? (
-        <p className="m-0 text-[11px] text-stone-500" id={helpId}>
+        <p className="m-0 text-2xs text-stone-500" id={helpId}>
           {help}
         </p>
       ) : null}
       {error ? (
-        <p className="m-0 text-[11px] text-red-700" id={errorId} role="alert">
+        <p className="m-0 text-2xs text-red-700" id={errorId} role="alert">
           {error}
         </p>
       ) : null}
@@ -370,7 +361,7 @@ function selectValue<Value extends string>(
   return options.find((option) => option.value === value)?.value;
 }
 
-function createFieldId(name: string): string {
+export function createFieldId(name: string): string {
   return `builder-field-${name.replace(/[^A-Za-z0-9_-]+/g, "-")}`;
 }
 

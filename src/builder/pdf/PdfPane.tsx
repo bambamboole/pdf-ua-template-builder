@@ -20,7 +20,7 @@ const tabBaseClass =
 const tabActiveClass = "text-stone-900 border-stone-900";
 
 const statusPillBaseClass =
-  "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium";
+  "inline-flex items-center gap-2 rounded-full px-3 py-1 text-2xs font-medium";
 
 const statusPillVariantClass: Record<OutputStatus, string> = {
   ready: "bg-emerald-100 text-emerald-700",
@@ -29,7 +29,7 @@ const statusPillVariantClass: Record<OutputStatus, string> = {
 };
 
 const surfacePanelClass =
-  "h-full w-full min-h-0 rounded-lg border border-solid border-stone-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.1)]";
+  "h-full w-full min-h-0 rounded-lg border border-solid border-stone-200 bg-white shadow-page";
 
 export function PdfPane({ pdfUrl, error, loading, template, data }: PdfPaneProps) {
   const [tab, setTab] = useState<OutputTab>("pdf");
@@ -139,7 +139,7 @@ function CopyJsonButton({ template, data }: { template?: Template; data?: Templa
   return (
     <button
       type="button"
-      className="m-0 ml-2 h-[26px] cursor-pointer self-center rounded-md border border-solid border-stone-200 bg-white px-3 text-[11px] font-medium text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-900"
+      className="m-0 ml-2 h-[26px] cursor-pointer self-center rounded-md border border-solid border-stone-200 bg-white px-3 text-2xs font-medium text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-900"
       onClick={handleCopy}
     >
       {copied ? "✓ Copied" : "⧉ Copy JSON"}

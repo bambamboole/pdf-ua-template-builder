@@ -1,8 +1,4 @@
-import type { ComponentType } from "react";
 import type { Block } from "../../types/generated/template";
-import { ImageBlockEditor } from "./ImageBlockEditor";
-import { KeyValueBlockEditor } from "./KeyValueBlockEditor";
-import { TableBlockEditor } from "./TableBlockEditor";
 
 export interface BlockEditorProps {
   block: Block;
@@ -12,10 +8,27 @@ export interface BlockEditorProps {
   showLayoutControls?: boolean;
 }
 
-export type BlockEditorRegistry = Partial<Record<string, ComponentType<BlockEditorProps>>>;
+export function setBlockConfigValue<TBlock extends Block>(
+  block: TBlock,
+  key: string,
+  value: unknown,
+): TBlock {
+  const config = { ...(block.config as Record<string, unknown> | undefined) };
 
-export const BLOCK_EDITORS: BlockEditorRegistry = {
-  image: ImageBlockEditor,
-  "key-value": KeyValueBlockEditor,
-  table: TableBlockEditor,
-};
+  if (value === undefined) {
+    delete config[key];
+  } else {
+    config[key] = value;
+  }
+
+  const nextBlock = {
+    ...block,
+    config: Object.keys(config).length === 0 ? undefined : config,
+  } as TBlock;
+
+  if ((nextBlock as { config?: unknown }).config === undefined) {
+    delete (nextBlock as { config?: unknown }).config;
+  }
+
+  return nextBlock;
+}

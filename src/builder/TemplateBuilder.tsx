@@ -20,8 +20,9 @@ import type {
   Template,
 } from "../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../types/template";
-import { BlockPalette, paletteChipClass } from "./blocks/BlockPalette";
+import { BlockPalette } from "./blocks/BlockPalette";
 import { getBlockSummary } from "./blocks/blockChrome";
+import { Chip } from "./primitives/Chip";
 import { BlockCardPreview } from "./canvas/BlockCardPreview";
 import { BuilderCanvas } from "./canvas/BuilderCanvas";
 import { BlockInspector } from "./inspector/BlockInspector";
@@ -428,7 +429,7 @@ export function TemplateBuilder({
             aria-label="Block palette"
           >
             <div className="flex w-full min-w-0 items-center gap-3">
-              <h2 className="m-0 flex-none text-[11px] font-medium uppercase tracking-[0.06em] text-stone-400">
+              <h2 className="m-0 flex-none text-2xs font-medium uppercase tracking-[0.06em] text-stone-400">
                 Blocks
               </h2>
               <BlockPalette blockTypes={blockTypes} onAdd={handleAddBlock} />
@@ -437,7 +438,6 @@ export function TemplateBuilder({
 
           {schema ? (
             <BuilderCanvas
-              schema={schema}
               model={model}
               data={data}
               format={pageSize.format}
@@ -445,12 +445,10 @@ export function TemplateBuilder({
               footerRepeat={footerRepeat}
               pageNumbers={pageNumbers}
               selectedBlockUid={selectedBlockUid}
-              onChangeBlock={handleChangeBlock}
               onRemoveBlock={handleRemoveBlock}
               onSelectBlock={handleSelectBlock}
               onDeselect={handleCloseInspector}
               onSetRowWidths={handleSetRowWidths}
-              onChangeData={setData}
               onToggleFooterRepeat={handleToggleFooterRepeat}
               onChangePageNumbers={handleChangePageNumbers}
             />
@@ -518,11 +516,9 @@ function ActiveDragPreview({ drag }: { drag: NonNullable<ActiveDrag> }) {
     );
   }
   return (
-    <div className="pointer-events-none origin-top-left rotate-[1.5deg] scale-[1.02] cursor-grabbing [filter:drop-shadow(0_12px_24px_rgba(0,0,0,0.18))]">
+    <div className="pointer-events-none origin-top-left rotate-[1.5deg] scale-[1.02] cursor-grabbing drop-shadow-drag">
       <div className="inline-flex min-w-[180px] max-w-[360px] items-center gap-2 rounded-lg border border-solid border-stone-300 bg-white px-3 py-2 text-sm font-medium">
-        <span className={paletteChipClass} aria-hidden="true">
-          ⋮⋮
-        </span>
+        <Chip>⋮⋮</Chip>
         <span className="font-medium">Row</span>
       </div>
     </div>

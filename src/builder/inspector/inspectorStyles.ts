@@ -7,6 +7,3 @@ export const inspectorSectionClass =
   "grid min-w-0 gap-1 overflow-hidden rounded-md border border-solid border-stone-200 bg-stone-100 p-3";
 
 export const inspectorSectionHeadingClass = "m-0 text-xs font-semibold text-stone-900";
-
-export const inspectorDangerButtonClass =
-  "inline-flex h-8 cursor-pointer items-center gap-2 rounded-md border border-solid border-red-700 bg-red-50 px-3 font-medium whitespace-nowrap text-red-700 transition-colors hover:border-red-700 hover:bg-red-700 hover:text-white";

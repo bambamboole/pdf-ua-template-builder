@@ -1,33 +1,13 @@
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import type { CSSProperties, ReactNode } from "react";
-import type { Align, Block, KeyValueBlock } from "../../types/generated/template";
-import type { BlockEditorProps } from "./blockEditors";
-import {
-  arrayAddClass,
-  arrayFieldClass,
-  arrayHandleClass,
-  arrayItemSortableClass,
-  arrayLegendClass,
-  arrayRemoveClass,
-  controlClass,
-  fieldLabelClass,
-} from "./controls/fieldStyles";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import type { ReactNode } from "react";
+import type { Block, KeyValueBlock } from "../../types/generated/template";
+import { isRecord, omitKey, renameKey } from "../lib/records";
+import { useBuilderSensors } from "../lib/sensors";
+import { setBlockConfigValue, type BlockEditorProps } from "./blockEditors";
+import { SortableRow } from "./SortableRow";
+import { AlignSelect } from "./controls";
+import { arrayAddClass, arrayFieldClass, arrayLegendClass, controlClass, fieldLabelClass } from "./controls/fieldStyles";
 
 interface KeyValueField {
   key: string;
@@ -128,14 +108,14 @@ export function KeyValueBlockEditor({
   const fields = getFields(kvBlock);
   const values = getValues(kvBlock);
   const width = (kvBlock.config?.width ?? "") as string;
-  const align = (kvBlock.config?.align ?? "") as Align | "";
+  const align = (kvBlock.config?.align ?? "") as string;
 
   function handleChangeWidth(nextWidth: string): void {
-    onChangeBlock(setConfigField(kvBlock, "width", nextWidth || undefined));
+    onChangeBlock(setBlockConfigValue(kvBlock, "width", nextWidth || undefined));
   }
 
   function handleChangeAlign(nextAlign: string): void {
-    onChangeBlock(setConfigField(kvBlock, "align", nextAlign === "" ? undefined : nextAlign));
+    onChangeBlock(setBlockConfigValue(kvBlock, "align", nextAlign === "" ? undefined : nextAlign));
   }
 
   return (
@@ -175,20 +155,7 @@ export function KeyValueBlockEditor({
             />
           </label>
 
-          <label className={fieldLabelClass}>
-            Align
-            <select
-              className={controlClass}
-              name="config.align"
-              value={align}
-              onChange={(event) => handleChangeAlign(event.currentTarget.value)}
-            >
-              <option value="" />
-              <option value="left">left</option>
-              <option value="center">center</option>
-              <option value="right">right</option>
-            </select>
-          </label>
+          <AlignSelect name="config.align" value={align} onChange={handleChangeAlign} />
         </>
       ) : null}
     </div>
@@ -202,10 +169,7 @@ interface FieldsEditorProps {
 }
 
 function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const sensors = useBuilderSensors();
 
   function handleDragEnd(event: DragEndEvent): void {
     const { active, over } = event;
@@ -270,33 +234,14 @@ interface FieldRowProps {
 }
 
 function FieldRow({ id, index, field, onChangeKey, onChangeLabel, onRemove }: FieldRowProps) {
-  const {
-    attributes,
-    listeners,
-    setActivatorNodeRef,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-  };
-
   return (
-    <div ref={setNodeRef} className={arrayItemSortableClass} style={style}>
-      <button
-        ref={setActivatorNodeRef}
-        type="button"
-        className={arrayHandleClass}
-        aria-label={`Drag to reorder field ${index + 1}`}
-        {...attributes}
-        {...listeners}
-      >
-        ⋮⋮
-      </button>
+    <SortableRow
+      id={id}
+      dragLabel={`Drag to reorder field ${index + 1}`}
+      removeLabel={`Remove field ${index + 1}`}
+      removeName={`remove-field-${index}`}
+      onRemove={onRemove}
+    >
       <label className={fieldLabelClass}>
         Key
         <input
@@ -317,16 +262,7 @@ function FieldRow({ id, index, field, onChangeKey, onChangeLabel, onRemove }: Fi
           onChange={(event) => onChangeLabel(event.currentTarget.value)}
         />
       </label>
-      <button
-        type="button"
-        data-name={`remove-field-${index}`}
-        className={arrayRemoveClass}
-        aria-label={`Remove field ${index + 1}`}
-        onClick={onRemove}
-      >
-        ✕
-      </button>
-    </div>
+    </SortableRow>
   );
 }
 
@@ -343,7 +279,7 @@ function getFields(block: KeyValueBlock): KeyValueField[] {
 function getValues(block: KeyValueBlock): KeyValueValues {
   const candidate = block.values;
 
-  return isPlainObject(candidate) ? (candidate as KeyValueValues) : {};
+  return isRecord(candidate) ? (candidate as KeyValueValues) : {};
 }
 
 function nextFieldIndex(fields: KeyValueField[]): number {
@@ -385,55 +321,4 @@ function applyFields(
   }
 
   return nextBlock;
-}
-
-function setConfigField(block: KeyValueBlock, key: string, value: unknown): Block {
-  const config = { ...block.config } as Record<string, unknown>;
-
-  if (value === undefined) {
-    delete config[key];
-  } else {
-    config[key] = value;
-  }
-
-  const nextBlock: KeyValueBlock = {
-    ...block,
-    config: Object.keys(config).length === 0 ? undefined : (config as KeyValueBlock["config"]),
-  };
-
-  if (nextBlock.config === undefined) {
-    delete (nextBlock as { config?: KeyValueBlock["config"] }).config;
-  }
-
-  return nextBlock as Block;
-}
-
-function omitKey(values: KeyValueValues, key: string): KeyValueValues {
-  if (!(key in values)) {
-    return values;
-  }
-
-  const next = { ...values };
-  delete next[key];
-  return next;
-}
-
-function renameKey(
-  values: KeyValueValues,
-  previousKey: string,
-  nextKey: string,
-): KeyValueValues {
-  if (!(previousKey in values)) {
-    return values;
-  }
-
-  const next: KeyValueValues = {};
-  for (const [key, value] of Object.entries(values)) {
-    next[key === previousKey ? nextKey : key] = value;
-  }
-  return next;
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

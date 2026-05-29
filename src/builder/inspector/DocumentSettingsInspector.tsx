@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { Orientation, PageFormat, Template } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
-import { docChipClass } from "../blocks/chipStyles";
+import { Chip } from "../primitives/Chip";
 import { CheckboxField, SelectField } from "../forms/controls";
 import { PAGE_SIZES_MM } from "../lib/pageSizes";
 import type { PageNumbersValue } from "../state/editorModel";
@@ -62,9 +62,7 @@ export function DocumentSettingsInspector({
     <aside className={inspectorClass} aria-label="Document settings inspector">
       <header className="flex min-w-0 items-start justify-between gap-2">
         <div className="flex min-w-0 flex-auto items-start gap-2">
-          <span className={docChipClass} aria-hidden="true">
-            Doc
-          </span>
+          <Chip wide>Doc</Chip>
           <div>
             <h2 className={inspectorTitleClass}>Document settings</h2>
             <p className="mt-0.5 mb-0 break-words text-xs text-stone-500">

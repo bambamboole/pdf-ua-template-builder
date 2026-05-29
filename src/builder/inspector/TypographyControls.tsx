@@ -1,7 +1,7 @@
 import type { ChangeEvent, ReactNode } from "react";
 import type { Block, Template, TypographyConfig } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
-import { BuilderField, ColorField, NumberField, SelectField } from "../forms/controls";
+import { BuilderField, ColorField, createFieldId, NumberField, SelectField } from "../forms/controls";
 import { arrayFieldClass, arrayLegendClass, controlClass } from "../forms/controls/fieldStyles";
 import { setBlockTypographyField, setTemplateTypographyField } from "../state/configUpdates";
 
@@ -105,7 +105,7 @@ interface FontFamilyFieldProps {
 }
 
 function FontFamilyField({ name, value, fontOptions, onChange }: FontFamilyFieldProps): ReactNode {
-  const id = createControlId(name);
+  const id = createFieldId(name);
   const listId = fontOptions.length > 0 ? `${id}-options` : undefined;
 
   return (
@@ -162,8 +162,4 @@ function bundledFontOptions(
 
 function optionalTextValue(value: string): string | undefined {
   return value === "" ? undefined : value;
-}
-
-function createControlId(name: string): string {
-  return `builder-field-${name.replace(/[^A-Za-z0-9_-]+/g, "-")}`;
 }

@@ -1,30 +1,17 @@
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import type { CSSProperties, ReactNode } from "react";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import type { ReactNode } from "react";
 import type { Align, Block, TableBlock } from "../../types/generated/template";
-import type { BlockEditorProps } from "./blockEditors";
+import { isRecord, omitKey, renameKey } from "../lib/records";
+import { useBuilderSensors } from "../lib/sensors";
+import { setBlockConfigValue, type BlockEditorProps } from "./blockEditors";
+import { SortableRow } from "./SortableRow";
+import { AlignSelect } from "./controls";
 import {
   arrayAddClass as arrayAddBaseClass,
   arrayFieldClass,
-  arrayHandleClass,
-  arrayItemSortableClass,
   arrayLegendClass,
-  arrayRemoveClass,
+  checkboxClass,
   checkboxLabelClass,
   controlClass,
   fieldLabelClass,
@@ -32,7 +19,7 @@ import {
 
 const arrayAddClass = `${arrayAddBaseClass} disabled:cursor-not-allowed disabled:opacity-50`;
 
-const hintClass = "m-0 text-[11px] text-stone-500";
+const hintClass = "m-0 text-2xs text-stone-500";
 
 interface TableColumn {
   key: string;
@@ -256,15 +243,15 @@ export function TableBlockEditor({
   }
 
   function handleChangeWidth(nextWidth: string): void {
-    onChangeBlock(setConfigField(tableBlock, "width", nextWidth || undefined));
+    onChangeBlock(setBlockConfigValue(tableBlock, "width", nextWidth || undefined));
   }
 
   function handleChangeAlign(nextAlign: string): void {
-    onChangeBlock(setConfigField(tableBlock, "align", nextAlign === "" ? undefined : nextAlign));
+    onChangeBlock(setBlockConfigValue(tableBlock, "align", nextAlign === "" ? undefined : nextAlign));
   }
 
   function handleToggleNumberRows(checked: boolean): void {
-    onChangeBlock(setConfigField(tableBlock, "numberRows", checked || undefined));
+    onChangeBlock(setBlockConfigValue(tableBlock, "numberRows", checked || undefined));
   }
 
   return (
@@ -288,7 +275,7 @@ export function TableBlockEditor({
         <>
           <label className={checkboxLabelClass}>
             <input
-              className="h-3.5 w-3.5 accent-indigo-600"
+              className={checkboxClass}
               name="config.numberRows"
               type="checkbox"
               checked={tableBlock.config?.numberRows === true}
@@ -308,20 +295,7 @@ export function TableBlockEditor({
             />
           </label>
 
-          <label className={fieldLabelClass}>
-            Align
-            <select
-              className={controlClass}
-              name="config.align"
-              value={align}
-              onChange={(event) => handleChangeAlign(event.currentTarget.value)}
-            >
-              <option value="" />
-              <option value="left">left</option>
-              <option value="center">center</option>
-              <option value="right">right</option>
-            </select>
-          </label>
+          <AlignSelect name="config.align" value={align} onChange={handleChangeAlign} />
         </>
       ) : null}
     </div>
@@ -343,10 +317,7 @@ function ColumnsEditor({
   onRemoveColumn,
   onRenameColumnKey,
 }: ColumnsEditorProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const sensors = useBuilderSensors();
 
   function handleDragEnd(event: DragEndEvent): void {
     const { active, over } = event;
@@ -424,33 +395,14 @@ function ColumnRow({
   onChangeWidth,
   onRemove,
 }: ColumnRowProps) {
-  const {
-    attributes,
-    listeners,
-    setActivatorNodeRef,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-  };
-
   return (
-    <div ref={setNodeRef} className={arrayItemSortableClass} style={style}>
-      <button
-        ref={setActivatorNodeRef}
-        type="button"
-        className={arrayHandleClass}
-        aria-label={`Drag to reorder column ${index + 1}`}
-        {...attributes}
-        {...listeners}
-      >
-        ⋮⋮
-      </button>
+    <SortableRow
+      id={id}
+      dragLabel={`Drag to reorder column ${index + 1}`}
+      removeLabel={`Remove column ${index + 1}`}
+      removeName={`remove-column-${index}`}
+      onRemove={onRemove}
+    >
       <label className={fieldLabelClass}>
         Key
         <input
@@ -471,20 +423,11 @@ function ColumnRow({
           onChange={(event) => onChangeLabel(event.currentTarget.value)}
         />
       </label>
-      <label className={fieldLabelClass}>
-        Align
-        <select
-          className={controlClass}
-          name={`column-align-${index}`}
-          value={(column.align ?? "") as string}
-          onChange={(event) => onChangeAlign(event.currentTarget.value)}
-        >
-          <option value="" />
-          <option value="left">left</option>
-          <option value="center">center</option>
-          <option value="right">right</option>
-        </select>
-      </label>
+      <AlignSelect
+        name={`column-align-${index}`}
+        value={(column.align ?? "") as string}
+        onChange={onChangeAlign}
+      />
       <label className={fieldLabelClass}>
         Width
         <input
@@ -495,16 +438,7 @@ function ColumnRow({
           onChange={(event) => onChangeWidth(event.currentTarget.value)}
         />
       </label>
-      <button
-        type="button"
-        data-name={`remove-column-${index}`}
-        className={arrayRemoveClass}
-        aria-label={`Remove column ${index + 1}`}
-        onClick={onRemove}
-      >
-        ✕
-      </button>
-    </div>
+    </SortableRow>
   );
 }
 
@@ -516,10 +450,7 @@ interface RowsEditorProps {
 }
 
 function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const sensors = useBuilderSensors();
 
   function handleDragEnd(event: DragEndEvent): void {
     const { active, over } = event;
@@ -600,33 +531,14 @@ interface DataRowProps {
 }
 
 function DataRow({ id, index, row, columns, onChangeCell, onRemove }: DataRowProps) {
-  const {
-    attributes,
-    listeners,
-    setActivatorNodeRef,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-  };
-
   return (
-    <div ref={setNodeRef} className={arrayItemSortableClass} style={style}>
-      <button
-        ref={setActivatorNodeRef}
-        type="button"
-        className={arrayHandleClass}
-        aria-label={`Drag to reorder row ${index + 1}`}
-        {...attributes}
-        {...listeners}
-      >
-        ⋮⋮
-      </button>
+    <SortableRow
+      id={id}
+      dragLabel={`Drag to reorder row ${index + 1}`}
+      removeLabel={`Remove row ${index + 1}`}
+      removeName={`remove-row-${index}`}
+      onRemove={onRemove}
+    >
       {columns.map((column) => (
         <label key={column.key} className={fieldLabelClass}>
           {column.label || column.key}
@@ -639,16 +551,7 @@ function DataRow({ id, index, row, columns, onChangeCell, onRemove }: DataRowPro
           />
         </label>
       ))}
-      <button
-        type="button"
-        data-name={`remove-row-${index}`}
-        className={arrayRemoveClass}
-        aria-label={`Remove row ${index + 1}`}
-        onClick={onRemove}
-      >
-        ✕
-      </button>
-    </div>
+    </SortableRow>
   );
 }
 
@@ -676,7 +579,7 @@ function getRows(rowData: unknown): TableRow[] {
     return [];
   }
 
-  return rowData.filter((entry): entry is TableRow => isPlainObject(entry)) as TableRow[];
+  return rowData.filter((entry): entry is TableRow => isRecord(entry)) as TableRow[];
 }
 
 function nextColumnIndex(columns: TableColumn[]): number {
@@ -709,52 +612,4 @@ function applyColumns(block: TableBlock, columns: TableColumn[]): TableBlock {
   }
 
   return nextBlock;
-}
-
-function setConfigField(block: TableBlock, key: string, value: unknown): Block {
-  const config = { ...block.config } as Record<string, unknown>;
-
-  if (value === undefined) {
-    delete config[key];
-  } else {
-    config[key] = value;
-  }
-
-  const nextBlock: TableBlock = {
-    ...block,
-    config:
-      Object.keys(config).length === 0 ? undefined : (config as TableBlock["config"]),
-  };
-
-  if (nextBlock.config === undefined) {
-    delete (nextBlock as { config?: TableBlock["config"] }).config;
-  }
-
-  return nextBlock as Block;
-}
-
-function omitKey(row: TableRow, key: string): TableRow {
-  if (!(key in row)) {
-    return row;
-  }
-
-  const next = { ...row };
-  delete next[key];
-  return next;
-}
-
-function renameKey(row: TableRow, previousKey: string, nextKey: string): TableRow {
-  if (!(previousKey in row)) {
-    return row;
-  }
-
-  const next: TableRow = {};
-  for (const [key, value] of Object.entries(row)) {
-    next[key === previousKey ? nextKey : key] = value;
-  }
-  return next;
-}
-
-function isPlainObject(value: unknown): value is Record<string, string> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

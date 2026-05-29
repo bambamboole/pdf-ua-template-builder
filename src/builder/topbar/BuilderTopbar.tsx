@@ -1,23 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { Orientation, PageFormat } from "../../types/generated/template";
-import { selectControlClass } from "../forms/controls/fieldStyles";
+import { Button } from "../primitives/Button";
+import { inputClass, selectControlClass } from "../forms/controls/fieldStyles";
 import { PAGE_SIZES_MM } from "../lib/pageSizes";
 
 const PAGE_FORMATS = Object.keys(PAGE_SIZES_MM) as PageFormat[];
-
-const buttonClass =
-  "inline-flex h-8 items-center gap-2 m-0 whitespace-nowrap rounded-md border border-solid border-stone-200 bg-white px-3 font-medium text-stone-900 transition-colors hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:bg-white disabled:text-stone-400 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
-
-const primaryButtonClass =
-  "inline-flex h-8 items-center gap-2 m-0 whitespace-nowrap rounded-md border border-solid border-stone-800 bg-stone-800 px-3 font-semibold text-white transition-colors hover:border-stone-950 hover:bg-stone-950 disabled:cursor-not-allowed disabled:border-stone-300 disabled:bg-stone-100 disabled:text-stone-400 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-indigo-600/20";
-
-const iconGhostButtonClass =
-  "inline-flex h-8 w-8 items-center justify-center m-0 cursor-pointer rounded-md border border-solid border-transparent bg-transparent p-0 text-stone-900 transition-colors hover:border-stone-200 hover:bg-stone-100 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
-
-const selectClass = selectControlClass;
-
-const inputClass =
-  "h-8 w-full min-w-0 rounded-md border border-solid border-stone-200 bg-white px-3 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
 
 export interface BuilderTopbarProps {
   format: PageFormat;
@@ -57,7 +44,7 @@ export function BuilderTopbar({
     >
       <div className="flex items-center gap-2 whitespace-nowrap text-[17px] font-semibold tracking-tight text-stone-900">
         <span
-          className="inline-grid h-[22px] w-[22px] place-items-center rounded bg-stone-800 text-[11px] font-semibold text-white"
+          className="inline-grid h-[22px] w-[22px] place-items-center rounded bg-stone-800 text-2xs font-semibold text-white"
           aria-hidden="true"
         >
           ◳
@@ -70,7 +57,7 @@ export function BuilderTopbar({
 
       <div className="flex items-center gap-2">
         <select
-          className={`${selectClass} min-w-[88px]`}
+          className={`${selectControlClass} min-w-[88px]`}
           value={format}
           onChange={(event) => onChangeFormat(event.currentTarget.value as PageFormat)}
           aria-label="Page format"
@@ -82,7 +69,7 @@ export function BuilderTopbar({
           ))}
         </select>
         <select
-          className={`${selectClass} min-w-[112px]`}
+          className={`${selectControlClass} min-w-[112px]`}
           value={orientation}
           onChange={(event) => onChangeOrientation(event.currentTarget.value as Orientation)}
           aria-label="Orientation"
@@ -93,22 +80,12 @@ export function BuilderTopbar({
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className={buttonClass}
-          onClick={onLoadExample}
-          disabled={exampleDisabled}
-        >
+        <Button onClick={onLoadExample} disabled={exampleDisabled}>
           Load example
-        </button>
-        <button
-          type="button"
-          className={primaryButtonClass}
-          onClick={onRender}
-          disabled={renderDisabled}
-        >
+        </Button>
+        <Button variant="primary" onClick={onRender} disabled={renderDisabled}>
           {rendering ? "Rendering…" : "Render PDF"}
-        </button>
+        </Button>
         <SettingsPopover
           apiUrl={apiUrl}
           onApiUrlChange={onApiUrlChange}
@@ -164,22 +141,22 @@ function SettingsPopover({
 
   return (
     <div className="relative" ref={containerRef}>
-      <button
-        type="button"
-        className={iconGhostButtonClass}
+      <Button
+        variant="ghost"
+        icon
         aria-label="Settings"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
         ⚙
-      </button>
+      </Button>
       {open ? (
         <div
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-10 grid w-80 gap-2 rounded-lg border border-solid border-stone-200 bg-white p-3 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.12)]"
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-10 grid w-80 gap-2 rounded-lg border border-solid border-stone-200 bg-white p-3 shadow-pop"
           role="dialog"
           aria-label="Settings"
         >
-          <label className="grid gap-1 text-[11px] font-medium uppercase tracking-wide text-stone-500">
+          <label className="grid gap-1 text-2xs font-medium uppercase tracking-wide text-stone-500">
             API URL
             <input
               className={inputClass}
@@ -187,14 +164,9 @@ function SettingsPopover({
               onChange={(event) => onApiUrlChange(event.currentTarget.value)}
             />
           </label>
-          <button
-            type="button"
-            className={buttonClass}
-            onClick={onLoadSchema}
-            disabled={schemaLoading}
-          >
+          <Button onClick={onLoadSchema} disabled={schemaLoading}>
             {schemaLoading ? "Loading…" : "Reload schema"}
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>

@@ -1,5 +1,5 @@
 import { getBlockChrome } from "../blocks/blockChrome";
-import { paletteChipClass } from "../blocks/BlockPalette";
+import { Chip } from "../primitives/Chip";
 
 export interface BlockCardPreviewProps {
   type: string;
@@ -11,11 +11,9 @@ export function BlockCardPreview({ type, summary, prefix }: BlockCardPreviewProp
   const chrome = getBlockChrome(type);
 
   return (
-    <div className="pointer-events-none origin-top-left rotate-[1.5deg] scale-[1.02] cursor-grabbing [filter:drop-shadow(0_12px_24px_rgba(0,0,0,0.18))]">
+    <div className="pointer-events-none origin-top-left rotate-[1.5deg] scale-[1.02] cursor-grabbing drop-shadow-drag">
       <div className="inline-flex min-w-[180px] max-w-[360px] items-center gap-2 rounded-lg border border-solid border-stone-300 bg-white px-3 py-2 text-sm font-medium">
-        <span className={paletteChipClass} aria-hidden="true">
-          {chrome.chip}
-        </span>
+        <Chip>{chrome.chip}</Chip>
         <span className="inline-flex items-baseline gap-2">
           <span className="font-medium">
             {prefix}

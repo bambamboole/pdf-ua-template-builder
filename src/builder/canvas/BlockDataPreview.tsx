@@ -116,7 +116,7 @@ function KeyValuePreview({ block, rowData }: { block: KeyValueBlock; rowData?: u
           key={entry.key}
           className="grid min-w-0 items-baseline gap-2 grid-cols-[minmax(72px,0.42fr)_minmax(0,1fr)]"
         >
-          <dt className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-stone-400">
+          <dt className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-2xs text-stone-400">
             {entry.label}
           </dt>
           <dd className="m-0 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm text-stone-900">
@@ -138,7 +138,7 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
 
   return (
     <div className="min-w-0 overflow-hidden rounded-md border border-solid border-stone-200">
-      <table className="w-full table-fixed border-collapse text-[11px]">
+      <table className="w-full table-fixed border-collapse text-2xs">
         <thead>
           <tr>
             {columns.slice(0, 4).map((column) => (
@@ -185,7 +185,7 @@ function SpacerPreview({ block }: { block: SpacerBlock }) {
   const height = block.config?.height;
 
   return (
-    <div className="grid h-9 place-items-center rounded-md border border-dashed border-stone-300 text-[11px] text-stone-400">
+    <div className="grid h-9 place-items-center rounded-md border border-dashed border-stone-300 text-2xs text-stone-400">
       {typeof height === "number" ? `${height}mm spacer` : "Spacer"}
     </div>
   );

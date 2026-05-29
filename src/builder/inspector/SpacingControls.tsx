@@ -28,7 +28,7 @@ export function SpacingControls(props: SpacingControlsProps): ReactNode {
 
   return (
     <fieldset className="m-0 grid min-w-0 gap-2 border-0 p-0" aria-label={title}>
-      <legend className="p-0 text-[11px] font-semibold text-stone-400">{title}</legend>
+      <legend className="p-0 text-2xs font-semibold text-stone-400">{title}</legend>
       <div className="grid grid-cols-2 gap-2">
         {spacingSides.map((side) => (
           <NumberField

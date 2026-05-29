@@ -1,6 +1,7 @@
 import type { ChangeEvent, ReactNode } from "react";
-import type { Align, Block, ImageBlock } from "../../types/generated/template";
-import type { BlockEditorProps } from "./blockEditors";
+import type { ImageBlock } from "../../types/generated/template";
+import { setBlockConfigValue, type BlockEditorProps } from "./blockEditors";
+import { AlignSelect } from "./controls";
 import { controlClass, fieldLabelClass } from "./controls/fieldStyles";
 
 export function ImageBlockEditor({
@@ -13,7 +14,7 @@ export function ImageBlockEditor({
   const alt = imageBlock.alt ?? "";
   const maxHeight = imageBlock.config?.maxHeight;
   const width = (imageBlock.config?.width ?? "") as string;
-  const align = (imageBlock.config?.align ?? "") as Align | "";
+  const align = (imageBlock.config?.align ?? "") as string;
 
   function handleSrcChange(value: string): void {
     onChangeBlock({ ...imageBlock, src: value });
@@ -26,15 +27,15 @@ export function ImageBlockEditor({
   function handleMaxHeightChange(value: string, valueAsNumber: number | undefined): void {
     const next = value === "" || !Number.isFinite(valueAsNumber) ? undefined : valueAsNumber;
 
-    onChangeBlock(setConfigField(imageBlock, "maxHeight", next));
+    onChangeBlock(setBlockConfigValue(imageBlock, "maxHeight", next));
   }
 
   function handleWidthChange(value: string): void {
-    onChangeBlock(setConfigField(imageBlock, "width", value || undefined));
+    onChangeBlock(setBlockConfigValue(imageBlock, "width", value || undefined));
   }
 
   function handleAlignChange(value: string): void {
-    onChangeBlock(setConfigField(imageBlock, "align", value === "" ? undefined : value));
+    onChangeBlock(setBlockConfigValue(imageBlock, "align", value === "" ? undefined : value));
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>): void {
@@ -63,7 +64,7 @@ export function ImageBlockEditor({
         {src ? (
           <img src={src} alt={alt} className="max-h-[120px] max-w-full object-contain" />
         ) : (
-          <div className="text-[11px] text-stone-500">No image selected</div>
+          <div className="text-2xs text-stone-500">No image selected</div>
         )}
       </div>
 
@@ -99,7 +100,7 @@ export function ImageBlockEditor({
           onChange={(event) => handleAltChange(event.currentTarget.value)}
         />
       </label>
-      <p className="-mt-2 m-0 text-[11px] text-stone-500">
+      <p className="-mt-2 m-0 text-2xs text-stone-500">
         Alt text is required for PDF/UA accessibility. Describe what the image conveys.
       </p>
 
@@ -130,43 +131,9 @@ export function ImageBlockEditor({
             />
           </label>
 
-          <label className={fieldLabelClass}>
-            Align
-            <select
-              className={controlClass}
-              name="config.align"
-              value={align}
-              onChange={(event) => handleAlignChange(event.currentTarget.value)}
-            >
-              <option value="" />
-              <option value="left">left</option>
-              <option value="center">center</option>
-              <option value="right">right</option>
-            </select>
-          </label>
+          <AlignSelect name="config.align" value={align} onChange={handleAlignChange} />
         </>
       ) : null}
     </div>
   );
-}
-
-function setConfigField(block: ImageBlock, key: string, value: unknown): Block {
-  const config = { ...block.config } as Record<string, unknown>;
-
-  if (value === undefined) {
-    delete config[key];
-  } else {
-    config[key] = value;
-  }
-
-  const nextBlock: ImageBlock = {
-    ...block,
-    config: Object.keys(config).length === 0 ? undefined : (config as ImageBlock["config"]),
-  };
-
-  if (nextBlock.config === undefined) {
-    delete (nextBlock as { config?: ImageBlock["config"] }).config;
-  }
-
-  return nextBlock as Block;
 }

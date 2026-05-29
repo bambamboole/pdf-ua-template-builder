@@ -2,21 +2,17 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties, KeyboardEvent, MouseEvent } from "react";
 import type { EditorArea, EditorBlock } from "../state/editorModel";
-import type { Block } from "../../types/generated/template";
-import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
+import type { TemplateData } from "../../types/template";
 import { BlockDataPreview } from "./BlockDataPreview";
 
 export interface SortableBlockProps {
   rowUid: string;
   area: EditorArea;
   editorBlock: EditorBlock;
-  schema: TemplateSchemaResponse;
   data: TemplateData;
   selected: boolean;
-  onChangeBlock: (blockUid: string, block: Block) => void;
   onRemoveBlock: (blockUid: string) => void;
   onSelect: (blockUid: string) => void;
-  onChangeData: (data: TemplateData) => void;
   style?: CSSProperties;
 }
 
@@ -24,13 +20,10 @@ export function SortableBlock({
   rowUid,
   area,
   editorBlock,
-  schema,
   data,
   selected,
-  onChangeBlock,
   onRemoveBlock,
   onSelect,
-  onChangeData,
   style: layoutStyle,
 }: SortableBlockProps) {
   const {
@@ -50,10 +43,6 @@ export function SortableBlock({
       area,
     },
   });
-
-  void schema;
-  void onChangeBlock;
-  void onChangeData;
 
   const blockId = typeof editorBlock.block.id === "string" ? editorBlock.block.id : null;
   const rowData = blockId ? data[blockId] : undefined;

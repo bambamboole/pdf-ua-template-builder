@@ -1,13 +1,13 @@
 import type { Block } from "../../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
-import { paletteChipClass } from "../blocks/chipStyles";
+import { Button } from "../primitives/Button";
+import { Chip } from "../primitives/Chip";
 import { getBlockChrome, getBlockSummary } from "../blocks/blockChrome";
 import type { EditorBlock } from "../state/editorModel";
 import { BlockContentControls } from "./BlockContentControls";
 import { BlockLayoutControls } from "./BlockLayoutControls";
 import {
   inspectorClass,
-  inspectorDangerButtonClass,
   inspectorSectionClass,
   inspectorSectionHeadingClass,
   inspectorTitleClass,
@@ -60,9 +60,7 @@ export function BlockInspector({
     <aside className={inspectorClass} aria-label="Block inspector">
       <header className="flex min-w-0 items-start justify-between gap-2">
         <div className="flex min-w-0 flex-auto items-start gap-2">
-          <span className={paletteChipClass} aria-hidden="true">
-            {chrome.chip}
-          </span>
+          <Chip>{chrome.chip}</Chip>
           <div>
             <h2 className={inspectorTitleClass}>{chrome.label}</h2>
             {summary ? (
@@ -117,30 +115,22 @@ export function BlockInspector({
                 block={block.block}
                 onChangeBlock={(nextBlock) => onChangeBlock(block.uid, nextBlock)}
               />
-            ) : section === "Typography" ? (
+            ) : (
               <TypographyControls
                 target="block"
                 block={block.block}
                 metadata={schema["x-pdfUa"]}
                 onChangeBlock={(nextBlock) => onChangeBlock(block.uid, nextBlock)}
               />
-            ) : (
-              <p className="m-0 text-xs text-stone-500">
-                Controls will be added in a later porting slice.
-              </p>
             )}
           </section>
         ))}
       </div>
 
       <footer className="flex justify-end">
-        <button
-          type="button"
-          className={inspectorDangerButtonClass}
-          onClick={() => onRemoveBlock(block.uid)}
-        >
+        <Button variant="danger" onClick={() => onRemoveBlock(block.uid)}>
           Remove block
-        </button>
+        </Button>
       </footer>
     </aside>
   );
@@ -154,8 +144,8 @@ interface MetaRowProps {
 function MetaRow({ label, value }: MetaRowProps) {
   return (
     <div className="grid grid-cols-[72px_minmax(0,1fr)] items-baseline gap-2">
-      <dt className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">{label}</dt>
-      <dd className="m-0 min-w-0 break-words font-mono text-[11px] text-stone-900">{value}</dd>
+      <dt className="text-2xs font-semibold uppercase tracking-wide text-stone-400">{label}</dt>
+      <dd className="m-0 min-w-0 break-words font-mono text-2xs text-stone-900">{value}</dd>
     </div>
   );
 }
