@@ -7,6 +7,7 @@ export interface ColumnResizerProps {
   leftIndex: number;
   containerRef: RefObject<HTMLElement | null>;
   onResize: (widths: string[]) => void;
+  label?: string;
 }
 
 export function ColumnResizer({
@@ -15,6 +16,7 @@ export function ColumnResizer({
   leftIndex,
   containerRef,
   onResize,
+  label,
 }: ColumnResizerProps) {
   function handlePointerDown(event: React.PointerEvent<HTMLButtonElement>): void {
     const bounds = containerRef.current?.getBoundingClientRect();
@@ -52,7 +54,7 @@ export function ColumnResizer({
     <button
       type="button"
       className="group/resizer min-h-full w-1.5 cursor-col-resize select-none self-stretch rounded-full border-0 bg-transparent p-0 transition-colors max-[480px]:hidden"
-      aria-label={`Resize columns ${leftIndex + 1} and ${leftIndex + 2}`}
+      aria-label={label ?? `Resize columns ${leftIndex + 1} and ${leftIndex + 2}`}
       onPointerDown={handlePointerDown}
     >
       <span className="mx-auto block h-full w-0.5 rounded-full bg-border-strong transition-colors group-hover/resizer:bg-accent" />

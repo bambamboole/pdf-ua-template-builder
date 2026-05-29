@@ -447,6 +447,7 @@ export function TemplateBuilder({
               selectedBlockUid={selectedBlockUid}
               onRemoveBlock={handleRemoveBlock}
               onSelectBlock={handleSelectBlock}
+              onChangeBlock={handleChangeBlock}
               onDeselect={handleCloseInspector}
               onSetRowWidths={handleSetRowWidths}
               onToggleFooterRepeat={handleToggleFooterRepeat}

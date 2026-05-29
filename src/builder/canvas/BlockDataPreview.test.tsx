@@ -40,6 +40,37 @@ describe("BlockDataPreview", () => {
     expect(html).toContain("RE-2026-001234");
   });
 
+  it("reflects labelWidth and exposes the label resizer when editable", () => {
+    const block: Block = {
+      type: "key-value",
+      id: "invoice-meta",
+      values: { invoiceNumber: "RE-2026-001234" },
+      config: {
+        labelWidth: "40%",
+        fields: [{ key: "invoiceNumber", label: "Invoice number" }],
+      },
+    };
+
+    const html = renderToStaticMarkup(<BlockDataPreview block={block} onChange={() => {}} />);
+
+    expect(html).toContain("grid-template-columns:40% minmax(0, 1fr)");
+    expect(html).toContain("Resize the label column");
+  });
+
+  it("omits the label resizer when no change handler is provided", () => {
+    const block: Block = {
+      type: "key-value",
+      id: "invoice-meta",
+      values: { invoiceNumber: "RE-2026-001234" },
+      config: { fields: [{ key: "invoiceNumber", label: "Invoice number" }] },
+    };
+
+    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+
+    expect(html).not.toContain("Resize the label column");
+    expect(html).toContain("grid-template-columns:30% minmax(0, 1fr)");
+  });
+
   it("renders table headers and runtime rows directly on the card", () => {
     const block: Block = {
       type: "table",

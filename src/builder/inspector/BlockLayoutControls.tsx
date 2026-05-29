@@ -54,7 +54,9 @@ export function BlockLayoutControls({ block, onChangeBlock }: BlockLayoutControl
         name="config.width"
         label="Width"
         value={block.config?.width ?? undefined}
-        onChange={(value) => onChangeBlock(setCommonConfigField(block, "width", value))}
+        placeholder="Full width"
+        readOnly
+        help="Drag the column divider on the canvas to resize."
       />
       <SelectField
         name="config.align"
@@ -153,14 +155,6 @@ function renderTypeSpecificControls(
         </>
       );
     case "key-value":
-      return (
-        <UnitField
-          name="config.labelWidth"
-          label="Label width"
-          value={block.config?.labelWidth}
-          onChange={(value) => onChangeBlock(setBlockConfigField(block, "labelWidth", value))}
-        />
-      );
     case "heading":
     case "text":
     case "html":

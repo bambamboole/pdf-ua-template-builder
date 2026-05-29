@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatWidths, gridTemplateForWidths, parseWidths, setBoundary } from "./columns";
+import {
+  formatWidths,
+  gridTemplateForWidths,
+  labelWidthPercent,
+  parseWidths,
+  setBoundary,
+} from "./columns";
 
 describe("column width helpers", () => {
   it("returns equal integer-ish percentages when widths are missing", () => {
@@ -32,5 +38,19 @@ describe("column width helpers", () => {
   it("adjusts adjacent widths while preserving pair total and minimum sides", () => {
     expect(setBoundary([50, 50], 0, 80)).toEqual([80, 20]);
     expect(setBoundary([50, 50], 0, 2)).toEqual([5, 95]);
+  });
+
+  it("rounds the dragged boundary to whole percentages", () => {
+    expect(setBoundary([50, 50], 0, 60.7)).toEqual([61, 39]);
+    expect(setBoundary([50, 50], 0, 33.2)).toEqual([33, 67]);
+  });
+
+  it("derives a clamped whole-percent label width with a default fallback", () => {
+    expect(labelWidthPercent("40%")).toBe(40);
+    expect(labelWidthPercent("40.6%")).toBe(41);
+    expect(labelWidthPercent("30mm")).toBe(30);
+    expect(labelWidthPercent(undefined)).toBe(30);
+    expect(labelWidthPercent("2%")).toBe(5);
+    expect(labelWidthPercent("140%")).toBe(95);
   });
 });

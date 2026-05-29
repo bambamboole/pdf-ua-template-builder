@@ -5,7 +5,7 @@ import type { Block, DividerBlock, SpacerBlock, TextBlock } from "../../types/ge
 import { BlockLayoutControls } from "./BlockLayoutControls";
 
 describe("BlockLayoutControls", () => {
-  it("renders, updates, and clears common width and align controls", () => {
+  it("renders width as a read-only display and updates align", () => {
     const block = {
       type: "text",
       id: "body",
@@ -27,24 +27,19 @@ describe("BlockLayoutControls", () => {
     expect(html).toContain('<option value="">Default</option>');
     expect(html).toContain('value="center" selected=""');
 
-    getInputChangeHandler(requireControl(element, "config.width"))({
-      currentTarget: { value: "80mm" },
-    });
+    expect(requireControl(element, "config.width").props.readOnly).toBe(true);
+    expect(requireControl(element, "config.width").props.onChange).toBeUndefined();
+
     getSelectChangeHandler(requireControl(element, "config.align"))({
       currentTarget: { value: "" },
     });
     getSelectChangeHandler(requireControl(element, "config.align"))({
       currentTarget: { value: "right" },
     });
-    getInputChangeHandler(requireControl(element, "config.width"))({
-      currentTarget: { value: "" },
-    });
 
     expect(changes).toEqual([
-      { ...block, config: { width: "80mm", align: "center" } },
       { ...block, config: { width: "60%" } },
       { ...block, config: { width: "60%", align: "right" } },
-      { ...block, config: { align: "center" } },
     ]);
   });
 

@@ -50,13 +50,20 @@ export function setBoundary(
   const pairTotal = widths[leftIndex] + widths[rightIndex];
   const minLeft = Math.min(MIN_WIDTH, pairTotal);
   const maxLeft = Math.max(minLeft, pairTotal - MIN_WIDTH);
-  const nextLeft = clamp(leftPercent, minLeft, maxLeft);
+  const nextLeft = Math.round(clamp(leftPercent, minLeft, maxLeft));
   const nextWidths = [...widths];
 
   nextWidths[leftIndex] = nextLeft;
   nextWidths[rightIndex] = pairTotal - nextLeft;
 
   return nextWidths;
+}
+
+export function labelWidthPercent(width: string | null | undefined, fallback = 30): number {
+  const parsed = width == null ? Number.NaN : parseWidth(width);
+  const value = Number.isFinite(parsed) ? parsed : fallback;
+
+  return Math.round(clamp(value, MIN_WIDTH, TOTAL_WIDTH - MIN_WIDTH));
 }
 
 function equalWidths(count: number): number[] {
