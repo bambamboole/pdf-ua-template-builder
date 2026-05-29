@@ -7,19 +7,12 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useCallback, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useState, type Dispatch, type RefObject } from "react";
 import type { Block } from "../../types/generated/template";
-import { createDefaultBlock, type JsonSchemaObject } from "../schema/schemaAdapter";
-import {
-  addBlockToNewRow,
-  addBlockToRow,
-  createNextBlockId,
-  findEditorBlock,
-  moveBlock,
-  moveRow,
-  type EditorModel,
-} from "../state/editorModel";
-import { getDragData, getDropTarget, getRowIndex } from "../state/dragDrop";
+import type { JsonSchemaObject } from "../../types/template";
+import { getDragData } from "../state/dragDrop";
+import { findEditorBlock, type EditorModel } from "../state/editorModel";
+import type { EditorAction } from "../state/editorReducer";
 
 export type ActiveDrag =
   | { kind: "palette"; type: string }
@@ -37,7 +30,8 @@ interface BuilderDragDrop {
 
 export function useBuilderDragDrop(
   schema: JsonSchemaObject | null,
-  setModel: Dispatch<SetStateAction<EditorModel>>,
+  dispatch: Dispatch<EditorAction>,
+  modelRef: RefObject<EditorModel>,
 ): BuilderDragDrop {
   const [activeDrag, setActiveDrag] = useState<ActiveDrag>(null);
 
@@ -63,14 +57,11 @@ export function useBuilderDragDrop(
         return;
       }
       if (dragData.type === "block" && dragData.blockUid) {
-        setModel((currentModel) => {
-          const editorBlock = findEditorBlock(currentModel, dragData.blockUid ?? "");
-          setActiveDrag(editorBlock ? { kind: "block", block: editorBlock.block } : null);
-          return currentModel;
-        });
+        const editorBlock = findEditorBlock(modelRef.current, dragData.blockUid);
+        setActiveDrag(editorBlock ? { kind: "block", block: editorBlock.block } : null);
       }
     },
-    [setModel],
+    [modelRef],
   );
 
   const onDragEnd = useCallback(
@@ -85,47 +76,31 @@ export function useBuilderDragDrop(
       const overData = getDragData(event.over.data.current);
 
       if (activeData.source === "palette" && activeData.type && schema) {
-        setModel((currentModel) => {
-          const target = getDropTarget(currentModel, event.over?.id, overData);
-          const block = createDefaultBlock(
-            schema,
-            activeData.type ?? "",
-            createNextBlockId(currentModel, activeData.type ?? ""),
-          );
-
-          return target.rowUid === null
-            ? addBlockToNewRow(currentModel, block, target.area)
-            : addBlockToRow(currentModel, target.rowUid, block, target.index);
+        dispatch({
+          type: "dropFromPalette",
+          schema,
+          blockType: activeData.type,
+          overId: event.over.id,
+          overData,
         });
         return;
       }
 
       if (activeData.type === "row" && activeData.rowUid) {
-        setModel((currentModel) => {
-          const index = getRowIndex(currentModel, event.over?.id, overData);
-
-          return index === null
-            ? currentModel
-            : moveRow(currentModel, activeData.rowUid ?? "", index);
-        });
+        dispatch({ type: "moveRowTo", rowUid: activeData.rowUid, overId: event.over.id, overData });
         return;
       }
 
       if (activeData.type === "block" && activeData.blockUid) {
-        setModel((currentModel) => {
-          const target = getDropTarget(currentModel, event.over?.id, overData);
-
-          return moveBlock(
-            currentModel,
-            activeData.blockUid ?? "",
-            target.rowUid,
-            target.index,
-            target.area,
-          );
+        dispatch({
+          type: "moveBlockTo",
+          blockUid: activeData.blockUid,
+          overId: event.over.id,
+          overData,
         });
       }
     },
-    [schema, setModel],
+    [schema, dispatch],
   );
 
   const onDragCancel = useCallback(() => {

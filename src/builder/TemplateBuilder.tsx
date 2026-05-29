@@ -1,5 +1,5 @@
 import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { resolveDefaultApiUrl } from "../api/pdfUaApi";
 import type { Block, Orientation, PageFormat, Template } from "../types/generated/template";
 import type { TemplateData } from "../types/template";
@@ -14,27 +14,16 @@ import { BlockInspector } from "./inspector/BlockInspector";
 import { DocumentSettingsInspector } from "./inspector/DocumentSettingsInspector";
 import { PdfPane } from "./pdf/PdfPane";
 import { createInvoiceExample } from "./schema/invoiceExample";
-import { createDefaultBlock, getBlockTypes, type JsonSchemaObject } from "./schema/schemaAdapter";
+import { getBlockTypes, type JsonSchemaObject } from "./schema/schemaAdapter";
 import {
-  addBlockToNewRow,
-  createEditorModel,
-  createNextBlockId,
   getFooterRepeat,
   getPageNumbers,
   getPageSize,
-  reconcileSelectedBlockUid,
-  removeBlock,
   resolveSelectedEditorBlock,
   serializeTemplate,
-  setFooterRepeat,
-  setPageNumbers,
-  setPageSize,
-  setRowWidths,
-  updateBlock,
-  updateTemplateSettings,
-  type EditorModel,
   type PageNumbersValue,
 } from "./state/editorModel";
+import { createEditorState, editorReducer } from "./state/editorReducer";
 import { BuilderTopbar } from "./topbar/BuilderTopbar";
 
 const emptyTemplate: Template = {
@@ -66,11 +55,12 @@ export function TemplateBuilder({
 }: TemplateBuilderProps = {}) {
   const defaultApiUrl = resolveDefaultApiUrl(initialApiUrlProp);
   const [apiUrl, setApiUrl] = useState(defaultApiUrl);
-  const [model, setModel] = useState<EditorModel>(() =>
-    createEditorModel(initialTemplate ?? emptyTemplate),
+  const [state, dispatch] = useReducer(editorReducer, undefined, () =>
+    createEditorState(initialTemplate ?? emptyTemplate, initialData ?? {}),
   );
-  const [data, setData] = useState<TemplateData>(initialData ?? {});
-  const [selectedBlockUid, setSelectedBlockUid] = useState<string | null>(null);
+  const { model, data, selectedBlockUid } = state;
+  const modelRef = useRef(model);
+  modelRef.current = model;
 
   const { schema, schemaLoading, pdfUrl, pdfLoading, error, loadSchema, renderPdf } = usePdfUaApi({
     initialApiUrl: defaultApiUrl,
@@ -109,39 +99,42 @@ export function TemplateBuilder({
 
   const { activeDrag, sensors, onDragStart, onDragEnd, onDragCancel } = useBuilderDragDrop(
     schemaObject,
-    setModel,
+    dispatch,
+    modelRef,
   );
 
   const loadExample = useCallback(() => {
     const example = createInvoiceExample();
 
-    setModel(createEditorModel(example.template));
-    setData(example.data);
+    dispatch({ type: "loadExample", template: example.template, data: example.data });
   }, []);
 
   const handleChangeBlock = useCallback((blockUid: string, block: Block) => {
-    setModel((currentModel) => updateBlock(currentModel, blockUid, block));
+    dispatch({ type: "changeBlock", blockUid, block });
   }, []);
 
   const handleChangeTemplateSettings = useCallback((template: Template) => {
-    setModel((currentModel) => updateTemplateSettings(currentModel, template));
+    dispatch({ type: "changeTemplateSettings", template });
   }, []);
 
   const handleRemoveBlock = useCallback((blockUid: string) => {
-    setSelectedBlockUid((currentUid) => (currentUid === blockUid ? null : currentUid));
-    setModel((currentModel) => removeBlock(currentModel, blockUid));
+    dispatch({ type: "removeBlock", blockUid });
   }, []);
 
   const handleSelectBlock = useCallback((blockUid: string) => {
-    setSelectedBlockUid(blockUid);
+    dispatch({ type: "selectBlock", blockUid });
   }, []);
 
   const handleCloseInspector = useCallback(() => {
-    setSelectedBlockUid(null);
+    dispatch({ type: "deselect" });
   }, []);
 
   const handleSetRowWidths = useCallback((rowUid: string, widths: string[]) => {
-    setModel((currentModel) => setRowWidths(currentModel, rowUid, widths));
+    dispatch({ type: "setRowWidths", rowUid, widths });
+  }, []);
+
+  const handleChangeData = useCallback((nextData: TemplateData) => {
+    dispatch({ type: "setData", data: nextData });
   }, []);
 
   const handleAddBlock = useCallback(
@@ -149,46 +142,26 @@ export function TemplateBuilder({
       if (!schemaObject) {
         return;
       }
-      setModel((currentModel) => {
-        const block = createDefaultBlock(
-          schemaObject,
-          type,
-          createNextBlockId(currentModel, type),
-        );
-
-        return addBlockToNewRow(currentModel, block);
-      });
+      dispatch({ type: "addBlock", schema: schemaObject, blockType: type });
     },
     [schemaObject],
   );
 
   const handleChangeFormat = useCallback((format: PageFormat) => {
-    setModel((currentModel) => {
-      const current = getPageSize(currentModel);
-
-      return setPageSize(currentModel, format, current.orientation);
-    });
+    dispatch({ type: "setFormat", format });
   }, []);
 
   const handleChangeOrientation = useCallback((orientation: Orientation) => {
-    setModel((currentModel) => {
-      const current = getPageSize(currentModel);
-
-      return setPageSize(currentModel, current.format, orientation);
-    });
+    dispatch({ type: "setOrientation", orientation });
   }, []);
 
   const handleToggleFooterRepeat = useCallback((repeat: boolean) => {
-    setModel((currentModel) => setFooterRepeat(currentModel, repeat));
+    dispatch({ type: "setFooterRepeat", repeat });
   }, []);
 
   const handleChangePageNumbers = useCallback((value: PageNumbersValue) => {
-    setModel((currentModel) => setPageNumbers(currentModel, value));
+    dispatch({ type: "setPageNumbers", value });
   }, []);
-
-  useEffect(() => {
-    setSelectedBlockUid((currentUid) => reconcileSelectedBlockUid(model, currentUid));
-  }, [model]);
 
   const shellClass =
     "grid h-screen overflow-hidden bg-app text-fg grid-cols-[minmax(40rem,1.55fr)_minmax(28rem,0.95fr)] max-[1080px]:h-auto max-[1080px]:grid-cols-1 max-[1080px]:overflow-visible";
@@ -266,7 +239,7 @@ export function TemplateBuilder({
               schema={schema}
               data={data}
               onChangeBlock={handleChangeBlock}
-              onChangeData={setData}
+              onChangeData={handleChangeData}
               onRemoveBlock={handleRemoveBlock}
               onClose={handleCloseInspector}
             />
