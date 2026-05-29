@@ -1,6 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import dts from "vite-plugin-dts";
 
 declare const process: { env: Record<string, string | undefined> };
@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
         react(),
         dts({
           include: ["src/**/*"],
-          exclude: ["**/*.test.*", "src/main.tsx", "src/App.tsx", "src/env.d.ts"],
+          exclude: ["**/*.test.*", "src/test/**", "src/main.tsx", "src/App.tsx", "src/env.d.ts"],
           tsconfigPath: "./tsconfig.json",
         }),
       ],
@@ -50,6 +50,10 @@ export default defineConfig(({ mode }) => {
         "/schema": proxyTarget,
         "/render": proxyTarget,
       },
+    },
+    test: {
+      environment: "jsdom",
+      setupFiles: ["./src/test/setup.ts"],
     },
   };
 });
