@@ -1,6 +1,7 @@
-import type { ReactElement, ReactNode } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useState } from "react";
+import { describe, expect, it, vi } from "vitest";
 import type { Block, ImageBlock } from "../../types/generated/template";
 import { ImageBlockEditor } from "./ImageBlockEditor";
 
@@ -12,120 +13,71 @@ const baseBlock = {
   config: { maxHeight: 28 },
 } satisfies ImageBlock;
 
+function renderEditor(initial: Block = baseBlock) {
+  const onChangeBlock = vi.fn();
+
+  function Harness() {
+    const [block, setBlock] = useState<Block>(initial);
+
+    return (
+      <ImageBlockEditor
+        block={block}
+        onChangeBlock={(next) => {
+          onChangeBlock(next);
+          setBlock(next);
+        }}
+      />
+    );
+  }
+
+  render(<Harness />);
+  return { onChangeBlock };
+}
+
 describe("ImageBlockEditor", () => {
-  it("renders a preview, alt text input, and a file picker", () => {
-    const html = renderToStaticMarkup(
-      <ImageBlockEditor block={baseBlock} onChangeBlock={() => undefined} />,
+  it("renders the preview, source, and alt fields from the block", () => {
+    renderEditor();
+
+    expect(screen.getByRole("img", { name: "Company logo" })).toHaveAttribute(
+      "src",
+      "https://example.com/logo.png",
     );
-
-    expect(html).toContain('src="https://example.com/logo.png"');
-    expect(html).toContain('alt="Company logo"');
-    expect(html).toContain('value="Company logo"');
-    expect(html).toContain('type="file"');
-    expect(html).toContain('value="https://example.com/logo.png"');
+    expect(screen.getByLabelText("Source")).toHaveValue("https://example.com/logo.png");
+    expect(screen.getByLabelText("Alt text")).toHaveValue("Company logo");
+    expect(screen.getByLabelText("Upload")).toHaveAttribute("type", "file");
   });
 
-  it("updates block.alt when the alt input changes", () => {
-    const changes: Block[] = [];
-    const element = ImageBlockEditor({
-      block: baseBlock,
-      onChangeBlock: (block) => changes.push(block),
-    });
-    const control = requireControl(element, "alt");
+  it("updates block.alt as the alt text is edited", async () => {
+    const user = userEvent.setup();
+    const { onChangeBlock } = renderEditor();
+    const altInput = screen.getByLabelText("Alt text");
 
-    getChangeHandler(control)({ currentTarget: { value: "Updated logo" } });
+    await user.clear(altInput);
+    await user.type(altInput, "Updated logo");
 
-    expect(changes[0]).toEqual({ ...baseBlock, alt: "Updated logo" });
-  });
-
-  it("updates block.src when the src input changes", () => {
-    const changes: Block[] = [];
-    const element = ImageBlockEditor({
-      block: baseBlock,
-      onChangeBlock: (block) => changes.push(block),
-    });
-    const control = requireControl(element, "src");
-
-    getChangeHandler(control)({ currentTarget: { value: "data:image/svg+xml;base64,Zm9v" } });
-
-    expect(changes[0]).toEqual({ ...baseBlock, src: "data:image/svg+xml;base64,Zm9v" });
-  });
-
-  it("falls back to a placeholder when src is empty", () => {
-    const emptyBlock = { type: "image", src: "" } satisfies ImageBlock;
-    const html = renderToStaticMarkup(
-      <ImageBlockEditor block={emptyBlock} onChangeBlock={() => undefined} />,
+    expect(altInput).toHaveValue("Updated logo");
+    expect(onChangeBlock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ alt: "Updated logo" }),
     );
+  });
 
-    expect(html).toContain("No image selected");
+  it("updates block.src as the source is edited", async () => {
+    const user = userEvent.setup();
+    const { onChangeBlock } = renderEditor();
+    const srcInput = screen.getByLabelText("Source");
+
+    await user.clear(srcInput);
+    await user.type(srcInput, "data:image/svg+xml;base64,Zm9v");
+
+    expect(onChangeBlock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ src: "data:image/svg+xml;base64,Zm9v" }),
+    );
+  });
+
+  it("shows a placeholder when no image is selected", () => {
+    renderEditor({ type: "image", src: "" } satisfies ImageBlock);
+
+    expect(screen.getByText("No image selected")).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 });
-
-type TestElement = ReactElement<Record<string, unknown>>;
-
-function requireControl(node: ReactNode, name: string): TestElement {
-  const control = findElement(
-    node,
-    (element) => element.props.name === name || element.props["data-name"] === name,
-  );
-
-  if (!control) {
-    throw new Error(`Control not found: ${name}`);
-  }
-
-  return control;
-}
-
-function findElement(
-  node: ReactNode,
-  predicate: (element: TestElement) => boolean,
-): TestElement | undefined {
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      const match = findElement(child, predicate);
-
-      if (match) {
-        return match;
-      }
-    }
-
-    return undefined;
-  }
-
-  if (!isReactElement(node)) {
-    return undefined;
-  }
-
-  if (predicate(node)) {
-    return node;
-  }
-
-  const children = node.props.children;
-  const childNodes = Array.isArray(children) ? children : [children];
-
-  for (const child of childNodes) {
-    const match = findElement(child, predicate);
-
-    if (match) {
-      return match;
-    }
-  }
-
-  return undefined;
-}
-
-function getChangeHandler(
-  element: TestElement,
-): (event: { currentTarget: { value: string; valueAsNumber?: number } }) => void {
-  const onChange = element.props.onChange;
-
-  if (typeof onChange !== "function") {
-    throw new Error("Control has no change handler");
-  }
-
-  return onChange as (event: { currentTarget: { value: string; valueAsNumber?: number } }) => void;
-}
-
-function isReactElement(node: ReactNode): node is TestElement {
-  return typeof node === "object" && node !== null && "props" in node;
-}

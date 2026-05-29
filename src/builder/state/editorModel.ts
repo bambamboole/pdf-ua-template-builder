@@ -403,10 +403,41 @@ function createEditorBlock(block: Block): EditorBlock {
   };
 }
 
-function findEditorBlock(model: EditorModel, blockUid: string): EditorBlock | undefined {
+export function findEditorBlock(model: EditorModel, blockUid: string): EditorBlock | undefined {
   const allRows = [...model.rows, ...model.footerRows];
 
   return allRows.flatMap((row) => row.blocks).find((block) => block.uid === blockUid);
+}
+
+export function resolveSelectedEditorBlock(
+  model: EditorModel,
+  blockUid: string | null,
+): EditorBlock | null {
+  return blockUid ? (findEditorBlock(model, blockUid) ?? null) : null;
+}
+
+export function reconcileSelectedBlockUid(
+  model: EditorModel,
+  blockUid: string | null,
+): string | null {
+  return resolveSelectedEditorBlock(model, blockUid) ? blockUid : null;
+}
+
+export function createNextBlockId(model: EditorModel, blockType: string): string {
+  const usedIds = new Set(
+    serializeTemplate(model).rows?.flatMap((row) =>
+      row.blocks
+        .map((block) => block.id)
+        .filter((id): id is string => typeof id === "string" && id.length > 0),
+    ) ?? [],
+  );
+  let nextId = 1;
+
+  while (usedIds.has(`${blockType}-${nextId}`)) {
+    nextId += 1;
+  }
+
+  return `${blockType}-${nextId}`;
 }
 
 function setBlockWidth(block: Block, width: string | undefined): Block {
