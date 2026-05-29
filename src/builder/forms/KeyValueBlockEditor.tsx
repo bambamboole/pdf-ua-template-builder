@@ -6,10 +6,9 @@ import { isRecord, omitKey, renameKey } from "../lib/records";
 import { useBuilderSensors } from "../lib/sensors";
 import { AddButton } from "../primitives/Button";
 import type { BlockEditorProps } from "./blockEditors";
+import { InspectorSection } from "../inspector/InspectorShell";
 import { SortableRow } from "./SortableRow";
 import { Field, Input } from "./controls";
-
-const groupLabelClass = "text-2xs font-medium uppercase tracking-wide text-fg-muted";
 
 interface KeyValueField {
   key: string;
@@ -107,12 +106,13 @@ export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps):
   const values = getValues(kvBlock);
 
   return (
-    <div className="grid gap-3 [container-type:inline-size]">
-      <FieldsEditor block={kvBlock} fields={fields} onChangeBlock={onChangeBlock} />
+    <>
+      <InspectorSection title="Fields">
+        <FieldsEditor block={kvBlock} fields={fields} onChangeBlock={onChangeBlock} />
+      </InspectorSection>
 
       {fields.length > 0 ? (
-        <div className="grid gap-2">
-          <span className={groupLabelClass}>Values</span>
+        <InspectorSection title="Values">
           {fields.map((field) => (
             <Field key={field.key} label={field.label || field.key}>
               <Input
@@ -125,9 +125,9 @@ export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps):
               />
             </Field>
           ))}
-        </div>
+        </InspectorSection>
       ) : null}
-    </div>
+    </>
   );
 }
 
@@ -160,8 +160,7 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
   const sortableIds = fields.map((_, index) => String(index));
 
   return (
-    <div className="grid gap-2">
-      <span className={groupLabelClass}>Fields</span>
+    <>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -184,7 +183,7 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
       <AddButton data-name="add-field" onClick={() => onChangeBlock(addField(block))}>
         Add field
       </AddButton>
-    </div>
+    </>
   );
 }
 

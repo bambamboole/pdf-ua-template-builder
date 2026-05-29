@@ -20,7 +20,7 @@ export interface BlockInspectorProps {
   onClose: () => void;
 }
 
-const shellSections = ["Content", "Layout", "Typography", "Spacing"] as const;
+const detailSections = ["Layout", "Typography", "Spacing"] as const;
 
 export function BlockInspector({
   block,
@@ -45,6 +45,18 @@ export function BlockInspector({
   const blockId = typeof block.block.id === "string" ? block.block.id : null;
   const hasRuntimeData = blockId ? data[blockId] !== undefined : false;
   const schemaSupportsBlock = schema["x-pdfUa"].blockOrder.includes(block.block.type);
+  const contentControls = (
+    <BlockContentControls
+      block={block.block}
+      rowData={blockId ? data[blockId] : undefined}
+      onChangeBlock={(nextBlock) => onChangeBlock(block.uid, nextBlock)}
+      onChangeRowData={
+        blockId && onChangeData
+          ? (nextRowData) => onChangeData({ ...data, [blockId]: nextRowData })
+          : undefined
+      }
+    />
+  );
 
   return (
     <InspectorShell ariaLabel="Block inspector">
@@ -76,20 +88,14 @@ export function BlockInspector({
       </dl>
 
       <div className="grid gap-2" aria-label="Inspector sections">
-        {shellSections.map((section) => (
+        {block.block.type === "key-value" ? (
+          contentControls
+        ) : (
+          <InspectorSection title="Content">{contentControls}</InspectorSection>
+        )}
+        {detailSections.map((section) => (
           <InspectorSection key={section} title={section}>
-            {section === "Content" ? (
-              <BlockContentControls
-                block={block.block}
-                rowData={blockId ? data[blockId] : undefined}
-                onChangeBlock={(nextBlock) => onChangeBlock(block.uid, nextBlock)}
-                onChangeRowData={
-                  blockId && onChangeData
-                    ? (nextRowData) => onChangeData({ ...data, [blockId]: nextRowData })
-                    : undefined
-                }
-              />
-            ) : section === "Layout" ? (
+            {section === "Layout" ? (
               <BlockLayoutControls
                 block={block.block}
                 onChangeBlock={(nextBlock) => onChangeBlock(block.uid, nextBlock)}
