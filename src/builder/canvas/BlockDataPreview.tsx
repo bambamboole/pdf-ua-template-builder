@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import type {
   Block,
   DividerBlock,
@@ -11,10 +11,14 @@ import type {
   TableBlock,
   TextBlock,
 } from "../../types/generated/template";
+import { setBlockConfigField } from "../state/configUpdates";
+import { ColumnResizer } from "./ColumnResizer";
+import { formatWidths, labelWidthPercent, tableColumnTracks } from "./columns";
 
 export interface BlockDataPreviewProps {
   block: Block;
   rowData?: unknown;
+  onChange?: (block: Block) => void;
 }
 
 const copyClass =
@@ -26,7 +30,7 @@ function EmptyPreview({ children }: { children: ReactNode }) {
   return <p className="m-0 text-sm text-fg-subtle">{children}</p>;
 }
 
-export function BlockDataPreview({ block, rowData }: BlockDataPreviewProps) {
+export function BlockDataPreview({ block, rowData, onChange }: BlockDataPreviewProps) {
   switch (block.type) {
     case "heading":
       return <TextPreview block={block} variant="heading" />;
@@ -37,9 +41,9 @@ export function BlockDataPreview({ block, rowData }: BlockDataPreviewProps) {
     case "image":
       return <ImagePreview block={block} />;
     case "key-value":
-      return <KeyValuePreview block={block} rowData={rowData} />;
+      return <KeyValuePreview block={block} rowData={rowData} onChange={onChange} />;
     case "table":
-      return <TablePreview block={block} rowData={rowData} />;
+      return <TablePreview block={block} rowData={rowData} onChange={onChange} />;
     case "spacer":
       return <SpacerPreview block={block} />;
     case "divider":
@@ -93,7 +97,16 @@ function ImagePreview({ block }: { block: ImageBlock }) {
   );
 }
 
-function KeyValuePreview({ block, rowData }: { block: KeyValueBlock; rowData?: unknown }) {
+function KeyValuePreview({
+  block,
+  rowData,
+  onChange,
+}: {
+  block: KeyValueBlock;
+  rowData?: unknown;
+  onChange?: (block: Block) => void;
+}) {
+  const listRef = useRef<HTMLDListElement | null>(null);
   const fields = block.config?.fields ?? [];
   const values = mergeRecordValues(block.values, rowData);
   const entries =
@@ -113,39 +126,85 @@ function KeyValuePreview({ block, rowData }: { block: KeyValueBlock; rowData?: u
     return <EmptyPreview>No fields yet</EmptyPreview>;
   }
 
+  const labelPercent = labelWidthPercent(block.config?.labelWidth);
+  const columnsStyle = { gridTemplateColumns: `${labelPercent}% minmax(0, 1fr)` };
+
   return (
-    <dl className="m-0 grid gap-0.5">
+    <dl ref={listRef} className="relative m-0 grid gap-0.5">
       {entries.slice(0, 5).map((entry) => (
-        <div
-          key={entry.key}
-          className="grid min-w-0 items-baseline gap-2 grid-cols-[minmax(72px,0.42fr)_minmax(0,1fr)]"
-        >
-          <dt className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-2xs text-fg-subtle">
+        <div key={entry.key} className="grid min-w-0 items-baseline" style={columnsStyle}>
+          <dt className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap pr-2 text-2xs text-fg-subtle">
             {entry.label}
           </dt>
-          <dd className="m-0 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm text-fg">
+          <dd className="m-0 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap pl-2 text-sm text-fg">
             {entry.value || "—"}
           </dd>
         </div>
       ))}
+      {onChange ? (
+        <div
+          className="absolute inset-y-0 flex -translate-x-1/2"
+          style={{ left: `${labelPercent}%` }}
+        >
+          <ColumnResizer
+            widths={formatWidths([labelPercent, 100 - labelPercent])}
+            count={2}
+            leftIndex={0}
+            containerRef={listRef}
+            label="Resize the label column"
+            onResize={(widths) => onChange(setBlockConfigField(block, "labelWidth", widths[0]))}
+          />
+        </div>
+      ) : null}
     </dl>
   );
 }
 
-function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown }) {
+function TablePreview({
+  block,
+  rowData,
+  onChange,
+}: {
+  block: TableBlock;
+  rowData?: unknown;
+  onChange?: (block: Block) => void;
+}) {
+  const tableRef = useRef<HTMLDivElement | null>(null);
   const columns = block.config?.columns ?? [];
+  const numberRows = block.config?.numberRows === true;
   const rows = Array.isArray(rowData) ? rowData.filter(isRecord) : [];
 
   if (columns.length === 0) {
     return <EmptyPreview>No columns yet</EmptyPreview>;
   }
 
+  const { tracks, data } = tableColumnTracks(
+    columns.map((column) => column.width),
+    numberRows,
+  );
+  const trackStrings = formatWidths(tracks);
+  const trackOffset = numberRows ? 1 : 0;
+
   return (
-    <div className="min-w-0 overflow-hidden rounded-md border border-solid border-border">
+    <div
+      ref={tableRef}
+      className="relative min-w-0 overflow-hidden rounded-md border border-solid border-border"
+    >
       <table className="w-full table-fixed border-collapse text-2xs">
+        <colgroup>
+          {numberRows ? <col style={{ width: `${tracks[0]}%` }} /> : null}
+          {data.map((width, index) => (
+            <col key={columns[index].key} style={{ width: `${width}%` }} />
+          ))}
+        </colgroup>
         <thead>
           <tr>
-            {columns.slice(0, 4).map((column) => (
+            {numberRows ? (
+              <th className="border-0 border-b border-solid border-border bg-surface-muted px-2 py-[5px] text-left font-semibold text-fg-subtle">
+                #
+              </th>
+            ) : null}
+            {columns.map((column) => (
               <th
                 key={column.key}
                 className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-border bg-surface-muted px-2 py-[5px] text-left font-semibold text-fg"
@@ -157,9 +216,14 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
         </thead>
         <tbody>
           {rows.length > 0 ? (
-            rows.slice(0, 3).map((row) => (
+            rows.map((row, rowIndex) => (
               <tr key={tableRowPreviewKey(row, columns)} className="last:[&>td]:border-b-0">
-                {columns.slice(0, 4).map((column) => (
+                {numberRows ? (
+                  <td className="border-0 border-b border-solid border-border px-2 py-[5px] text-left text-fg-subtle">
+                    {rowIndex + 1}
+                  </td>
+                ) : null}
+                {columns.map((column) => (
                   <td
                     key={column.key}
                     className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 border-b border-solid border-border px-2 py-[5px] text-left text-fg-muted"
@@ -172,7 +236,7 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
           ) : (
             <tr>
               <td
-                colSpan={Math.min(columns.length, 4)}
+                colSpan={columns.length + trackOffset}
                 className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-0 px-2 py-[5px] text-left text-fg-muted"
               >
                 No runtime rows yet
@@ -181,6 +245,42 @@ function TablePreview({ block, rowData }: { block: TableBlock; rowData?: unknown
           )}
         </tbody>
       </table>
+      {onChange
+        ? columns.slice(0, -1).map((column, index) => {
+            const leftIndex = trackOffset + index;
+            const boundaryPercent = tracks
+              .slice(0, leftIndex + 1)
+              .reduce((total, value) => total + value, 0);
+
+            return (
+              <div
+                key={`${column.key}:resizer`}
+                className="absolute inset-y-0 flex -translate-x-1/2"
+                style={{ left: `${boundaryPercent}%` }}
+              >
+                <ColumnResizer
+                  widths={trackStrings}
+                  count={tracks.length}
+                  leftIndex={leftIndex}
+                  containerRef={tableRef}
+                  label={`Resize column ${index + 1}`}
+                  onResize={(next) =>
+                    onChange(
+                      setBlockConfigField(
+                        block,
+                        "columns",
+                        columns.map((current, columnIndex) => ({
+                          ...current,
+                          width: (numberRows ? next.slice(1) : next)[columnIndex],
+                        })),
+                      ),
+                    )
+                  }
+                />
+              </div>
+            );
+          })
+        : null}
     </div>
   );
 }

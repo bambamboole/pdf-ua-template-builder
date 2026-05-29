@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties, KeyboardEvent, MouseEvent } from "react";
+import type { Block } from "../../types/generated/template";
 import type { EditorArea, EditorBlock } from "../state/editorModel";
 import type { TemplateData } from "../../types/template";
 import { BlockDataPreview } from "./BlockDataPreview";
@@ -13,6 +14,7 @@ export interface SortableBlockProps {
   selected: boolean;
   onRemoveBlock: (blockUid: string) => void;
   onSelect: (blockUid: string) => void;
+  onChangeBlock: (blockUid: string, block: Block) => void;
   style?: CSSProperties;
 }
 
@@ -24,6 +26,7 @@ export function SortableBlock({
   selected,
   onRemoveBlock,
   onSelect,
+  onChangeBlock,
   style: layoutStyle,
 }: SortableBlockProps) {
   const {
@@ -116,7 +119,11 @@ export function SortableBlock({
         </div>
       </div>
       <div className="grid min-w-0 bg-surface p-3">
-        <BlockDataPreview block={editorBlock.block} rowData={rowData} />
+        <BlockDataPreview
+          block={editorBlock.block}
+          rowData={rowData}
+          onChange={(block) => onChangeBlock(editorBlock.uid, block)}
+        />
       </div>
     </article>
   );

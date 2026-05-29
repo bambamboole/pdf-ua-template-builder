@@ -67,7 +67,8 @@ export interface UnitFieldProps extends BuilderControlProps {
   value?: string;
   placeholder?: string;
   emptyValue?: EmptyTextValue;
-  onChange: (value: string | undefined) => void;
+  readOnly?: boolean;
+  onChange?: (value: string | undefined) => void;
 }
 
 interface FieldLayoutProps extends BuilderControlProps {
@@ -250,6 +251,7 @@ export function UnitField({
   value,
   placeholder = "auto, 50%, 80mm",
   emptyValue = "undefined",
+  readOnly = false,
   onChange,
   ...fieldProps
 }: UnitFieldProps): ReactNode {
@@ -263,12 +265,18 @@ export function UnitField({
         type="text"
         inputMode="text"
         spellCheck={false}
+        className={readOnly ? "cursor-default bg-surface-muted text-fg-muted" : undefined}
         value={value ?? ""}
         placeholder={placeholder}
+        readOnly={readOnly}
         disabled={fieldProps.disabled}
         aria-describedby={fieldState.describedBy}
         aria-invalid={fieldState.invalid || undefined}
-        onChange={(event) => onChange(textValue(event.currentTarget.value, emptyValue))}
+        onChange={
+          readOnly
+            ? undefined
+            : (event) => onChange?.(textValue(event.currentTarget.value, emptyValue))
+        }
       />
     </BuilderField>
   );

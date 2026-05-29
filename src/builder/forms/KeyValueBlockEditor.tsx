@@ -6,8 +6,9 @@ import { isRecord, omitKey, renameKey } from "../lib/records";
 import { useBuilderSensors } from "../lib/sensors";
 import { AddButton } from "../primitives/Button";
 import type { BlockEditorProps } from "./blockEditors";
+import { InspectorSection } from "../inspector/InspectorShell";
 import { SortableRow } from "./SortableRow";
-import { Field, FieldGroup, Input } from "./controls";
+import { Field, Input } from "./controls";
 
 interface KeyValueField {
   key: string;
@@ -105,11 +106,13 @@ export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps):
   const values = getValues(kvBlock);
 
   return (
-    <div className="grid gap-3 [container-type:inline-size]">
-      <FieldsEditor block={kvBlock} fields={fields} onChangeBlock={onChangeBlock} />
+    <>
+      <InspectorSection title="Fields">
+        <FieldsEditor block={kvBlock} fields={fields} onChangeBlock={onChangeBlock} />
+      </InspectorSection>
 
       {fields.length > 0 ? (
-        <FieldGroup legend="Values">
+        <InspectorSection title="Values">
           {fields.map((field) => (
             <Field key={field.key} label={field.label || field.key}>
               <Input
@@ -122,9 +125,9 @@ export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps):
               />
             </Field>
           ))}
-        </FieldGroup>
+        </InspectorSection>
       ) : null}
-    </div>
+    </>
   );
 }
 
@@ -157,7 +160,7 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
   const sortableIds = fields.map((_, index) => String(index));
 
   return (
-    <FieldGroup legend="Fields">
+    <>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -180,7 +183,7 @@ function FieldsEditor({ block, fields, onChangeBlock }: FieldsEditorProps) {
       <AddButton data-name="add-field" onClick={() => onChangeBlock(addField(block))}>
         Add field
       </AddButton>
-    </FieldGroup>
+    </>
   );
 }
 
@@ -202,22 +205,24 @@ function FieldRow({ id, index, field, onChangeKey, onChangeLabel, onRemove }: Fi
       removeName={`remove-field-${index}`}
       onRemove={onRemove}
     >
-      <Field label="Key">
-        <Input
-          name={`field-key-${index}`}
-          type="text"
-          value={field.key}
-          onChange={(event) => onChangeKey(event.currentTarget.value)}
-        />
-      </Field>
-      <Field label="Label">
-        <Input
-          name={`field-label-${index}`}
-          type="text"
-          value={field.label}
-          onChange={(event) => onChangeLabel(event.currentTarget.value)}
-        />
-      </Field>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Key">
+          <Input
+            name={`field-key-${index}`}
+            type="text"
+            value={field.key}
+            onChange={(event) => onChangeKey(event.currentTarget.value)}
+          />
+        </Field>
+        <Field label="Label">
+          <Input
+            name={`field-label-${index}`}
+            type="text"
+            value={field.label}
+            onChange={(event) => onChangeLabel(event.currentTarget.value)}
+          />
+        </Field>
+      </div>
     </SortableRow>
   );
 }

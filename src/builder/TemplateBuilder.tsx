@@ -447,6 +447,7 @@ export function TemplateBuilder({
               selectedBlockUid={selectedBlockUid}
               onRemoveBlock={handleRemoveBlock}
               onSelectBlock={handleSelectBlock}
+              onChangeBlock={handleChangeBlock}
               onDeselect={handleCloseInspector}
               onSetRowWidths={handleSetRowWidths}
               onToggleFooterRepeat={handleToggleFooterRepeat}
@@ -476,13 +477,9 @@ export function TemplateBuilder({
               metadata={schema["x-pdfUa"]}
               format={pageSize.format}
               orientation={pageSize.orientation}
-              footerRepeat={footerRepeat}
-              pageNumbers={pageNumbers}
               onChangeTemplate={handleChangeTemplateSettings}
               onChangeFormat={handleChangeFormat}
               onChangeOrientation={handleChangeOrientation}
-              onToggleFooterRepeat={handleToggleFooterRepeat}
-              onChangePageNumbers={handleChangePageNumbers}
             />
           ) : null}
         </section>

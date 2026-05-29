@@ -5,6 +5,7 @@ import { KeyValueBlockEditor } from "../forms/KeyValueBlockEditor";
 import { TableBlockEditor } from "../forms/TableBlockEditor";
 import { SelectField, TextAreaField, TextField, type SelectFieldOption } from "../forms/controls";
 import { setBlockConfigField } from "../state/configUpdates";
+import { InspectorSection } from "./InspectorShell";
 
 export interface BlockContentControlsProps {
   block: Block;
@@ -24,12 +25,26 @@ const headingLevelOptions = [
   { value: "6", label: "Heading 6" },
 ] as const satisfies readonly SelectFieldOption<HeadingLevelValue>[];
 
-export function BlockContentControls({
-  block,
-  rowData,
-  onChangeBlock,
-  onChangeRowData,
-}: BlockContentControlsProps): ReactNode {
+export function BlockContentControls(props: BlockContentControlsProps): ReactNode {
+  if (props.block.type === "key-value") {
+    return <KeyValueBlockEditor block={props.block} onChangeBlock={props.onChangeBlock} />;
+  }
+
+  if (props.block.type === "table") {
+    return (
+      <TableBlockEditor
+        block={props.block}
+        rowData={props.rowData}
+        onChangeBlock={props.onChangeBlock}
+        onChangeRowData={props.onChangeRowData}
+      />
+    );
+  }
+
+  return <InspectorSection title="Content">{renderContentFields(props)}</InspectorSection>;
+}
+
+function renderContentFields({ block, onChangeBlock }: BlockContentControlsProps): ReactNode {
   switch (block.type) {
     case "text":
       return (
@@ -80,16 +95,8 @@ export function BlockContentControls({
     case "image":
       return <ImageBlockEditor block={block} onChangeBlock={onChangeBlock} />;
     case "key-value":
-      return <KeyValueBlockEditor block={block} onChangeBlock={onChangeBlock} />;
     case "table":
-      return (
-        <TableBlockEditor
-          block={block}
-          rowData={rowData}
-          onChangeBlock={onChangeBlock}
-          onChangeRowData={onChangeRowData}
-        />
-      );
+      return null;
     case "spacer":
     case "divider":
       return <p className="m-0 text-xs text-fg-muted">No content fields for this block.</p>;

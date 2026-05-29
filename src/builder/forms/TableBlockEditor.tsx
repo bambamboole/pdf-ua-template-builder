@@ -2,12 +2,15 @@ import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { ReactNode } from "react";
 import type { Align, Block, TableBlock } from "../../types/generated/template";
+import { NUMBER_COLUMN_RESERVE, percentWidth } from "../canvas/columns";
 import { isRecord, omitKey, renameKey } from "../lib/records";
 import { useBuilderSensors } from "../lib/sensors";
 import { AddButton } from "../primitives/Button";
+import { InspectorSection } from "../inspector/InspectorShell";
+import { setBlockConfigField } from "../state/configUpdates";
 import type { BlockEditorProps } from "./blockEditors";
 import { SortableRow } from "./SortableRow";
-import { AlignSelect, Field, FieldGroup, Input } from "./controls";
+import { AlignSelect, Field, Input } from "./controls";
 
 const hintClass = "m-0 text-2xs text-fg-muted";
 
@@ -120,27 +123,36 @@ export function setColumnAlign(
   );
 }
 
-export function setColumnWidth(
-  block: TableBlock,
-  index: number,
-  nextWidth: string,
-): TableBlock {
+export function setTableNumberRows(block: TableBlock, value: boolean | undefined): TableBlock {
+  const previousOn = block.config?.numberRows === true;
+  const nextOn = value === true;
+  const withFlag = setBlockConfigField(block, "numberRows", value);
+
+  if (previousOn === nextOn) {
+    return withFlag;
+  }
+
+  return adjustFirstColumnWidth(withFlag, nextOn ? -NUMBER_COLUMN_RESERVE : NUMBER_COLUMN_RESERVE);
+}
+
+function adjustFirstColumnWidth(block: TableBlock, delta: number): TableBlock {
   const columns = getColumns(block);
+
+  if (columns.length === 0 || !columns.every((column) => percentWidth(column.width) !== null)) {
+    return block;
+  }
 
   return applyColumns(
     block,
-    columns.map((column, currentIndex) => {
-      if (currentIndex !== index) {
+    columns.map((column, index) => {
+      if (index !== 0) {
         return column;
       }
 
-      const next: TableColumn = { ...column };
-      if (nextWidth === "") {
-        delete next.width;
-      } else {
-        next.width = nextWidth;
-      }
-      return next;
+      const current = percentWidth(column.width) ?? 0;
+      const next = Math.max(NUMBER_COLUMN_RESERVE, current + delta);
+
+      return { ...column, width: `${next}%` };
     }),
   );
 }
@@ -230,7 +242,7 @@ export function TableBlockEditor({
   }
 
   return (
-    <div className="grid gap-3 [container-type:inline-size]">
+    <>
       <ColumnsEditor
         block={tableBlock}
         columns={columns}
@@ -245,7 +257,7 @@ export function TableBlockEditor({
         columns={columns}
         onChangeRowData={onChangeRowData}
       />
-    </div>
+    </>
   );
 }
 
@@ -286,7 +298,7 @@ function ColumnsEditor({
   const sortableIds = columns.map((_, index) => String(index));
 
   return (
-    <FieldGroup legend="Columns">
+    <InspectorSection title="Columns">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -302,7 +314,6 @@ function ColumnsEditor({
               onChangeKey={(value) => onRenameColumnKey(index, value)}
               onChangeLabel={(value) => onChangeBlock(setColumnLabel(block, index, value))}
               onChangeAlign={(value) => onChangeBlock(setColumnAlign(block, index, value))}
-              onChangeWidth={(value) => onChangeBlock(setColumnWidth(block, index, value))}
               onRemove={() => onRemoveColumn(index)}
             />
           ))}
@@ -311,7 +322,7 @@ function ColumnsEditor({
       <AddButton data-name="add-column" onClick={() => onChangeBlock(addColumn(block))}>
         Add column
       </AddButton>
-    </FieldGroup>
+    </InspectorSection>
   );
 }
 
@@ -322,7 +333,6 @@ interface ColumnRowProps {
   onChangeKey: (value: string) => void;
   onChangeLabel: (value: string) => void;
   onChangeAlign: (value: string) => void;
-  onChangeWidth: (value: string) => void;
   onRemove: () => void;
 }
 
@@ -333,7 +343,6 @@ function ColumnRow({
   onChangeKey,
   onChangeLabel,
   onChangeAlign,
-  onChangeWidth,
   onRemove,
 }: ColumnRowProps) {
   return (
@@ -344,35 +353,29 @@ function ColumnRow({
       removeName={`remove-column-${index}`}
       onRemove={onRemove}
     >
-      <Field label="Key">
-        <Input
-          name={`column-key-${index}`}
-          type="text"
-          value={column.key}
-          onChange={(event) => onChangeKey(event.currentTarget.value)}
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Key">
+          <Input
+            name={`column-key-${index}`}
+            type="text"
+            value={column.key}
+            onChange={(event) => onChangeKey(event.currentTarget.value)}
+          />
+        </Field>
+        <Field label="Label">
+          <Input
+            name={`column-label-${index}`}
+            type="text"
+            value={column.label}
+            onChange={(event) => onChangeLabel(event.currentTarget.value)}
+          />
+        </Field>
+        <AlignSelect
+          name={`column-align-${index}`}
+          value={(column.align ?? "") as string}
+          onChange={onChangeAlign}
         />
-      </Field>
-      <Field label="Label">
-        <Input
-          name={`column-label-${index}`}
-          type="text"
-          value={column.label}
-          onChange={(event) => onChangeLabel(event.currentTarget.value)}
-        />
-      </Field>
-      <AlignSelect
-        name={`column-align-${index}`}
-        value={(column.align ?? "") as string}
-        onChange={onChangeAlign}
-      />
-      <Field label="Width">
-        <Input
-          name={`column-width-${index}`}
-          type="text"
-          value={column.width ?? ""}
-          onChange={(event) => onChangeWidth(event.currentTarget.value)}
-        />
-      </Field>
+      </div>
     </SortableRow>
   );
 }
@@ -406,16 +409,16 @@ function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorP
 
   if (!canEditRows) {
     return (
-      <FieldGroup legend="Rows">
+      <InspectorSection title="Rows">
         <p className={hintClass}>Give this block an id to edit runtime row data here.</p>
-      </FieldGroup>
+      </InspectorSection>
     );
   }
 
   const sortableIds = rows.map((_, index) => String(index));
 
   return (
-    <FieldGroup legend="Rows">
+    <InspectorSection title="Rows">
       {rows.length === 0 ? (
         <p className={hintClass}>No rows yet. Add one to seed runtime data for this table.</p>
       ) : (
@@ -448,7 +451,7 @@ function RowsEditor({ canEditRows, rows, columns, onChangeRowData }: RowsEditorP
       >
         Add row
       </AddButton>
-    </FieldGroup>
+    </InspectorSection>
   );
 }
 
@@ -470,16 +473,18 @@ function DataRow({ id, index, row, columns, onChangeCell, onRemove }: DataRowPro
       removeName={`remove-row-${index}`}
       onRemove={onRemove}
     >
-      {columns.map((column) => (
-        <Field key={column.key} label={column.label || column.key}>
-          <Input
-            name={`row-${index}.${column.key}`}
-            type="text"
-            value={row[column.key] ?? ""}
-            onChange={(event) => onChangeCell(column.key, event.currentTarget.value)}
-          />
-        </Field>
-      ))}
+      <div className="grid grid-cols-2 gap-2">
+        {columns.map((column) => (
+          <Field key={column.key} label={column.label || column.key}>
+            <Input
+              name={`row-${index}.${column.key}`}
+              type="text"
+              value={row[column.key] ?? ""}
+              onChange={(event) => onChangeCell(column.key, event.currentTarget.value)}
+            />
+          </Field>
+        ))}
+      </div>
     </SortableRow>
   );
 }

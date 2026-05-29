@@ -3,7 +3,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties, RefObject } from "react";
 import { Fragment, useRef } from "react";
-import type { Orientation, PageFormat } from "../../types/generated/template";
+import type { Block, Orientation, PageFormat } from "../../types/generated/template";
 import type { TemplateData } from "../../types/template";
 import type {
   EditorArea,
@@ -27,6 +27,7 @@ export interface BuilderCanvasProps {
   selectedBlockUid: string | null;
   onRemoveBlock: (blockUid: string) => void;
   onSelectBlock: (blockUid: string) => void;
+  onChangeBlock: (blockUid: string, block: Block) => void;
   onDeselect: () => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
   onToggleFooterRepeat: (repeat: boolean) => void;
@@ -43,6 +44,7 @@ export function BuilderCanvas({
   selectedBlockUid,
   onRemoveBlock,
   onSelectBlock,
+  onChangeBlock,
   onDeselect,
   onSetRowWidths,
   onToggleFooterRepeat,
@@ -68,6 +70,7 @@ export function BuilderCanvas({
           fillLabel="Drop a block here to add a new row"
           onRemoveBlock={onRemoveBlock}
           onSelectBlock={onSelectBlock}
+          onChangeBlock={onChangeBlock}
           onSetRowWidths={onSetRowWidths}
         />
 
@@ -103,6 +106,7 @@ export function BuilderCanvas({
             fillLabel="Drop a block here to add a footer row"
             onRemoveBlock={onRemoveBlock}
             onSelectBlock={onSelectBlock}
+            onChangeBlock={onChangeBlock}
             onSetRowWidths={onSetRowWidths}
           />
 
@@ -139,6 +143,7 @@ interface CanvasAreaProps {
   fillLabel: string;
   onRemoveBlock: (blockUid: string) => void;
   onSelectBlock: (blockUid: string) => void;
+  onChangeBlock: (blockUid: string, block: Block) => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
 }
 
@@ -152,6 +157,7 @@ function CanvasArea({
   fillLabel,
   onRemoveBlock,
   onSelectBlock,
+  onChangeBlock,
   onSetRowWidths,
 }: CanvasAreaProps) {
   const { setNodeRef: setNewRowRef, isOver: isNewRowOver } = useDroppable({
@@ -174,6 +180,7 @@ function CanvasArea({
             selectedBlockUid={selectedBlockUid}
             onRemoveBlock={onRemoveBlock}
             onSelectBlock={onSelectBlock}
+            onChangeBlock={onChangeBlock}
             onSetRowWidths={onSetRowWidths}
           />
         ))}
@@ -200,6 +207,7 @@ interface CanvasRowProps {
   selectedBlockUid: string | null;
   onRemoveBlock: (blockUid: string) => void;
   onSelectBlock: (blockUid: string) => void;
+  onChangeBlock: (blockUid: string, block: Block) => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
 }
 
@@ -210,6 +218,7 @@ function CanvasRow({
   selectedBlockUid,
   onRemoveBlock,
   onSelectBlock,
+  onChangeBlock,
   onSetRowWidths,
 }: CanvasRowProps) {
   const rowRef = useRef<HTMLDivElement | null>(null);
@@ -278,6 +287,7 @@ function CanvasRow({
                 selected={editorBlock.uid === selectedBlockUid}
                 onRemoveBlock={onRemoveBlock}
                 onSelect={onSelectBlock}
+                onChangeBlock={onChangeBlock}
               />
               {canResizeColumns && index < row.blocks.length - 1 ? (
                 <ColumnResizer

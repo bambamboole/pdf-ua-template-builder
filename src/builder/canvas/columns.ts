@@ -50,7 +50,7 @@ export function setBoundary(
   const pairTotal = widths[leftIndex] + widths[rightIndex];
   const minLeft = Math.min(MIN_WIDTH, pairTotal);
   const maxLeft = Math.max(minLeft, pairTotal - MIN_WIDTH);
-  const nextLeft = clamp(leftPercent, minLeft, maxLeft);
+  const nextLeft = Math.round(clamp(leftPercent, minLeft, maxLeft));
   const nextWidths = [...widths];
 
   nextWidths[leftIndex] = nextLeft;
@@ -59,12 +59,59 @@ export function setBoundary(
   return nextWidths;
 }
 
-function equalWidths(count: number): number[] {
-  const baseWidth = Math.floor(TOTAL_WIDTH / count);
-  const widths = Array.from({ length: count }, () => baseWidth);
-  widths[count - 1] += TOTAL_WIDTH - baseWidth * count;
+export function labelWidthPercent(width: string | null | undefined, fallback = 30): number {
+  const parsed = width == null ? Number.NaN : parseWidth(width);
+  const value = Number.isFinite(parsed) ? parsed : fallback;
+
+  return Math.round(clamp(value, MIN_WIDTH, TOTAL_WIDTH - MIN_WIDTH));
+}
+
+export const NUMBER_COLUMN_RESERVE = 5;
+
+export interface TableColumnTracks {
+  tracks: number[];
+  data: number[];
+}
+
+export function percentWidth(width: string | number | null | undefined): number | null {
+  if (width == null) {
+    return null;
+  }
+
+  const parsed = parseWidth(width);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function distribute(count: number, total: number): number[] {
+  if (count <= 0) {
+    return [];
+  }
+
+  const base = Math.floor(total / count);
+  const widths = Array.from({ length: count }, () => base);
+  widths[count - 1] += total - base * count;
 
   return widths;
+}
+
+export function tableColumnTracks(
+  widths: readonly (string | null | undefined)[],
+  numberRows: boolean,
+): TableColumnTracks {
+  const available = numberRows ? TOTAL_WIDTH - NUMBER_COLUMN_RESERVE : TOTAL_WIDTH;
+  const parsed = widths.map((width) => percentWidth(width));
+  const data =
+    widths.length > 0 && parsed.every((value): value is number => value !== null)
+      ? parsed
+      : distribute(widths.length, available);
+  const tracks = numberRows ? [NUMBER_COLUMN_RESERVE, ...data] : [...data];
+
+  return { tracks, data };
+}
+
+function equalWidths(count: number): number[] {
+  return distribute(count, TOTAL_WIDTH);
 }
 
 function parseWidth(width: number | string): number {

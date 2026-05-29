@@ -40,6 +40,37 @@ describe("BlockDataPreview", () => {
     expect(html).toContain("RE-2026-001234");
   });
 
+  it("reflects labelWidth and exposes the label resizer when editable", () => {
+    const block: Block = {
+      type: "key-value",
+      id: "invoice-meta",
+      values: { invoiceNumber: "RE-2026-001234" },
+      config: {
+        labelWidth: "40%",
+        fields: [{ key: "invoiceNumber", label: "Invoice number" }],
+      },
+    };
+
+    const html = renderToStaticMarkup(<BlockDataPreview block={block} onChange={() => {}} />);
+
+    expect(html).toContain("grid-template-columns:40% minmax(0, 1fr)");
+    expect(html).toContain("Resize the label column");
+  });
+
+  it("omits the label resizer when no change handler is provided", () => {
+    const block: Block = {
+      type: "key-value",
+      id: "invoice-meta",
+      values: { invoiceNumber: "RE-2026-001234" },
+      config: { fields: [{ key: "invoiceNumber", label: "Invoice number" }] },
+    };
+
+    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+
+    expect(html).not.toContain("Resize the label column");
+    expect(html).toContain("grid-template-columns:30% minmax(0, 1fr)");
+  });
+
   it("renders table headers and runtime rows directly on the card", () => {
     const block: Block = {
       type: "table",
@@ -62,5 +93,73 @@ describe("BlockDataPreview", () => {
     expect(html).toContain("Description");
     expect(html).toContain("Accessible PDF template");
     expect(html).toContain("3.800,00 €");
+  });
+
+  it("adds a numbered column to the table preview when numberRows is enabled", () => {
+    const block: Block = {
+      type: "table",
+      id: "lineItems",
+      config: { numberRows: true, columns: [{ key: "description", label: "Description" }] },
+    };
+
+    const html = renderToStaticMarkup(
+      <BlockDataPreview block={block} rowData={[{ description: "Row one" }, { description: "Row two" }]} />,
+    );
+
+    expect(html).toContain(">#<");
+    expect(html).toContain(">1<");
+    expect(html).toContain(">2<");
+  });
+
+  it("omits the numbered column when numberRows is not set", () => {
+    const block: Block = {
+      type: "table",
+      id: "lineItems",
+      config: { columns: [{ key: "description", label: "Description" }] },
+    };
+
+    const html = renderToStaticMarkup(
+      <BlockDataPreview block={block} rowData={[{ description: "Row one" }]} />,
+    );
+
+    expect(html).not.toContain(">#<");
+  });
+
+  it("overlays a column resizer at each interior boundary when editable", () => {
+    const block: Block = {
+      type: "table",
+      id: "lineItems",
+      config: {
+        columns: [
+          { key: "description", label: "Description" },
+          { key: "qty", label: "Qty" },
+          { key: "total", label: "Total" },
+        ],
+      },
+    };
+
+    const html = renderToStaticMarkup(<BlockDataPreview block={block} onChange={() => {}} />);
+
+    expect(html).toContain("<colgroup");
+    expect(html).toContain('aria-label="Resize column 1"');
+    expect(html).toContain('aria-label="Resize column 2"');
+    expect(html).not.toContain('aria-label="Resize column 3"');
+  });
+
+  it("omits table column resizers when the preview is read-only", () => {
+    const block: Block = {
+      type: "table",
+      id: "lineItems",
+      config: {
+        columns: [
+          { key: "description", label: "Description" },
+          { key: "qty", label: "Qty" },
+        ],
+      },
+    };
+
+    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+
+    expect(html).not.toContain("Resize column");
   });
 });

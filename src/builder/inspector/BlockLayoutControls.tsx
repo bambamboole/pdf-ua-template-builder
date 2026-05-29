@@ -13,6 +13,7 @@ import {
   UnitField,
   type SelectFieldOption,
 } from "../forms/controls";
+import { setTableNumberRows } from "../forms/TableBlockEditor";
 import { setBlockConfigField } from "../state/configUpdates";
 
 export interface BlockLayoutControlsProps {
@@ -50,21 +51,25 @@ type NumberRowsValue = "show" | "hide";
 export function BlockLayoutControls({ block, onChangeBlock }: BlockLayoutControlsProps): ReactNode {
   return (
     <div className="grid gap-2">
-      <UnitField
-        name="config.width"
-        label="Width"
-        value={block.config?.width ?? undefined}
-        onChange={(value) => onChangeBlock(setCommonConfigField(block, "width", value))}
-      />
-      <SelectField
-        name="config.align"
-        label="Align"
-        value={block.config?.align ?? undefined}
-        options={alignOptions}
-        optional
-        emptyLabel="Default"
-        onChange={(value) => onChangeBlock(setCommonConfigField(block, "align", value))}
-      />
+      <div className="grid grid-cols-2 items-start gap-2">
+        <UnitField
+          name="config.width"
+          label="Width"
+          value={block.config?.width ?? undefined}
+          placeholder="Full width"
+          readOnly
+          help="Drag the column divider on the canvas to resize."
+        />
+        <SelectField
+          name="config.align"
+          label="Align"
+          value={block.config?.align ?? undefined}
+          options={alignOptions}
+          optional
+          emptyLabel="Default"
+          onChange={(value) => onChangeBlock(setCommonConfigField(block, "align", value))}
+        />
+      </div>
       {renderTypeSpecificControls(block, onChangeBlock)}
     </div>
   );
@@ -129,7 +134,7 @@ function renderTypeSpecificControls(
       );
     case "table":
       return (
-        <>
+        <div className="grid grid-cols-2 gap-2">
           <SelectField
             name="config.style"
             label="Table style"
@@ -147,20 +152,12 @@ function renderTypeSpecificControls(
             optional
             emptyLabel="Default"
             onChange={(value) =>
-              onChangeBlock(setBlockConfigField(block, "numberRows", booleanFromNumberRows(value)))
+              onChangeBlock(setTableNumberRows(block, booleanFromNumberRows(value)))
             }
           />
-        </>
+        </div>
       );
     case "key-value":
-      return (
-        <UnitField
-          name="config.labelWidth"
-          label="Label width"
-          value={block.config?.labelWidth}
-          onChange={(value) => onChangeBlock(setBlockConfigField(block, "labelWidth", value))}
-        />
-      );
     case "heading":
     case "text":
     case "html":
