@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Orientation, PageFormat } from "../../types/generated/template";
+import { selectControlClass } from "../forms/controls/fieldStyles";
 import { PAGE_SIZES_MM } from "../lib/pageSizes";
 
 const PAGE_FORMATS = Object.keys(PAGE_SIZES_MM) as PageFormat[];
@@ -13,8 +14,7 @@ const primaryButtonClass =
 const iconGhostButtonClass =
   "inline-flex h-8 w-8 items-center justify-center m-0 cursor-pointer rounded-md border border-solid border-transparent bg-transparent p-0 text-stone-900 transition-colors hover:border-stone-200 hover:bg-stone-100 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";
 
-const selectClass =
-  "h-8 w-auto min-w-0 cursor-pointer appearance-none rounded-md border border-solid border-stone-200 bg-white py-0 pl-3 pr-7 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20 bg-[linear-gradient(45deg,transparent_50%,#6b6b6b_50%),linear-gradient(135deg,#6b6b6b_50%,transparent_50%)] bg-[length:5px_5px,5px_5px] bg-[position:calc(100%-14px)_50%,calc(100%-9px)_50%] bg-no-repeat";
+const selectClass = selectControlClass;
 
 const inputClass =
   "h-8 w-full min-w-0 rounded-md border border-solid border-stone-200 bg-white px-3 text-stone-900 outline-none transition-colors hover:border-stone-300 focus-visible:border-indigo-600 focus-visible:ring-3 focus-visible:ring-indigo-600/20";

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Orientation, PageFormat, Template } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
+import { docChipClass } from "../blocks/chipStyles";
 import { CheckboxField, SelectField } from "../forms/controls";
 import { PAGE_SIZES_MM } from "../lib/pageSizes";
 import type { PageNumbersValue } from "../state/editorModel";
@@ -9,12 +10,9 @@ import {
   inspectorSectionClass,
   inspectorSectionHeadingClass,
   inspectorTitleClass,
-} from "./BlockInspector";
+} from "./inspectorStyles";
 import { SpacingControls } from "./SpacingControls";
 import { TypographyControls } from "./TypographyControls";
-
-const chipClass =
-  "inline-grid h-[22px] min-w-[22px] flex-none place-items-center rounded bg-stone-100 px-1 font-mono text-[11px] font-semibold text-stone-500";
 
 const pageFormatOptions = Object.keys(PAGE_SIZES_MM).map((format) => ({
   value: format as PageFormat,
@@ -64,7 +62,7 @@ export function DocumentSettingsInspector({
     <aside className={inspectorClass} aria-label="Document settings inspector">
       <header className="flex min-w-0 items-start justify-between gap-2">
         <div className="flex min-w-0 flex-auto items-start gap-2">
-          <span className={chipClass} aria-hidden="true">
+          <span className={docChipClass} aria-hidden="true">
             Doc
           </span>
           <div>

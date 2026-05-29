@@ -1,5 +1,6 @@
 import { useDraggable } from "@dnd-kit/core";
 import { getBlockChrome } from "./blockChrome";
+import { paletteChipClass } from "./chipStyles";
 
 export interface BlockPaletteProps {
   blockTypes: string[];
@@ -11,8 +12,7 @@ const paletteListClass = "flex min-w-0 gap-1 overflow-x-auto [scrollbar-width:th
 const paletteItemClass =
   "flex flex-none cursor-grab items-center gap-3 m-0 min-h-8 rounded-md border border-solid border-transparent bg-transparent px-2 py-1 text-left text-xs font-medium text-stone-900 transition-colors hover:border-stone-200 hover:bg-stone-100 active:scale-[0.98] active:cursor-grabbing active:bg-stone-100";
 
-export const paletteChipClass =
-  "inline-grid h-[22px] w-[22px] flex-none place-items-center rounded bg-stone-100 font-mono text-[11px] font-semibold text-stone-500";
+export { paletteChipClass };
 
 export function BlockPalette({ blockTypes, onAdd }: BlockPaletteProps) {
   return (
