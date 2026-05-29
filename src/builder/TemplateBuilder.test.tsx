@@ -6,14 +6,14 @@ import type { Template } from "../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../types/template";
 import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
 import { BlockInspector } from "./inspector/BlockInspector";
-import { createEditorModel } from "./state/editorModel";
+import { getRowIndex } from "./state/dragDrop";
 import {
-  TemplateBuilder,
+  createEditorModel,
   createNextBlockId,
-  getRowIndex,
   reconcileSelectedBlockUid,
   resolveSelectedEditorBlock,
-} from "./TemplateBuilder";
+} from "./state/editorModel";
+import { TemplateBuilder } from "./TemplateBuilder";
 import { PdfPane } from "./pdf/PdfPane";
 
 vi.mock("../api/pdfUaApi", () => ({

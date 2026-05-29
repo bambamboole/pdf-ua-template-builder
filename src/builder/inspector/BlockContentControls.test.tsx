@@ -9,8 +9,7 @@ import type {
   TextBlock,
 } from "../../types/generated/template";
 import type { TemplateSchemaResponse } from "../../types/template";
-import { resolveSelectedEditorBlock } from "../TemplateBuilder";
-import { createEditorModel } from "../state/editorModel";
+import { createEditorModel, resolveSelectedEditorBlock } from "../state/editorModel";
 import { BlockContentControls } from "./BlockContentControls";
 import { BlockInspector } from "./BlockInspector";
 
