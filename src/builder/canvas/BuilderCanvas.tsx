@@ -35,8 +35,6 @@ export interface BuilderCanvasProps {
   className?: string;
 }
 
-export const canvasRegionClass = "min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6";
-
 export function BuilderCanvas({
   model,
   data,
@@ -56,7 +54,7 @@ export function BuilderCanvas({
 }: BuilderCanvasProps) {
   return (
     <div
-      className={className ? `${canvasRegionClass} ${className}` : canvasRegionClass}
+      className={`min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6${className ? ` ${className}` : ""}`}
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
           onDeselect();

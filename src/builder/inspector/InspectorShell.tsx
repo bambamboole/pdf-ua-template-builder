@@ -1,8 +1,5 @@
 import type { ReactNode } from "react";
 
-const inspectorShellClass =
-  "grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto bg-surface p-4";
-
 export function InspectorShell({
   ariaLabel,
   className,
@@ -14,7 +11,7 @@ export function InspectorShell({
 }) {
   return (
     <aside
-      className={className ? `${inspectorShellClass} ${className}` : inspectorShellClass}
+      className={`grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto bg-surface p-4${className ? ` ${className}` : ""}`}
       aria-label={ariaLabel}
     >
       {children}

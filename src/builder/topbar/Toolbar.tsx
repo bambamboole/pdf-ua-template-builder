@@ -1,11 +1,11 @@
-import { useTemplateBuilderContext } from "../context/TemplateBuilderContext";
-import { BuilderTopbar } from "../topbar/BuilderTopbar";
+import { useTemplateBuilder } from "../context/BuilderContext";
+import { BuilderTopbar } from "./BuilderTopbar";
 
-export interface TemplateBuilderToolbarProps {
+export interface ToolbarProps {
   className?: string;
 }
 
-export function TemplateBuilderToolbar({ className }: TemplateBuilderToolbarProps = {}) {
+export function Toolbar({ className }: ToolbarProps = {}) {
   const {
     pageSize,
     apiUrl,
@@ -18,7 +18,7 @@ export function TemplateBuilderToolbar({ className }: TemplateBuilderToolbarProp
     pdfLoading,
     changeFormat,
     changeOrientation,
-  } = useTemplateBuilderContext();
+  } = useTemplateBuilder();
 
   return (
     <BuilderTopbar

@@ -42,7 +42,7 @@ const emptyTemplate: Template = {
   version: 1,
 };
 
-export interface TemplateBuilderProviderProps {
+export interface BuilderProviderProps {
   /** Base URL of a running pdf-ua-api instance. Defaults to "" (relative URLs / proxy). */
   apiUrl?: string;
   /** Template loaded into the editor on first render. */
@@ -57,7 +57,7 @@ export interface TemplateBuilderProviderProps {
   children: ReactNode;
 }
 
-export interface TemplateBuilderContextValue {
+export interface BuilderContextValue {
   schema: TemplateSchemaResponse | null;
   schemaLoading: boolean;
   apiUrl: string;
@@ -91,28 +91,26 @@ export interface TemplateBuilderContextValue {
   changePageNumbers: (value: PageNumbersValue) => void;
 }
 
-const TemplateBuilderContext = createContext<TemplateBuilderContextValue | null>(null);
+const BuilderContext = createContext<BuilderContextValue | null>(null);
 
-export function useTemplateBuilderContext(): TemplateBuilderContextValue {
-  const value = useContext(TemplateBuilderContext);
+export function useTemplateBuilder(): BuilderContextValue {
+  const value = useContext(BuilderContext);
 
   if (!value) {
-    throw new Error(
-      "useTemplateBuilderContext must be used within a <TemplateBuilderProvider>.",
-    );
+    throw new Error("useTemplateBuilder must be used within a <TemplateBuilder.Provider>.");
   }
 
   return value;
 }
 
-export function TemplateBuilderProvider({
+export function BuilderProvider({
   apiUrl: initialApiUrlProp,
   initialTemplate,
   initialData,
   onChange,
   onRendered,
   children,
-}: TemplateBuilderProviderProps) {
+}: BuilderProviderProps) {
   const defaultApiUrl = resolveDefaultApiUrl(initialApiUrlProp);
   const [apiUrl, setApiUrl] = useState(defaultApiUrl);
   const [state, dispatch] = useReducer(editorReducer, undefined, () =>
@@ -231,7 +229,7 @@ export function TemplateBuilderProvider({
     void renderPdf(serializedTemplate, data);
   }, [renderPdf, serializedTemplate, data]);
 
-  const value = useMemo<TemplateBuilderContextValue>(
+  const value = useMemo<BuilderContextValue>(
     () => ({
       schema,
       schemaLoading,
@@ -300,7 +298,7 @@ export function TemplateBuilderProvider({
   );
 
   return (
-    <TemplateBuilderContext.Provider value={value}>
+    <BuilderContext.Provider value={value}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -314,7 +312,7 @@ export function TemplateBuilderProvider({
           {activeDrag ? <ActiveDragPreview drag={activeDrag} /> : null}
         </DragOverlay>
       </DndContext>
-    </TemplateBuilderContext.Provider>
+    </BuilderContext.Provider>
   );
 }
 

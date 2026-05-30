@@ -1,12 +1,12 @@
-import { useTemplateBuilderContext } from "../context/TemplateBuilderContext";
-import { BlockInspector } from "../inspector/BlockInspector";
-import { DocumentSettingsInspector } from "../inspector/DocumentSettingsInspector";
+import { useTemplateBuilder } from "../context/BuilderContext";
+import { BlockInspector } from "./BlockInspector";
+import { DocumentSettingsInspector } from "./DocumentSettingsInspector";
 
-export interface TemplateBuilderInspectorProps {
+export interface InspectorProps {
   className?: string;
 }
 
-export function TemplateBuilderInspector({ className }: TemplateBuilderInspectorProps = {}) {
+export function Inspector({ className }: InspectorProps = {}) {
   const {
     schema,
     selectedBlock,
@@ -20,7 +20,7 @@ export function TemplateBuilderInspector({ className }: TemplateBuilderInspector
     changeTemplateSettings,
     changeFormat,
     changeOrientation,
-  } = useTemplateBuilderContext();
+  } = useTemplateBuilder();
 
   if (!schema) {
     return null;

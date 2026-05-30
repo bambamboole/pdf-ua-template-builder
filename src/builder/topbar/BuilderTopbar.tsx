@@ -25,9 +25,6 @@ export interface BuilderTopbarProps {
   className?: string;
 }
 
-const topbarClass =
-  "flex min-w-0 h-14 items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4";
-
 export function BuilderTopbar({
   format,
   orientation,
@@ -46,7 +43,7 @@ export function BuilderTopbar({
 }: BuilderTopbarProps) {
   return (
     <header
-      className={className ? `${topbarClass} ${className}` : topbarClass}
+      className={`flex min-w-0 h-14 items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4${className ? ` ${className}` : ""}`}
       aria-label="Template builder toolbar"
     >
       <div className="flex items-center gap-2 whitespace-nowrap text-[17px] font-semibold tracking-tight text-fg">

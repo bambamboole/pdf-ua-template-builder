@@ -1,16 +1,11 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { TemplateSchemaResponse } from "../../types/template";
-import { fetchTemplateSchema, renderTemplatePdf } from "../../api/pdfUaApi";
-import { TemplateBuilderProvider } from "../context/TemplateBuilderContext";
-import { TemplateBuilderCanvas } from "./TemplateBuilderCanvas";
-import { TemplateBuilderInspector } from "./TemplateBuilderInspector";
-import { TemplateBuilderPalette } from "./TemplateBuilderPalette";
-import { TemplateBuilderPreview } from "./TemplateBuilderPreview";
-import { TemplateBuilderToolbar } from "./TemplateBuilderToolbar";
+import type { TemplateSchemaResponse } from "../types/template";
+import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
+import { TemplateBuilder } from "./TemplateBuilder";
 
-vi.mock("../../api/pdfUaApi", () => ({
+vi.mock("../api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn(),
   renderTemplatePdf: vi.fn(),
   resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
@@ -50,21 +45,21 @@ const mockFetchSchema = vi.mocked(fetchTemplateSchema);
 
 function StackedBuilder() {
   return (
-    <TemplateBuilderProvider>
+    <TemplateBuilder.Provider>
       <div className="flex flex-col">
-        <TemplateBuilderToolbar />
-        <TemplateBuilderPalette />
+        <TemplateBuilder.Toolbar />
+        <TemplateBuilder.Palette />
         <div className="grid grid-cols-[320px_1fr]">
-          <TemplateBuilderInspector />
-          <TemplateBuilderCanvas className="h-[36rem]" />
+          <TemplateBuilder.Inspector />
+          <TemplateBuilder.Canvas className="h-[36rem]" />
         </div>
-        <TemplateBuilderPreview className="h-[40rem]" />
+        <TemplateBuilder.Preview className="h-[40rem]" />
       </div>
-    </TemplateBuilderProvider>
+    </TemplateBuilder.Provider>
   );
 }
 
-describe("composable builder slots", () => {
+describe("composable TemplateBuilder parts", () => {
   beforeEach(() => {
     mockFetchSchema.mockReset();
     mockFetchSchema.mockResolvedValue(builderSchema);
@@ -85,7 +80,7 @@ describe("composable builder slots", () => {
     );
   });
 
-  it("shares state across slots: loading the example through the toolbar fills the canvas", async () => {
+  it("shares state across parts: loading the example through the toolbar fills the canvas", async () => {
     const user = userEvent.setup();
 
     render(<StackedBuilder />);

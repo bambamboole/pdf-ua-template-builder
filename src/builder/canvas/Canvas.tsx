@@ -1,11 +1,11 @@
-import { useTemplateBuilderContext } from "../context/TemplateBuilderContext";
-import { BuilderCanvas, canvasRegionClass } from "../canvas/BuilderCanvas";
+import { useTemplateBuilder } from "../context/BuilderContext";
+import { BuilderCanvas } from "./BuilderCanvas";
 
-export interface TemplateBuilderCanvasProps {
+export interface CanvasProps {
   className?: string;
 }
 
-export function TemplateBuilderCanvas({ className }: TemplateBuilderCanvasProps = {}) {
+export function Canvas({ className }: CanvasProps = {}) {
   const {
     schema,
     schemaLoading,
@@ -22,11 +22,13 @@ export function TemplateBuilderCanvas({ className }: TemplateBuilderCanvasProps 
     setRowWidths,
     toggleFooterRepeat,
     changePageNumbers,
-  } = useTemplateBuilderContext();
+  } = useTemplateBuilder();
 
   if (!schema) {
     return (
-      <div className={className ? `${canvasRegionClass} ${className}` : canvasRegionClass}>
+      <div
+        className={`min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6${className ? ` ${className}` : ""}`}
+      >
         <div className="grid h-full place-items-center text-sm text-fg-muted">
           {schemaLoading ? "Loading schema…" : "Load the schema to start building."}
         </div>
