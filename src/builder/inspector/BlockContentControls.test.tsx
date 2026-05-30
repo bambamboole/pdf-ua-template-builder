@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -100,7 +100,7 @@ describe("BlockContentControls", () => {
     expect(onChangeBlock).toHaveBeenLastCalledWith({
       type: "heading",
       id: "title",
-      text: "Invoice",
+      text: "Updated invoice",
     });
   });
 
