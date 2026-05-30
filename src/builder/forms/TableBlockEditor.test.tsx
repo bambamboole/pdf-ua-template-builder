@@ -1,4 +1,4 @@
-import { renderToStaticMarkup } from "react-dom/server";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { TableBlock } from "../../types/generated/template";
 import {
@@ -36,28 +36,33 @@ const baseRows = [
 
 describe("TableBlockEditor render", () => {
   it("renders one column row per defined column with key/label/align inputs", () => {
-    const html = renderToStaticMarkup(
-      <TableBlockEditor block={baseBlock} onChangeBlock={() => undefined} />,
-    );
+    render(<TableBlockEditor block={baseBlock} onChangeBlock={() => undefined} />);
 
-    expect(html).toContain("Description");
-    expect(html).toContain("Qty");
-    expect(html).toContain('value="description"');
-    expect(html).toContain('value="quantity"');
+    const keyInputs = screen.getAllByLabelText("Key");
+    const labelInputs = screen.getAllByLabelText("Label");
+
+    expect(keyInputs).toHaveLength(2);
+    expect(keyInputs[0]).toHaveValue("description");
+    expect(keyInputs[1]).toHaveValue("quantity");
+
+    expect(labelInputs).toHaveLength(2);
+    expect(labelInputs[0]).toHaveValue("Description");
+    expect(labelInputs[1]).toHaveValue("Qty");
   });
 
   it("renders drag handles and ✕ remove buttons per column row", () => {
-    const html = renderToStaticMarkup(
-      <TableBlockEditor block={baseBlock} onChangeBlock={() => undefined} />,
-    );
+    render(<TableBlockEditor block={baseBlock} onChangeBlock={() => undefined} />);
 
-    expect(html).toContain('aria-label="Drag to reorder column 1"');
-    expect(html).toContain('aria-label="Remove column 1"');
-    expect(html).toContain("✕");
+    expect(
+      screen.getByRole("button", { name: "Drag to reorder column 1" }),
+    ).toBeInTheDocument();
+    const removeButton = screen.getByRole("button", { name: "Remove column 1" });
+    expect(removeButton).toBeInTheDocument();
+    expect(removeButton).toHaveTextContent("✕");
   });
 
   it("renders sample data rows when rowData is provided and the block has an id", () => {
-    const html = renderToStaticMarkup(
+    render(
       <TableBlockEditor
         block={baseBlock}
         rowData={baseRows}
@@ -66,20 +71,25 @@ describe("TableBlockEditor render", () => {
       />,
     );
 
-    expect(html).toContain('value="Service A"');
-    expect(html).toContain('value="2"');
-    expect(html).toContain('value="Service B"');
-    expect(html).toContain('aria-label="Drag to reorder row 1"');
-    expect(html).toContain('aria-label="Remove row 1"');
+    const descriptionCells = screen.getAllByLabelText("Description");
+    const qtyCells = screen.getAllByLabelText("Qty");
+
+    expect(descriptionCells[0]).toHaveValue("Service A");
+    expect(qtyCells[0]).toHaveValue("2");
+    expect(descriptionCells[1]).toHaveValue("Service B");
+    expect(
+      screen.getByRole("button", { name: "Drag to reorder row 1" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove row 1" }),
+    ).toBeInTheDocument();
   });
 
   it("shows a notice when the block has no id and the row editor cannot persist data", () => {
     const noIdBlock = { type: "table" } satisfies TableBlock;
-    const html = renderToStaticMarkup(
-      <TableBlockEditor block={noIdBlock} onChangeBlock={() => undefined} />,
-    );
+    render(<TableBlockEditor block={noIdBlock} onChangeBlock={() => undefined} />);
 
-    expect(html).toContain("Give this block an id");
+    expect(screen.getByText(/Give this block an id/)).toBeInTheDocument();
   });
 });
 

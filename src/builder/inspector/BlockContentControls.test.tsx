@@ -1,6 +1,7 @@
-import type { ReactElement, ReactNode } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useState } from "react";
+import { describe, expect, it, vi } from "vitest";
 import type {
   Block,
   HeadingBlock,
@@ -27,87 +28,103 @@ const schema = {
   },
 } satisfies TemplateSchemaResponse;
 
+function renderControls(initial: Block) {
+  const onChangeBlock = vi.fn();
+
+  function Harness() {
+    const [block, setBlock] = useState<Block>(initial);
+
+    return (
+      <BlockContentControls
+        block={block}
+        onChangeBlock={(next) => {
+          onChangeBlock(next);
+          setBlock(next);
+        }}
+      />
+    );
+  }
+
+  render(<Harness />);
+  return { onChangeBlock };
+}
+
 describe("BlockContentControls", () => {
-  it("updates text block content", () => {
+  it("updates text block content", async () => {
+    const user = userEvent.setup();
     const block = {
       type: "text",
       id: "body",
       text: "Original body",
     } satisfies TextBlock;
-    const changes: Block[] = [];
-    const element = BlockContentControls({
-      block,
-      onChangeBlock: (nextBlock) => changes.push(nextBlock),
-    });
+    const { onChangeBlock } = renderControls(block);
 
-    expect(renderToStaticMarkup(element)).toContain('name="text"');
+    const textInput = screen.getByLabelText("Text");
+    expect(textInput).toHaveValue("Original body");
 
-    getChangeHandler(requireControl(element, "text"))({
-      currentTarget: { value: "Updated body" },
-    });
+    await user.clear(textInput);
+    await user.type(textInput, "Updated body");
 
-    expect(changes).toEqual([{ ...block, text: "Updated body" }]);
+    expect(textInput).toHaveValue("Updated body");
+    expect(onChangeBlock).toHaveBeenLastCalledWith({ ...block, text: "Updated body" });
   });
 
-  it("updates heading text and heading level", () => {
+  it("updates heading text and heading level", async () => {
+    const user = userEvent.setup();
     const block = {
       type: "heading",
       id: "title",
       text: "Invoice",
       config: { level: 2 },
     } satisfies HeadingBlock;
-    const changes: Block[] = [];
-    const element = BlockContentControls({
-      block,
-      onChangeBlock: (nextBlock) => changes.push(nextBlock),
-    });
-    const html = renderToStaticMarkup(element);
+    const { onChangeBlock } = renderControls(block);
 
-    expect(html).toContain('name="text"');
-    expect(html).toContain('name="config.level"');
-    expect(html).toContain('value="2" selected=""');
+    const textInput = screen.getByLabelText("Text");
+    const levelSelect = screen.getByLabelText("Level");
 
-    getChangeHandler(requireControl(element, "text"))({
-      currentTarget: { value: "Updated invoice" },
-    });
-    getChangeHandler(requireControl(element, "config.level"))({
-      currentTarget: { value: "3" },
-    });
-    getChangeHandler(requireControl(element, "config.level"))({
-      currentTarget: { value: "" },
-    });
+    expect(textInput).toHaveValue("Invoice");
+    expect(levelSelect).toHaveValue("2");
 
-    expect(changes).toEqual([
-      { ...block, text: "Updated invoice" },
-      { ...block, config: { level: 3 } },
-      { type: "heading", id: "title", text: "Invoice" },
-    ]);
+    await user.clear(textInput);
+    await user.type(textInput, "Updated invoice");
+    expect(onChangeBlock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ text: "Updated invoice" }),
+    );
+
+    await user.selectOptions(levelSelect, "3");
+    expect(onChangeBlock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ config: { level: 3 } }),
+    );
+
+    await user.selectOptions(levelSelect, "Default");
+    expect(onChangeBlock).toHaveBeenLastCalledWith({
+      type: "heading",
+      id: "title",
+      text: "Invoice",
+    });
   });
 
-  it("updates HTML block content in a textarea", () => {
+  it("updates HTML block content in a textarea", async () => {
+    const user = userEvent.setup();
     const block = {
       type: "html",
       id: "terms",
       html: "<p>Terms</p>",
     } satisfies HtmlBlock;
-    const changes: Block[] = [];
-    const element = BlockContentControls({
-      block,
-      onChangeBlock: (nextBlock) => changes.push(nextBlock),
-    });
-    const html = renderToStaticMarkup(element);
+    const { onChangeBlock } = renderControls(block);
 
-    expect(html).toContain("<textarea");
-    expect(html).toContain('name="html"');
+    const htmlInput = screen.getByLabelText("HTML");
+    expect(htmlInput.tagName).toBe("TEXTAREA");
+    expect(htmlInput).toHaveValue("<p>Terms</p>");
 
-    getChangeHandler(requireControl(element, "html"))({
-      currentTarget: { value: "<p>Updated terms</p>" },
-    });
+    await user.clear(htmlInput);
+    await user.type(htmlInput, "<p>Updated terms</p>");
 
-    expect(changes).toEqual([{ ...block, html: "<p>Updated terms</p>" }]);
+    expect(onChangeBlock).toHaveBeenLastCalledWith({ ...block, html: "<p>Updated terms</p>" });
   });
 
-  it("renders image content fields without duplicated layout controls", () => {
+  it("renders image content fields without duplicated layout controls", async () => {
+    const user = userEvent.setup();
     const block = {
       type: "image",
       id: "logo",
@@ -115,24 +132,21 @@ describe("BlockContentControls", () => {
       alt: "Company logo",
       config: { maxHeight: 24, width: "40mm", align: "right" },
     } satisfies ImageBlock;
-    const changes: Block[] = [];
-    const element = BlockContentControls({
-      block,
-      onChangeBlock: (nextBlock) => changes.push(nextBlock),
-    });
-    const html = renderToStaticMarkup(element);
+    const { onChangeBlock } = renderControls(block);
 
-    expect(html).toContain('name="src"');
-    expect(html).toContain('name="alt"');
-    expect(html).not.toContain('name="config.maxHeight"');
-    expect(html).not.toContain('name="config.width"');
-    expect(html).not.toContain('name="config.align"');
+    expect(screen.getByLabelText("Source")).toHaveValue("https://example.com/logo.png");
+    expect(screen.getByLabelText("Alt text")).toHaveValue("Company logo");
+    expect(screen.queryByLabelText("Max height")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Width")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Align")).not.toBeInTheDocument();
 
-    getChangeHandler(requireControl(element, "alt"))({
-      currentTarget: { value: "Updated logo" },
-    });
+    const altInput = screen.getByLabelText("Alt text");
+    await user.clear(altInput);
+    await user.type(altInput, "Updated logo");
 
-    expect(changes).toEqual([{ ...block, alt: "Updated logo" }]);
+    expect(onChangeBlock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ alt: "Updated logo" }),
+    );
   });
 });
 
@@ -145,7 +159,7 @@ describe("BlockInspector content section", () => {
     const selectedUid = model.rows[0]?.blocks[0]?.uid ?? "";
     const selectedBlock = resolveSelectedEditorBlock(model, selectedUid);
 
-    const html = renderToStaticMarkup(
+    render(
       <BlockInspector
         block={selectedBlock}
         schema={schema}
@@ -157,99 +171,11 @@ describe("BlockInspector content section", () => {
       />,
     );
 
-    expect(html).toContain("Content");
-    expect(html).toContain('name="text"');
-    expect(html).toContain('name="config.level"');
-    expect(html).not.toContain("Controls will be added in a later porting slice.</p><");
+    expect(screen.getByText("Content")).toBeInTheDocument();
+    expect(screen.getByLabelText("Text")).toBeInTheDocument();
+    expect(screen.getByLabelText("Level")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Controls will be added in a later porting slice."),
+    ).not.toBeInTheDocument();
   });
 });
-
-type TestElement = ReactElement<Record<string, unknown>>;
-type TestComponent = (props: Record<string, unknown>) => ReactNode;
-
-function requireControl(node: ReactNode, name: string): TestElement {
-  const control = findElement(
-    node,
-    (element) => isNativeElement(element) && element.props.name === name,
-  );
-
-  if (!control) {
-    throw new Error(`Control not found: ${name}`);
-  }
-
-  return control;
-}
-
-function findElement(
-  node: ReactNode,
-  predicate: (element: TestElement) => boolean,
-): TestElement | undefined {
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      const match = findElement(child, predicate);
-
-      if (match) {
-        return match;
-      }
-    }
-
-    return undefined;
-  }
-
-  if (!isReactElement(node)) {
-    return undefined;
-  }
-
-  if (predicate(node)) {
-    return node;
-  }
-
-  if (isCallableComponent(node.type)) {
-    return findElement(node.type(node.props), predicate);
-  }
-
-  const children = node.props.children;
-  const childNodes = Array.isArray(children) ? children : [children];
-
-  for (const child of childNodes) {
-    const match = findElement(child, predicate);
-
-    if (match) {
-      return match;
-    }
-  }
-
-  return undefined;
-}
-
-function getChangeHandler(
-  element: TestElement,
-): (event: { currentTarget: { value: string; valueAsNumber?: number } }) => void {
-  const onChange = element.props.onChange;
-
-  if (typeof onChange !== "function") {
-    throw new Error("Control has no change handler");
-  }
-
-  return onChange as (event: {
-    currentTarget: { value: string; valueAsNumber?: number };
-  }) => void;
-}
-
-function isReactElement(node: ReactNode): node is TestElement {
-  return typeof node === "object" && node !== null && "props" in node;
-}
-
-function isNativeElement(element: TestElement): boolean {
-  return typeof element.type === "string";
-}
-
-function isCallableComponent(type: unknown): type is TestComponent {
-  if (typeof type !== "function") {
-    return false;
-  }
-
-  const prototype = (type as { prototype?: { render?: unknown } }).prototype;
-
-  return typeof prototype?.render !== "function";
-}

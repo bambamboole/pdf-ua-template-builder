@@ -1,14 +1,15 @@
-import { renderToStaticMarkup } from "react-dom/server";
+import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { PdfPane } from "./PdfPane";
 
 describe("PdfPane", () => {
-  it("server-renders PDF objects without iframe sandboxing", () => {
-    const html = renderToStaticMarkup(
+  it("renders the PDF as a non-sandboxed object", () => {
+    const { container } = render(
       <PdfPane pdfUrl="blob:http://localhost:5174/test" error={null} loading={false} />,
     );
 
-    expect(html).toContain('data="blob:http://localhost:5174/test"');
-    expect(html).not.toContain("sandbox=");
+    const object = container.querySelector("object");
+    expect(object).toHaveAttribute("data", "blob:http://localhost:5174/test");
+    expect(object).not.toHaveAttribute("sandbox");
   });
 });

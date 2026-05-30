@@ -1,4 +1,4 @@
-import { renderToStaticMarkup } from "react-dom/server";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { KeyValueBlock } from "../../types/generated/template";
 import {
@@ -28,25 +28,26 @@ const baseBlock = {
 
 describe("KeyValueBlockEditor render", () => {
   it("renders one value input per declared field, using each field label", () => {
-    const html = renderToStaticMarkup(
-      <KeyValueBlockEditor block={baseBlock} onChangeBlock={() => undefined} />,
-    );
+    render(<KeyValueBlockEditor block={baseBlock} onChangeBlock={() => undefined} />);
 
-    expect(html).toContain("Invoice number");
-    expect(html).toContain("Issue date");
-    expect(html).toContain('value="RE-2026-001234"');
-    expect(html).toContain('value="2026-02-17"');
-    expect(html).not.toContain("<textarea");
+    const invoiceInput = screen.getByLabelText("Invoice number");
+    const issueInput = screen.getByLabelText("Issue date");
+
+    expect(invoiceInput).toHaveValue("RE-2026-001234");
+    expect(issueInput).toHaveValue("2026-02-17");
+    expect(invoiceInput).toHaveAttribute("name", "values.invoiceNumber");
+    expect(issueInput).toHaveAttribute("name", "values.issueDate");
+    expect(document.querySelector("textarea")).not.toBeInTheDocument();
   });
 
   it("renders a drag handle and a ✕ remove button per field row", () => {
-    const html = renderToStaticMarkup(
-      <KeyValueBlockEditor block={baseBlock} onChangeBlock={() => undefined} />,
-    );
+    render(<KeyValueBlockEditor block={baseBlock} onChangeBlock={() => undefined} />);
 
-    expect(html).toContain('aria-label="Drag to reorder field 1"');
-    expect(html).toContain('aria-label="Remove field 1"');
-    expect(html).toContain("✕");
+    expect(screen.getByRole("button", { name: "Drag to reorder field 1" })).toBeInTheDocument();
+
+    const removeButton = screen.getByRole("button", { name: "Remove field 1" });
+    expect(removeButton).toBeInTheDocument();
+    expect(removeButton).toHaveTextContent("✕");
   });
 });
 
