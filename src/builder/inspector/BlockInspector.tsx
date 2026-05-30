@@ -18,6 +18,7 @@ export interface BlockInspectorProps {
   onChangeData?: (data: TemplateData) => void;
   onRemoveBlock: (blockUid: string) => void;
   onClose: () => void;
+  className?: string;
 }
 
 const detailSections = ["Layout", "Typography", "Spacing"] as const;
@@ -30,10 +31,11 @@ export function BlockInspector({
   onChangeData,
   onRemoveBlock,
   onClose,
+  className,
 }: BlockInspectorProps) {
   if (!block) {
     return (
-      <InspectorShell ariaLabel="Block inspector">
+      <InspectorShell ariaLabel="Block inspector" className={className}>
         <InspectorHeader title="Inspector" />
         <p className="m-0 text-xs text-fg-muted">Select a block to inspect it.</p>
       </InspectorShell>
@@ -59,7 +61,7 @@ export function BlockInspector({
   );
 
   return (
-    <InspectorShell ariaLabel="Block inspector">
+    <InspectorShell ariaLabel="Block inspector" className={className}>
       <InspectorHeader
         chip={<Chip>{chrome.chip}</Chip>}
         title={chrome.label}

@@ -3,6 +3,12 @@ import "./styles/app.css";
 export { TemplateBuilder } from "./builder/TemplateBuilder";
 export type { TemplateBuilderProps } from "./builder/TemplateBuilder";
 
+export { useTemplateBuilder } from "./builder/context/BuilderContext";
+export type {
+  BuilderProviderProps,
+  BuilderContextValue,
+} from "./builder/context/BuilderContext";
+
 export { createInvoiceExample } from "./builder/schema/invoiceExample";
 export type { InvoiceExample, InvoiceData, TableRow } from "./builder/schema/invoiceExample";
 

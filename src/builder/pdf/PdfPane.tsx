@@ -12,6 +12,7 @@ export interface PdfPaneProps {
   loading: boolean;
   template?: Template;
   data?: TemplateData;
+  className?: string;
 }
 
 function Tab({
@@ -53,7 +54,7 @@ function StatusPill({ status, children }: { status: OutputStatus; children: Reac
   );
 }
 
-export function PdfPane({ pdfUrl, error, loading, template, data }: PdfPaneProps) {
+export function PdfPane({ pdfUrl, error, loading, template, data, className }: PdfPaneProps) {
   const [tab, setTab] = useState<OutputTab>("pdf");
   const status: OutputStatus = loading
     ? "rendering"
@@ -64,7 +65,7 @@ export function PdfPane({ pdfUrl, error, loading, template, data }: PdfPaneProps
 
   return (
     <aside
-      className="grid min-w-0 min-h-0 grid-rows-[56px_auto_minmax(0,1fr)] bg-canvas"
+      className={`grid min-w-0 min-h-0 grid-rows-[56px_auto_minmax(0,1fr)] bg-canvas${className ? ` ${className}` : ""}`}
       aria-label="Output"
     >
       <header className="row-start-1 flex items-center justify-between gap-3 border-0 border-b border-solid border-border bg-surface px-4">

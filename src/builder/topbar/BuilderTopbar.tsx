@@ -22,6 +22,7 @@ export interface BuilderTopbarProps {
   onRender: () => void;
   renderDisabled: boolean;
   rendering: boolean;
+  className?: string;
 }
 
 export function BuilderTopbar({
@@ -38,10 +39,11 @@ export function BuilderTopbar({
   onRender,
   renderDisabled,
   rendering,
+  className,
 }: BuilderTopbarProps) {
   return (
     <header
-      className="col-span-full flex min-w-0 h-14 items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4"
+      className={`flex min-w-0 h-14 items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4${className ? ` ${className}` : ""}`}
       aria-label="Template builder toolbar"
     >
       <div className="flex items-center gap-2 whitespace-nowrap text-[17px] font-semibold tracking-tight text-fg">

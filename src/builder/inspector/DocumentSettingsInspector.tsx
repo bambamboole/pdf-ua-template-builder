@@ -26,6 +26,7 @@ export interface DocumentSettingsInspectorProps {
   onChangeTemplate: (template: Template) => void;
   onChangeFormat: (format: PageFormat) => void;
   onChangeOrientation: (orientation: Orientation) => void;
+  className?: string;
 }
 
 export function DocumentSettingsInspector({
@@ -36,9 +37,10 @@ export function DocumentSettingsInspector({
   onChangeTemplate,
   onChangeFormat,
   onChangeOrientation,
+  className,
 }: DocumentSettingsInspectorProps): ReactNode {
   return (
-    <InspectorShell ariaLabel="Document settings inspector">
+    <InspectorShell ariaLabel="Document settings inspector" className={className}>
       <InspectorHeader
         chip={<Chip wide>Doc</Chip>}
         title="Document settings"

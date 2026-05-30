@@ -32,6 +32,7 @@ export interface BuilderCanvasProps {
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
   onToggleFooterRepeat: (repeat: boolean) => void;
   onChangePageNumbers: (value: PageNumbersValue) => void;
+  className?: string;
 }
 
 export function BuilderCanvas({
@@ -49,10 +50,11 @@ export function BuilderCanvas({
   onSetRowWidths,
   onToggleFooterRepeat,
   onChangePageNumbers,
+  className,
 }: BuilderCanvasProps) {
   return (
     <div
-      className="col-start-2 row-start-3 min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6 max-[760px]:col-start-1 max-[760px]:col-span-1 max-[760px]:row-auto"
+      className={`min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6${className ? ` ${className}` : ""}`}
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
           onDeselect();
