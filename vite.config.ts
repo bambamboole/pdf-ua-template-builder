@@ -1,6 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import dts from "vite-plugin-dts";
 
 declare const process: { env: Record<string, string | undefined> };
@@ -54,6 +54,7 @@ export default defineConfig(({ mode }) => {
     test: {
       environment: "jsdom",
       setupFiles: ["./src/test/setup.ts"],
+      exclude: [...configDefaults.exclude, "e2e/**"],
     },
   };
 });

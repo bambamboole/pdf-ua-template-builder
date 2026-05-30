@@ -9,3 +9,6 @@ docs/superpowers
 .worktrees
 .playwright-mcp
 test-results
+playwright-report
+blob-report
+.playwright
