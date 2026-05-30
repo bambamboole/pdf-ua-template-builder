@@ -1,6 +1,7 @@
-import type { ReactElement, ReactNode } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useState } from "react";
+import { describe, expect, it, vi } from "vitest";
 import {
   CheckboxField,
   ColorField,
@@ -13,7 +14,7 @@ import {
 
 describe("builder form controls", () => {
   it("server-renders shared label, help, and error layout", () => {
-    const html = renderToStaticMarkup(
+    render(
       <TextField
         name="block.text"
         label="Heading text"
@@ -24,248 +25,261 @@ describe("builder form controls", () => {
       />,
     );
 
-    expect(html).toContain('for="builder-field-block-text"');
-    expect(html).toContain('id="builder-field-block-text"');
-    expect(html).toContain("Heading text");
-    expect(html).toContain('name="block.text"');
-    expect(html).toContain('value="Invoice"');
-    expect(html).toContain("Shown in the PDF");
-    expect(html).toContain("Required");
-    expect(html).toContain('aria-invalid="true"');
-    expect(html).toContain("aria-describedby");
+    const input = screen.getByLabelText("Heading text");
+
+    expect(input).toHaveAttribute("id", "builder-field-block-text");
+    expect(input).toHaveAttribute("name", "block.text");
+    expect(input).toHaveValue("Invoice");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+
+    const helpId = "builder-field-block-text-help";
+    const errorId = "builder-field-block-text-error";
+    expect(input).toHaveAttribute("aria-describedby", `${helpId} ${errorId}`);
+    expect(screen.getByText("Shown in the PDF")).toHaveAttribute("id", helpId);
+    expect(screen.getByRole("alert")).toHaveTextContent("Required");
   });
 
-  it("preserves empty text values by default and can clear optional text to undefined", () => {
-    const preserved: Array<string | undefined> = [];
-    const preservedElement = TextField({
-      name: "text",
-      label: "Text",
-      value: "Body",
-      onChange: (value) => preserved.push(value),
-    });
+  it("preserves empty text values by default and can clear optional text to undefined", async () => {
+    const user = userEvent.setup();
 
-    getInputChangeHandler(requireControl(preservedElement, "text"))({
-      currentTarget: { value: "" },
-    });
+    const preserved = vi.fn();
+    function PreservedHarness() {
+      const [value, setValue] = useState<string | undefined>("Body");
 
-    const cleared: Array<string | undefined> = [];
-    const clearedElement = TextField({
-      name: "config.width",
-      label: "Width",
-      value: "50%",
-      emptyValue: "undefined",
-      onChange: (value) => cleared.push(value),
-    });
+      return (
+        <TextField
+          name="text"
+          label="Text"
+          value={value}
+          onChange={(next) => {
+            preserved(next);
+            setValue(next);
+          }}
+        />
+      );
+    }
 
-    getInputChangeHandler(requireControl(clearedElement, "config.width"))({
-      currentTarget: { value: "" },
-    });
+    const cleared = vi.fn();
+    function ClearedHarness() {
+      const [value, setValue] = useState<string | undefined>("50%");
 
-    expect(preserved).toEqual([""]);
-    expect(cleared).toEqual([undefined]);
+      return (
+        <TextField
+          name="config.width"
+          label="Width"
+          value={value}
+          emptyValue="undefined"
+          onChange={(next) => {
+            cleared(next);
+            setValue(next);
+          }}
+        />
+      );
+    }
+
+    render(
+      <>
+        <PreservedHarness />
+        <ClearedHarness />
+      </>,
+    );
+
+    await user.clear(screen.getByLabelText("Text"));
+    await user.clear(screen.getByLabelText("Width"));
+
+    expect(preserved).toHaveBeenLastCalledWith("");
+    expect(cleared).toHaveBeenLastCalledWith(undefined);
   });
 
-  it("renders textarea controls and applies the same optional empty text handling", () => {
-    const changes: Array<string | undefined> = [];
-    const element = TextAreaField({
-      name: "description",
-      label: "Description",
-      value: "Initial",
-      emptyValue: "undefined",
-      onChange: (value) => changes.push(value),
-    });
-    const html = renderToStaticMarkup(element);
+  it("renders textarea controls and applies the same optional empty text handling", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
 
-    expect(html).toContain("<textarea");
-    expect(html).toContain('name="description"');
+    function Harness() {
+      const [value, setValue] = useState<string | undefined>("Initial");
 
-    getInputChangeHandler(requireControl(element, "description"))({
-      currentTarget: { value: "" },
-    });
+      return (
+        <TextAreaField
+          name="description"
+          label="Description"
+          value={value}
+          emptyValue="undefined"
+          onChange={(next) => {
+            onChange(next);
+            setValue(next);
+          }}
+        />
+      );
+    }
 
-    expect(changes).toEqual([undefined]);
+    render(<Harness />);
+
+    const textarea = screen.getByLabelText("Description");
+    expect(textarea.tagName).toBe("TEXTAREA");
+    expect(textarea).toHaveAttribute("name", "description");
+
+    await user.clear(textarea);
+
+    expect(onChange).toHaveBeenLastCalledWith(undefined);
   });
 
-  it("converts number input values and clears empty numbers to undefined", () => {
-    const changes: Array<number | undefined> = [];
-    const element = NumberField({
-      name: "config.maxHeight",
-      label: "Max height",
-      value: 28,
-      min: 0,
-      step: 0.5,
-      onChange: (value) => changes.push(value),
-    });
-    const control = requireControl(element, "config.maxHeight");
+  it("converts number input values and clears empty numbers to undefined", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
 
-    getInputChangeHandler(control)({
-      currentTarget: { value: "42.5", valueAsNumber: 42.5 },
-    });
-    getInputChangeHandler(control)({
-      currentTarget: { value: "", valueAsNumber: Number.NaN },
-    });
+    function Harness() {
+      const [value, setValue] = useState<number | undefined>(28);
 
-    expect(changes).toEqual([42.5, undefined]);
+      return (
+        <NumberField
+          name="config.maxHeight"
+          label="Max height"
+          value={value}
+          min={0}
+          step={0.5}
+          onChange={(next) => {
+            onChange(next);
+            setValue(next);
+          }}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    const input = screen.getByLabelText("Max height");
+    expect(input).toHaveAttribute("type", "number");
+
+    await user.clear(input);
+    await user.type(input, "42.5");
+    expect(onChange).toHaveBeenLastCalledWith(42.5);
+
+    await user.clear(input);
+    expect(onChange).toHaveBeenLastCalledWith(undefined);
   });
 
-  it("renders optional selects with an empty option and clears empty selections", () => {
-    const changes: Array<"left" | "center" | undefined> = [];
-    const element = SelectField({
-      name: "config.align",
-      label: "Align",
-      value: "center",
-      optional: true,
-      options: [
-        { value: "left", label: "Left" },
-        { value: "center", label: "Center" },
-      ] as const,
-      onChange: (value) => changes.push(value),
-    });
-    const html = renderToStaticMarkup(element);
-    const control = requireControl(element, "config.align");
+  it("renders optional selects with an empty option and clears empty selections", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
 
-    expect(html).toContain('<option value=""></option>');
-    expect(html).toContain('value="center" selected=""');
+    function Harness() {
+      const [value, setValue] = useState<"left" | "center" | undefined>("center");
 
-    getInputChangeHandler(control)({ currentTarget: { value: "" } });
-    getInputChangeHandler(control)({ currentTarget: { value: "left" } });
+      return (
+        <SelectField
+          name="config.align"
+          label="Align"
+          value={value}
+          optional
+          options={
+            [
+              { value: "left", label: "Left" },
+              { value: "center", label: "Center" },
+            ] as const
+          }
+          onChange={(next) => {
+            onChange(next);
+            setValue(next);
+          }}
+        />
+      );
+    }
 
-    expect(changes).toEqual([undefined, "left"]);
+    render(<Harness />);
+
+    const select = screen.getByRole("combobox", { name: "Align" });
+    const emptyOption = within(select).getByText("", { selector: "option[value='']" });
+    expect(emptyOption).toBeInTheDocument();
+    expect(select).toHaveValue("center");
+
+    await user.selectOptions(select, "");
+    expect(onChange).toHaveBeenLastCalledWith(undefined);
+
+    await user.selectOptions(select, "left");
+    expect(onChange).toHaveBeenLastCalledWith("left");
   });
 
-  it("renders an accessible controlled checkbox", () => {
-    const changes: boolean[] = [];
-    const element = CheckboxField({
-      name: "config.repeat",
-      label: "Repeat footer",
-      checked: false,
-      onChange: (checked) => changes.push(checked),
-    });
-    const html = renderToStaticMarkup(element);
+  it("renders an accessible controlled checkbox", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
 
-    expect(html).toContain('type="checkbox"');
-    expect(html).toContain('name="config.repeat"');
-    expect(html).toContain("Repeat footer");
-    expect(html).not.toContain("checked");
+    function Harness() {
+      const [checked, setChecked] = useState(false);
 
-    getCheckboxChangeHandler(requireControl(element, "config.repeat"))({
-      currentTarget: { checked: true },
-    });
+      return (
+        <CheckboxField
+          name="config.repeat"
+          label="Repeat footer"
+          checked={checked}
+          onChange={(next) => {
+            onChange(next);
+            setChecked(next);
+          }}
+        />
+      );
+    }
 
-    expect(changes).toEqual([true]);
+    render(<Harness />);
+
+    const checkbox = screen.getByLabelText("Repeat footer");
+    expect(checkbox).toHaveAttribute("type", "checkbox");
+    expect(checkbox).toHaveAttribute("name", "config.repeat");
+    expect(checkbox).not.toBeChecked();
+
+    await user.click(checkbox);
+
+    expect(onChange).toHaveBeenLastCalledWith(true);
+    expect(checkbox).toBeChecked();
   });
 
-  it("renders color and CSS unit fields as controlled typed inputs", () => {
-    const colors: Array<string | undefined> = [];
-    const colorElement = ColorField({
-      name: "config.color",
-      label: "Color",
-      value: "#334455",
-      onChange: (value) => colors.push(value),
-    });
-    const widths: Array<string | undefined> = [];
-    const unitElement = UnitField({
-      name: "config.width",
-      label: "Width",
-      value: "80mm",
-      onChange: (value) => widths.push(value),
-    });
+  it("renders color and CSS unit fields as controlled typed inputs", async () => {
+    const user = userEvent.setup();
+    const onColorChange = vi.fn();
+    const onWidthChange = vi.fn();
 
-    expect(renderToStaticMarkup(colorElement)).toContain('type="color"');
-    expect(renderToStaticMarkup(unitElement)).toContain('inputMode="text"');
+    function Harness() {
+      const [color, setColor] = useState<string | undefined>("#334455");
+      const [width, setWidth] = useState<string | undefined>("80mm");
 
-    getInputChangeHandler(requireControl(colorElement, "config.color"))({
-      currentTarget: { value: "#112233" },
-    });
-    getInputChangeHandler(requireControl(unitElement, "config.width"))({
-      currentTarget: { value: "auto" },
-    });
-    getInputChangeHandler(requireControl(unitElement, "config.width"))({
-      currentTarget: { value: "" },
-    });
+      return (
+        <>
+          <ColorField
+            name="config.color"
+            label="Color"
+            value={color}
+            onChange={(next) => {
+              onColorChange(next);
+              setColor(next);
+            }}
+          />
+          <UnitField
+            name="config.width"
+            label="Width"
+            value={width}
+            onChange={(next) => {
+              onWidthChange(next);
+              setWidth(next);
+            }}
+          />
+        </>
+      );
+    }
 
-    expect(colors).toEqual(["#112233"]);
-    expect(widths).toEqual(["auto", undefined]);
+    render(<Harness />);
+
+    const colorInput = screen.getByLabelText("Color");
+    const unitInput = screen.getByLabelText("Width");
+    expect(colorInput).toHaveAttribute("type", "color");
+    expect(unitInput).toHaveAttribute("inputmode", "text");
+
+    fireEvent.change(colorInput, { target: { value: "#112233" } });
+    expect(onColorChange).toHaveBeenLastCalledWith("#112233");
+
+    await user.clear(unitInput);
+    await user.type(unitInput, "auto");
+    expect(onWidthChange).toHaveBeenLastCalledWith("auto");
+
+    await user.clear(unitInput);
+    expect(onWidthChange).toHaveBeenLastCalledWith(undefined);
   });
 });
-
-type TestElement = ReactElement<Record<string, unknown>>;
-
-function requireControl(node: ReactNode, name: string): TestElement {
-  const control = findElement(
-    node,
-    (element) => element.props.name === name && typeof element.props.onChange === "function",
-  );
-
-  if (!control) {
-    throw new Error(`Control not found: ${name}`);
-  }
-
-  return control;
-}
-
-function findElement(
-  node: ReactNode,
-  predicate: (element: TestElement) => boolean,
-): TestElement | undefined {
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      const match = findElement(child, predicate);
-
-      if (match) {
-        return match;
-      }
-    }
-
-    return undefined;
-  }
-
-  if (!isReactElement(node)) {
-    return undefined;
-  }
-
-  if (predicate(node)) {
-    return node;
-  }
-
-  const children = node.props.children;
-  const childNodes = Array.isArray(children) ? children : [children];
-
-  for (const child of childNodes) {
-    const match = findElement(child, predicate);
-
-    if (match) {
-      return match;
-    }
-  }
-
-  return undefined;
-}
-
-function getInputChangeHandler(
-  element: TestElement,
-): (event: { currentTarget: { value: string; valueAsNumber?: number } }) => void {
-  const onChange = element.props.onChange;
-
-  if (typeof onChange !== "function") {
-    throw new Error("Control has no change handler");
-  }
-
-  return onChange as (event: { currentTarget: { value: string; valueAsNumber?: number } }) => void;
-}
-
-function getCheckboxChangeHandler(
-  element: TestElement,
-): (event: { currentTarget: { checked: boolean } }) => void {
-  const onChange = element.props.onChange;
-
-  if (typeof onChange !== "function") {
-    throw new Error("Control has no change handler");
-  }
-
-  return onChange as (event: { currentTarget: { checked: boolean } }) => void;
-}
-
-function isReactElement(node: ReactNode): node is TestElement {
-  return typeof node === "object" && node !== null && "props" in node;
-}

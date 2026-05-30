@@ -1,4 +1,4 @@
-import { renderToStaticMarkup } from "react-dom/server";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Block } from "../../types/generated/template";
 import { BlockDataPreview } from "./BlockDataPreview";
@@ -7,9 +7,9 @@ describe("BlockDataPreview", () => {
   it("renders text and heading content directly on the card", () => {
     const block: Block = { type: "text", id: "notice", text: "Payment is due in 30 days." };
 
-    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+    render(<BlockDataPreview block={block} />);
 
-    expect(html).toContain("Payment is due in 30 days.");
+    expect(screen.getByText("Payment is due in 30 days.")).toBeInTheDocument();
   });
 
   it("renders image content directly on the card", () => {
@@ -20,10 +20,11 @@ describe("BlockDataPreview", () => {
       alt: "PDF UA Kit logo",
     };
 
-    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+    render(<BlockDataPreview block={block} />);
 
-    expect(html).toContain('src="data:image/svg+xml;base64,PHN2Zy8+"');
-    expect(html).toContain('alt="PDF UA Kit logo"');
+    const image = screen.getByRole("img", { name: "PDF UA Kit logo" });
+    expect(image).toHaveAttribute("src", "data:image/svg+xml;base64,PHN2Zy8+");
+    expect(image).toHaveAttribute("alt", "PDF UA Kit logo");
   });
 
   it("renders key-value labels and values directly on the card", () => {
@@ -34,10 +35,10 @@ describe("BlockDataPreview", () => {
       config: { fields: [{ key: "invoiceNumber", label: "Invoice number" }] },
     };
 
-    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+    render(<BlockDataPreview block={block} />);
 
-    expect(html).toContain("Invoice number");
-    expect(html).toContain("RE-2026-001234");
+    expect(screen.getByText("Invoice number")).toBeInTheDocument();
+    expect(screen.getByText("RE-2026-001234")).toBeInTheDocument();
   });
 
   it("reflects labelWidth and exposes the label resizer when editable", () => {
@@ -51,10 +52,12 @@ describe("BlockDataPreview", () => {
       },
     };
 
-    const html = renderToStaticMarkup(<BlockDataPreview block={block} onChange={() => {}} />);
+    render(<BlockDataPreview block={block} onChange={() => {}} />);
 
-    expect(html).toContain("grid-template-columns:40% minmax(0, 1fr)");
-    expect(html).toContain("Resize the label column");
+    expect(screen.getByText("Invoice number").parentElement).toHaveStyle({
+      gridTemplateColumns: "40% minmax(0, 1fr)",
+    });
+    expect(screen.getByRole("button", { name: "Resize the label column" })).toBeInTheDocument();
   });
 
   it("omits the label resizer when no change handler is provided", () => {
@@ -65,10 +68,12 @@ describe("BlockDataPreview", () => {
       config: { fields: [{ key: "invoiceNumber", label: "Invoice number" }] },
     };
 
-    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+    render(<BlockDataPreview block={block} />);
 
-    expect(html).not.toContain("Resize the label column");
-    expect(html).toContain("grid-template-columns:30% minmax(0, 1fr)");
+    expect(screen.queryByRole("button", { name: "Resize the label column" })).not.toBeInTheDocument();
+    expect(screen.getByText("Invoice number").parentElement).toHaveStyle({
+      gridTemplateColumns: "30% minmax(0, 1fr)",
+    });
   });
 
   it("renders table headers and runtime rows directly on the card", () => {
@@ -83,16 +88,16 @@ describe("BlockDataPreview", () => {
       },
     };
 
-    const html = renderToStaticMarkup(
+    render(
       <BlockDataPreview
         block={block}
         rowData={[{ description: "Accessible PDF template", total: "3.800,00 €" }]}
       />,
     );
 
-    expect(html).toContain("Description");
-    expect(html).toContain("Accessible PDF template");
-    expect(html).toContain("3.800,00 €");
+    expect(screen.getByText("Description")).toBeInTheDocument();
+    expect(screen.getByText("Accessible PDF template")).toBeInTheDocument();
+    expect(screen.getByText("3.800,00 €")).toBeInTheDocument();
   });
 
   it("adds a numbered column to the table preview when numberRows is enabled", () => {
@@ -102,13 +107,13 @@ describe("BlockDataPreview", () => {
       config: { numberRows: true, columns: [{ key: "description", label: "Description" }] },
     };
 
-    const html = renderToStaticMarkup(
+    render(
       <BlockDataPreview block={block} rowData={[{ description: "Row one" }, { description: "Row two" }]} />,
     );
 
-    expect(html).toContain(">#<");
-    expect(html).toContain(">1<");
-    expect(html).toContain(">2<");
+    expect(screen.getByRole("columnheader", { name: "#" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "1" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "2" })).toBeInTheDocument();
   });
 
   it("omits the numbered column when numberRows is not set", () => {
@@ -118,11 +123,9 @@ describe("BlockDataPreview", () => {
       config: { columns: [{ key: "description", label: "Description" }] },
     };
 
-    const html = renderToStaticMarkup(
-      <BlockDataPreview block={block} rowData={[{ description: "Row one" }]} />,
-    );
+    render(<BlockDataPreview block={block} rowData={[{ description: "Row one" }]} />);
 
-    expect(html).not.toContain(">#<");
+    expect(screen.queryByRole("columnheader", { name: "#" })).not.toBeInTheDocument();
   });
 
   it("overlays a column resizer at each interior boundary when editable", () => {
@@ -138,12 +141,12 @@ describe("BlockDataPreview", () => {
       },
     };
 
-    const html = renderToStaticMarkup(<BlockDataPreview block={block} onChange={() => {}} />);
+    const { container } = render(<BlockDataPreview block={block} onChange={() => {}} />);
 
-    expect(html).toContain("<colgroup");
-    expect(html).toContain('aria-label="Resize column 1"');
-    expect(html).toContain('aria-label="Resize column 2"');
-    expect(html).not.toContain('aria-label="Resize column 3"');
+    expect(container.querySelector("colgroup")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Resize column 1" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Resize column 2" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Resize column 3" })).not.toBeInTheDocument();
   });
 
   it("omits table column resizers when the preview is read-only", () => {
@@ -158,8 +161,8 @@ describe("BlockDataPreview", () => {
       },
     };
 
-    const html = renderToStaticMarkup(<BlockDataPreview block={block} />);
+    render(<BlockDataPreview block={block} />);
 
-    expect(html).not.toContain("Resize column");
+    expect(screen.queryByRole("button", { name: /Resize column/ })).not.toBeInTheDocument();
   });
 });

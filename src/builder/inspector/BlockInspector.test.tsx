@@ -1,4 +1,4 @@
-import { renderToStaticMarkup } from "react-dom/server";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { TemplateSchemaResponse } from "../../types/template";
 import { createEditorModel, resolveSelectedEditorBlock } from "../state/editorModel";
@@ -27,7 +27,7 @@ describe("BlockInspector", () => {
     const selectedBlockUid = model.rows[0]?.blocks[0]?.uid ?? "";
     const selectedBlock = resolveSelectedEditorBlock(model, selectedBlockUid);
 
-    const html = renderToStaticMarkup(
+    render(
       <BlockInspector
         block={selectedBlock}
         schema={schema}
@@ -38,14 +38,14 @@ describe("BlockInspector", () => {
       />,
     );
 
-    expect(html).toContain('aria-label="Block inspector"');
-    expect(html).toContain("Heading");
-    expect(html).toContain("heading-1");
-    expect(html).toContain(selectedBlockUid);
-    expect(html).toContain("Content");
-    expect(html).toContain("Layout");
-    expect(html).toContain("Typography");
-    expect(html).toContain("Spacing");
+    expect(screen.getByRole("complementary", { name: "Block inspector" })).toBeInTheDocument();
+    expect(screen.getByText("Heading")).toBeInTheDocument();
+    expect(screen.getByText("heading-1")).toBeInTheDocument();
+    expect(screen.getByText(selectedBlockUid)).toBeInTheDocument();
+    expect(screen.getByText("Content")).toBeInTheDocument();
+    expect(screen.getByText("Layout")).toBeInTheDocument();
+    expect(screen.getByText("Typography")).toBeInTheDocument();
+    expect(screen.getByText("Spacing")).toBeInTheDocument();
   });
 
   it("shows the empty state when no block is selected", () => {
@@ -54,7 +54,7 @@ describe("BlockInspector", () => {
       rows: [{ blocks: [{ type: "text", id: "text-1", text: "Body" }] }],
     });
 
-    const html = renderToStaticMarkup(
+    render(
       <BlockInspector
         block={resolveSelectedEditorBlock(model, "removed-uid")}
         schema={schema}
@@ -65,7 +65,7 @@ describe("BlockInspector", () => {
       />,
     );
 
-    expect(html).toContain("Select a block to inspect it.");
-    expect(html).not.toContain("text-1");
+    expect(screen.getByText("Select a block to inspect it.")).toBeInTheDocument();
+    expect(screen.queryByText("text-1")).not.toBeInTheDocument();
   });
 });

@@ -1,7 +1,6 @@
-import type { ReactElement, ReactNode } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
-import type { Block, Template } from "../../types/generated/template";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import type { Block } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
 import { TypographyControls } from "./TypographyControls";
 
@@ -19,7 +18,7 @@ const metadata = {
 
 describe("TypographyControls", () => {
   it("renders family, size, weight, align, and color fields", () => {
-    const html = renderToStaticMarkup(
+    render(
       <TypographyControls
         target="block"
         block={{
@@ -40,90 +39,87 @@ describe("TypographyControls", () => {
       />,
     );
 
-    expect(html).toContain("Family");
-    expect(html).toContain('name="config.typography.family"');
-    expect(html).toContain("Size");
-    expect(html).toContain('name="config.typography.size"');
-    expect(html).toContain("Weight");
-    expect(html).toContain('name="config.typography.weight"');
-    expect(html).toContain("Align");
-    expect(html).toContain('name="config.typography.align"');
-    expect(html).toContain("Color");
-    expect(html).toContain('name="config.typography.color"');
+    expect(screen.getByLabelText("Family")).toHaveValue("Inter");
+    expect(screen.getByLabelText("Size")).toHaveValue(14);
+    expect(screen.getByLabelText("Weight")).toHaveValue(700);
+    expect(screen.getByLabelText("Align")).toHaveValue("center");
+    expect(screen.getByLabelText("Color")).toHaveValue("#112233");
   });
 
-  it("updates and clears block typography through nested block config", () => {
-    const changes: Block[] = [];
+  it("updates block typography through nested block config", () => {
     const block = {
       type: "heading",
       text: "Title",
       config: { level: 2 },
     } satisfies Block;
-    const element = TypographyControls({
-      target: "block",
-      block,
-      metadata,
-      onChangeBlock: (nextBlock) => changes.push(nextBlock),
+    const onChangeBlock = vi.fn();
+    render(
+      <TypographyControls
+        target="block"
+        block={block}
+        metadata={metadata}
+        onChangeBlock={onChangeBlock}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Family"), { target: { value: "Source Sans 3" } });
+    expect(onChangeBlock).toHaveBeenLastCalledWith({
+      ...block,
+      config: { level: 2, typography: { family: "Source Sans 3" } },
     });
 
-    getChangeHandler(requireControl(element, "config.typography.family"))({
-      currentTarget: { value: "Source Sans 3" },
+    fireEvent.change(screen.getByLabelText("Size"), { target: { value: "18" } });
+    expect(onChangeBlock).toHaveBeenLastCalledWith({
+      ...block,
+      config: { level: 2, typography: { size: 18 } },
     });
-    getChangeHandler(requireControl(element, "config.typography.size"))({
-      currentTarget: { value: "18", valueAsNumber: 18 },
+  });
+
+  it("clears block typography when a field is emptied", () => {
+    const onChangeBlock = vi.fn();
+    render(
+      <TypographyControls
+        target="block"
+        block={{
+          type: "heading",
+          text: "Title",
+          config: { level: 2, typography: { family: "Inter" } },
+        }}
+        metadata={metadata}
+        onChangeBlock={onChangeBlock}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Family"), { target: { value: "" } });
+
+    expect(onChangeBlock).toHaveBeenLastCalledWith({
+      type: "heading",
+      text: "Title",
+      config: { level: 2 },
     });
-
-    expect(changes).toEqual([
-      { ...block, config: { level: 2, typography: { family: "Source Sans 3" } } },
-      { ...block, config: { level: 2, typography: { size: 18 } } },
-    ]);
-
-    const clearChanges: Block[] = [];
-    const clearElement = TypographyControls({
-      target: "block",
-      block: {
-        ...block,
-        config: { level: 2, typography: { family: "Inter" } },
-      },
-      metadata,
-      onChangeBlock: (nextBlock) => clearChanges.push(nextBlock),
-    });
-
-    getChangeHandler(requireControl(clearElement, "config.typography.family"))({
-      currentTarget: { value: "" },
-    });
-
-    expect(clearChanges).toEqual([block]);
   });
 
   it("updates template typography through template config", () => {
-    const changes: Template[] = [];
-    const template = { version: 1 } satisfies Template;
-    const element = TypographyControls({
-      target: "template",
-      template,
-      metadata,
-      onChangeTemplate: (nextTemplate) => changes.push(nextTemplate),
-    });
+    const onChangeTemplate = vi.fn();
+    render(
+      <TypographyControls
+        target="template"
+        template={{ version: 1 }}
+        metadata={metadata}
+        onChangeTemplate={onChangeTemplate}
+      />,
+    );
 
-    getChangeHandler(requireControl(element, "template.config.typography.align"))({
-      currentTarget: { value: "right" },
-    });
+    fireEvent.change(screen.getByLabelText("Align"), { target: { value: "right" } });
 
-    expect(changes).toEqual([
-      {
-        version: 1,
-        config: {
-          typography: {
-            align: "right",
-          },
-        },
-      },
-    ]);
+    expect(onChangeTemplate).toHaveBeenLastCalledWith({
+      version: 1,
+      config: { typography: { align: "right" } },
+    });
   });
 
   it("renders bundled font options as a select when metadata is passed", () => {
-    const html = renderToStaticMarkup(
+    render(
       <TypographyControls
         target="template"
         template={{ version: 1 }}
@@ -132,93 +128,9 @@ describe("TypographyControls", () => {
       />,
     );
 
-    expect(html).toContain("<select");
-    expect(html).not.toContain("<datalist");
-    expect(html).toContain('value="Inter"');
-    expect(html).toContain('value="Source Sans 3"');
+    const family = screen.getByLabelText("Family");
+    expect(family.tagName).toBe("SELECT");
+    expect(within(family).getByRole("option", { name: "Inter" })).toBeInTheDocument();
+    expect(within(family).getByRole("option", { name: "Source Sans 3" })).toBeInTheDocument();
   });
 });
-
-type TestElement = ReactElement<Record<string, unknown>>;
-
-function requireControl(node: ReactNode, name: string): TestElement {
-  const control = findElement(
-    node,
-    (element) =>
-      isNativeElement(element) &&
-      (element.props.name === name || element.props["data-name"] === name),
-  );
-
-  if (!control) {
-    throw new Error(`Control not found: ${name}`);
-  }
-
-  return control;
-}
-
-function findElement(
-  node: ReactNode,
-  predicate: (element: TestElement) => boolean,
-): TestElement | undefined {
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      const match = findElement(child, predicate);
-
-      if (match) {
-        return match;
-      }
-    }
-
-    return undefined;
-  }
-
-  if (!isReactElement(node)) {
-    return undefined;
-  }
-
-  if (predicate(node)) {
-    return node;
-  }
-
-  if (typeof node.type === "function") {
-    const renderComponent = node.type as (props: Record<string, unknown>) => ReactNode;
-    const match = findElement(renderComponent(node.props), predicate);
-
-    if (match) {
-      return match;
-    }
-  }
-
-  const children = node.props.children;
-  const childNodes = Array.isArray(children) ? children : [children];
-
-  for (const child of childNodes) {
-    const match = findElement(child, predicate);
-
-    if (match) {
-      return match;
-    }
-  }
-
-  return undefined;
-}
-
-function getChangeHandler(
-  element: TestElement,
-): (event: { currentTarget: { value: string; valueAsNumber?: number } }) => void {
-  const onChange = element.props.onChange;
-
-  if (typeof onChange !== "function") {
-    throw new Error("Control has no change handler");
-  }
-
-  return onChange as (event: { currentTarget: { value: string; valueAsNumber?: number } }) => void;
-}
-
-function isReactElement(node: ReactNode): node is TestElement {
-  return typeof node === "object" && node !== null && "props" in node;
-}
-
-function isNativeElement(element: TestElement): boolean {
-  return typeof element.type === "string";
-}
