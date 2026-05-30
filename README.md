@@ -27,14 +27,11 @@ npm install react react-dom
 import { TemplateBuilder, createInvoiceExample } from "@bambamboole/pdf-ua-template-builder";
 import "@bambamboole/pdf-ua-template-builder/style.css";
 
-const example = createInvoiceExample();
-
 export default function App() {
   return (
     <TemplateBuilder
       apiUrl="http://localhost:8080"
-      initialTemplate={example.template}
-      initialData={example.data}
+      examples={{ Invoice: createInvoiceExample() }}
       onChange={(template, data) => console.log("changed", template, data)}
       onRendered={(pdf) => console.log("rendered pdf blob", pdf)}
     />
@@ -44,52 +41,53 @@ export default function App() {
 
 ## Props
 
-| Prop              | Type                                                                | Description                                                                  |
-| ----------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `apiUrl`          | `string`                                                            | Base URL of a running `pdf-ua-api`. Defaults to `""` (relative URL / proxy). |
-| `initialTemplate` | `Template`                                                          | Template loaded on first render.                                             |
-| `initialData`     | `Record<string, unknown>`                                           | Runtime data keyed by block id (table rows, dynamic key-value overrides).   |
-| `onChange`        | `(template: Template, data: Record<string, unknown>) => void`       | Fires on every edit.                                                         |
-| `onRendered`     | `(pdf: Blob) => void`                                               | Fires after a successful render.                                             |
-| `className`      | `string`                                                            | Class appended to the root element.                                          |
+| Prop              | Type                                                          | Description                                                                   |
+| ----------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `apiUrl`          | `string`                                                     | Base URL of a running `pdf-ua-api`. Defaults to `""` (relative URL / proxy).  |
+| `initialTemplate` | `Template`                                                   | Template loaded on first render.                                              |
+| `initialData`     | `Record<string, unknown>`                                    | Runtime data keyed by block id (table rows, dynamic key-value overrides).     |
+| `examples`        | `Record<string, { template: Template; data?: TemplateData }>` | Loadable examples keyed by display name. The palette's Load control only appears when this is non-empty. |
+| `onChange`        | `(template: Template, data: Record<string, unknown>) => void` | Fires on every edit.                                                          |
+| `onRendered`      | `(pdf: Blob) => void`                                        | Fires after a successful render.                                              |
+| `className`       | `string`                                                     | Class appended to the root element.                                           |
 
 ## Composable layout
 
-`<TemplateBuilder />` is a preset that arranges every pane in a fixed,
-full-screen two-column layout. When you need a different arrangement — for
-example the PDF preview **below** the authoring area inside a docs page —
-compose the parts yourself. `TemplateBuilder.Provider` owns the shared state and
-drag-and-drop context; place `TemplateBuilder.Toolbar`, `.Palette`, `.Canvas`,
-`.Inspector`, and `.Preview` inside it however you like. Each part accepts a
-`className` for positioning and sizing:
+`<TemplateBuilder />` is a preset that places a `Builder` and a `Preview`
+side-by-side. When you need a different arrangement — for example the PDF
+preview **below** the builder inside a docs page — compose the parts yourself.
+`TemplateBuilderProvider` owns the shared state and drag-and-drop context; place
+`Builder` and `Preview` inside it however you like. Both accept a `className` for
+positioning and sizing:
 
 ```tsx
-import { TemplateBuilder } from "@bambamboole/pdf-ua-template-builder";
+import {
+  TemplateBuilderProvider,
+  Builder,
+  Preview,
+  createInvoiceExample,
+} from "@bambamboole/pdf-ua-template-builder";
 import "@bambamboole/pdf-ua-template-builder/style.css";
 
 export default function StackedBuilder() {
   return (
-    <TemplateBuilder.Provider apiUrl="http://localhost:8080">
+    <TemplateBuilderProvider apiUrl="http://localhost:8080">
       <div className="flex flex-col gap-3">
-        <TemplateBuilder.Toolbar />
-        <TemplateBuilder.Palette />
-        <div className="grid grid-cols-[minmax(320px,360px)_1fr]">
-          <TemplateBuilder.Inspector className="border-r border-solid border-border" />
-          <TemplateBuilder.Canvas className="h-[36rem]" />
-        </div>
-        <TemplateBuilder.Preview className="h-[40rem]" />
+        <Builder examples={{ Invoice: createInvoiceExample() }} className="h-[36rem]" />
+        <Preview className="h-[40rem]" />
       </div>
-    </TemplateBuilder.Provider>
+    </TemplateBuilderProvider>
   );
 }
 ```
 
-`TemplateBuilder.Provider` accepts the same props as `<TemplateBuilder />` except
-`className` (`apiUrl`, `initialTemplate`, `initialData`, `onChange`,
-`onRendered`). Because the provider does not impose a height, give the canvas and
-preview regions explicit sizes when you are not filling the viewport. For fully
-custom parts, the `useTemplateBuilder()` hook exposes the underlying state and
-actions.
+`Builder` groups the palette, canvas, and inspector; `Preview` shows the rendered
+PDF and the Render button. `TemplateBuilderProvider` accepts the same props as
+`<TemplateBuilder />` except `examples` and `className` (`apiUrl`,
+`initialTemplate`, `initialData`, `onChange`, `onRendered`). Because the provider
+does not impose a height, give `Builder` and `Preview` explicit sizes when you
+are not filling the viewport. For fully custom parts, the `useTemplateBuilder()`
+hook exposes the underlying state and actions.
 
 ## Backend
 

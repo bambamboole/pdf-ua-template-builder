@@ -6,7 +6,8 @@ export interface PreviewProps {
 }
 
 export function Preview({ className }: PreviewProps = {}) {
-  const { pdfUrl, error, pdfLoading, serializedTemplate, data } = useTemplateBuilder();
+  const { pdfUrl, error, pdfLoading, serializedTemplate, data, schema, renderPdf } =
+    useTemplateBuilder();
 
   return (
     <PdfPane
@@ -16,6 +17,8 @@ export function Preview({ className }: PreviewProps = {}) {
       loading={pdfLoading}
       template={serializedTemplate}
       data={data}
+      onRender={renderPdf}
+      renderDisabled={!schema || pdfLoading}
     />
   );
 }

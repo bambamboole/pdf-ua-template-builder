@@ -3,10 +3,16 @@ import "./styles/app.css";
 export { TemplateBuilder } from "./builder/TemplateBuilder";
 export type { TemplateBuilderProps } from "./builder/TemplateBuilder";
 
-export { useTemplateBuilder } from "./builder/context/BuilderContext";
+export { Builder } from "./builder/Builder";
+export type { BuilderProps } from "./builder/Builder";
+export { Preview } from "./builder/preview/Preview";
+export type { PreviewProps } from "./builder/preview/Preview";
+
+export { TemplateBuilderProvider, useTemplateBuilder } from "./builder/context/BuilderContext";
 export type {
-  BuilderProviderProps,
+  TemplateBuilderProviderProps,
   BuilderContextValue,
+  TemplateExample,
 } from "./builder/context/BuilderContext";
 
 export { createInvoiceExample } from "./builder/schema/invoiceExample";

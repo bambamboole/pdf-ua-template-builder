@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import type { Template } from "../../types/generated/template";
 import type { TemplateData } from "../../types/template";
+import { Button } from "../primitives/Button";
 
 export type OutputTab = "pdf" | "data";
 
@@ -13,6 +14,8 @@ export interface PdfPaneProps {
   template?: Template;
   data?: TemplateData;
   className?: string;
+  onRender?: () => void;
+  renderDisabled?: boolean;
 }
 
 function Tab({
@@ -54,7 +57,16 @@ function StatusPill({ status, children }: { status: OutputStatus; children: Reac
   );
 }
 
-export function PdfPane({ pdfUrl, error, loading, template, data, className }: PdfPaneProps) {
+export function PdfPane({
+  pdfUrl,
+  error,
+  loading,
+  template,
+  data,
+  className,
+  onRender,
+  renderDisabled,
+}: PdfPaneProps) {
   const [tab, setTab] = useState<OutputTab>("pdf");
   const status: OutputStatus = loading
     ? "rendering"
@@ -78,7 +90,14 @@ export function PdfPane({ pdfUrl, error, loading, template, data, className }: P
           </Tab>
           {tab === "data" ? <CopyJsonButton template={template} data={data} /> : null}
         </div>
-        <StatusPill status={status}>{statusLabel}</StatusPill>
+        <div className="flex items-center gap-3">
+          <StatusPill status={status}>{statusLabel}</StatusPill>
+          {onRender ? (
+            <Button variant="primary" onClick={onRender} disabled={renderDisabled}>
+              {loading ? "Rendering…" : "Render PDF"}
+            </Button>
+          ) : null}
+        </div>
       </header>
 
       {error ? (

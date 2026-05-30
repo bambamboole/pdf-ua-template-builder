@@ -1,12 +1,17 @@
-import { useTemplateBuilder } from "../context/BuilderContext";
+import { useTemplateBuilder, type TemplateExample } from "../context/BuilderContext";
+import { Select } from "../forms/controls";
+import { Button } from "../primitives/Button";
 import { BlockPalette } from "./BlockPalette";
 
 export interface PaletteProps {
   className?: string;
+  /** Loadable examples keyed by display name. The Load control only renders when non-empty. */
+  examples?: Record<string, TemplateExample>;
 }
 
-export function Palette({ className }: PaletteProps = {}) {
-  const { blockTypes, addBlock } = useTemplateBuilder();
+export function Palette({ className, examples }: PaletteProps = {}) {
+  const { blockTypes, addBlock, loadExample, schema } = useTemplateBuilder();
+  const exampleEntries = examples ? Object.entries(examples) : [];
 
   return (
     <aside
@@ -18,7 +23,55 @@ export function Palette({ className }: PaletteProps = {}) {
           Blocks
         </h2>
         <BlockPalette blockTypes={blockTypes} onAdd={addBlock} />
+        {exampleEntries.length > 0 ? (
+          <div className="ml-auto flex-none">
+            <ExampleLoader entries={exampleEntries} disabled={!schema} onLoad={loadExample} />
+          </div>
+        ) : null}
       </div>
     </aside>
+  );
+}
+
+interface ExampleLoaderProps {
+  entries: [string, TemplateExample][];
+  disabled: boolean;
+  onLoad: (example: TemplateExample) => void;
+}
+
+function ExampleLoader({ entries, disabled, onLoad }: ExampleLoaderProps) {
+  if (entries.length === 1) {
+    const [, example] = entries[0];
+
+    return (
+      <Button onClick={() => onLoad(example)} disabled={disabled}>
+        Load example
+      </Button>
+    );
+  }
+
+  return (
+    <Select
+      className="w-auto py-0"
+      value=""
+      disabled={disabled}
+      aria-label="Load example"
+      onChange={(event) => {
+        const match = entries.find(([name]) => name === event.currentTarget.value);
+
+        if (match) {
+          onLoad(match[1]);
+        }
+      }}
+    >
+      <option value="" disabled>
+        Load example…
+      </option>
+      {entries.map(([name]) => (
+        <option key={name} value={name}>
+          {name}
+        </option>
+      ))}
+    </Select>
   );
 }

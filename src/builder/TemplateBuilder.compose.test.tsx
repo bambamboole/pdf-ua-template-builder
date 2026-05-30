@@ -3,7 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TemplateSchemaResponse } from "../types/template";
 import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
-import { TemplateBuilder } from "./TemplateBuilder";
+import { Builder } from "./Builder";
+import { TemplateBuilderProvider } from "./context/BuilderContext";
+import { Preview } from "./preview/Preview";
+import { createInvoiceExample } from "./schema/invoiceExample";
 
 vi.mock("../api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn(),
@@ -42,36 +45,32 @@ const builderSchema = {
 } satisfies TemplateSchemaResponse;
 
 const mockFetchSchema = vi.mocked(fetchTemplateSchema);
+const mockRenderPdf = vi.mocked(renderTemplatePdf);
 
 function StackedBuilder() {
   return (
-    <TemplateBuilder.Provider>
+    <TemplateBuilderProvider>
       <div className="flex flex-col">
-        <TemplateBuilder.Toolbar />
-        <TemplateBuilder.Palette />
-        <div className="grid grid-cols-[320px_1fr]">
-          <TemplateBuilder.Inspector />
-          <TemplateBuilder.Canvas className="h-[36rem]" />
-        </div>
-        <TemplateBuilder.Preview className="h-[40rem]" />
+        <Builder examples={{ Invoice: createInvoiceExample() }} className="h-[36rem]" />
+        <Preview className="h-[40rem]" />
       </div>
-    </TemplateBuilder.Provider>
+    </TemplateBuilderProvider>
   );
 }
 
-describe("composable TemplateBuilder parts", () => {
+describe("composing Builder and Preview", () => {
   beforeEach(() => {
     mockFetchSchema.mockReset();
     mockFetchSchema.mockResolvedValue(builderSchema);
-    vi.mocked(renderTemplatePdf).mockReset();
+    mockRenderPdf.mockReset();
     URL.createObjectURL = vi.fn(() => "blob:mock-pdf");
     URL.revokeObjectURL = vi.fn();
   });
 
-  it("renders every pane within one provider in a custom stacked layout", async () => {
+  it("renders both regions within one provider in a custom stacked layout", async () => {
     render(<StackedBuilder />);
 
-    expect(screen.getByRole("banner", { name: "Template builder toolbar" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Template authoring" })).toBeInTheDocument();
     expect(screen.getByRole("complementary", { name: "Block palette" })).toBeInTheDocument();
     expect(screen.getByRole("complementary", { name: "Output" })).toBeInTheDocument();
 
@@ -80,8 +79,9 @@ describe("composable TemplateBuilder parts", () => {
     );
   });
 
-  it("shares state across parts: loading the example through the toolbar fills the canvas", async () => {
+  it("shares state: Load example (Builder) fills the canvas and Render (Preview) calls the API", async () => {
     const user = userEvent.setup();
+    mockRenderPdf.mockResolvedValue(new Blob(["%PDF-1.7"], { type: "application/pdf" }));
 
     render(<StackedBuilder />);
 
@@ -101,5 +101,9 @@ describe("composable TemplateBuilder parts", () => {
     expect(
       screen.getByText(/Please transfer the amount due within 30 days/i),
     ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Render PDF" }));
+
+    await waitFor(() => expect(mockRenderPdf).toHaveBeenCalledTimes(1));
   });
 });

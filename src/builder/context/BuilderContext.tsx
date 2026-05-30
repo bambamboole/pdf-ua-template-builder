@@ -7,7 +7,6 @@ import {
   useMemo,
   useReducer,
   useRef,
-  useState,
   type ReactNode,
 } from "react";
 import { resolveDefaultApiUrl } from "../../api/pdfUaApi";
@@ -36,13 +35,18 @@ import {
 } from "../state/editorModel";
 import { createEditorState, editorReducer } from "../state/editorReducer";
 import { getBlockTypes, type JsonSchemaObject } from "../schema/schemaAdapter";
-import { createInvoiceExample } from "../schema/invoiceExample";
 
 const emptyTemplate: Template = {
   version: 1,
 };
 
-export interface BuilderProviderProps {
+/** A loadable example: a template plus its optional runtime data. */
+export interface TemplateExample {
+  template: Template;
+  data?: TemplateData;
+}
+
+export interface TemplateBuilderProviderProps {
   /** Base URL of a running pdf-ua-api instance. Defaults to "" (relative URLs / proxy). */
   apiUrl?: string;
   /** Template loaded into the editor on first render. */
@@ -60,8 +64,6 @@ export interface BuilderProviderProps {
 export interface BuilderContextValue {
   schema: TemplateSchemaResponse | null;
   schemaLoading: boolean;
-  apiUrl: string;
-  setApiUrl: (url: string) => void;
   model: EditorModel;
   data: TemplateData;
   serializedTemplate: Template;
@@ -74,9 +76,8 @@ export interface BuilderContextValue {
   pdfUrl: string | null;
   pdfLoading: boolean;
   error: string | null;
-  loadSchema: () => void;
   renderPdf: () => void;
-  loadExample: () => void;
+  loadExample: (example: TemplateExample) => void;
   addBlock: (type: string) => void;
   changeBlock: (blockUid: string, block: Block) => void;
   changeTemplateSettings: (template: Template) => void;
@@ -103,16 +104,15 @@ export function useTemplateBuilder(): BuilderContextValue {
   return value;
 }
 
-export function BuilderProvider({
-  apiUrl: initialApiUrlProp,
+export function TemplateBuilderProvider({
+  apiUrl: apiUrlProp,
   initialTemplate,
   initialData,
   onChange,
   onRendered,
   children,
-}: BuilderProviderProps) {
-  const defaultApiUrl = resolveDefaultApiUrl(initialApiUrlProp);
-  const [apiUrl, setApiUrl] = useState(defaultApiUrl);
+}: TemplateBuilderProviderProps) {
+  const apiUrl = resolveDefaultApiUrl(apiUrlProp);
   const [state, dispatch] = useReducer(editorReducer, undefined, () =>
     createEditorState(initialTemplate ?? emptyTemplate, initialData ?? {}),
   );
@@ -120,8 +120,8 @@ export function BuilderProvider({
   const modelRef = useRef(model);
   modelRef.current = model;
 
-  const { schema, schemaLoading, pdfUrl, pdfLoading, error, loadSchema, renderPdf } = usePdfUaApi({
-    initialApiUrl: defaultApiUrl,
+  const { schema, schemaLoading, pdfUrl, pdfLoading, error, renderPdf } = usePdfUaApi({
+    initialApiUrl: apiUrl,
     apiUrl,
     onRendered,
   });
@@ -161,10 +161,8 @@ export function BuilderProvider({
     modelRef,
   );
 
-  const loadExample = useCallback(() => {
-    const example = createInvoiceExample();
-
-    dispatch({ type: "loadExample", template: example.template, data: example.data });
+  const loadExample = useCallback((example: TemplateExample) => {
+    dispatch({ type: "loadExample", template: example.template, data: example.data ?? {} });
   }, []);
 
   const changeBlock = useCallback((blockUid: string, block: Block) => {
@@ -221,10 +219,6 @@ export function BuilderProvider({
     dispatch({ type: "setPageNumbers", value });
   }, []);
 
-  const handleLoadSchema = useCallback(() => {
-    void loadSchema(apiUrl);
-  }, [loadSchema, apiUrl]);
-
   const handleRenderPdf = useCallback(() => {
     void renderPdf(serializedTemplate, data);
   }, [renderPdf, serializedTemplate, data]);
@@ -233,8 +227,6 @@ export function BuilderProvider({
     () => ({
       schema,
       schemaLoading,
-      apiUrl,
-      setApiUrl,
       model,
       data,
       serializedTemplate,
@@ -247,7 +239,6 @@ export function BuilderProvider({
       pdfUrl,
       pdfLoading,
       error,
-      loadSchema: handleLoadSchema,
       renderPdf: handleRenderPdf,
       loadExample,
       addBlock,
@@ -266,7 +257,6 @@ export function BuilderProvider({
     [
       schema,
       schemaLoading,
-      apiUrl,
       model,
       data,
       serializedTemplate,
@@ -279,7 +269,6 @@ export function BuilderProvider({
       pdfUrl,
       pdfLoading,
       error,
-      handleLoadSchema,
       handleRenderPdf,
       loadExample,
       addBlock,
