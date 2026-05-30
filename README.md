@@ -53,6 +53,50 @@ export default function App() {
 | `onRendered`     | `(pdf: Blob) => void`                                               | Fires after a successful render.                                             |
 | `className`      | `string`                                                            | Class appended to the root element.                                          |
 
+## Composable layout
+
+`TemplateBuilder` is a preset that arranges every pane in a fixed, full-screen
+two-column layout. When you need a different arrangement — for example the PDF
+preview **below** the authoring area inside a docs page — compose the panes
+yourself. Wrap them in a single `TemplateBuilderProvider` (which owns the shared
+state and drag-and-drop context) and place the slots however you like. Each slot
+accepts a `className` for positioning and sizing:
+
+```tsx
+import {
+  TemplateBuilderProvider,
+  TemplateBuilderToolbar,
+  TemplateBuilderPalette,
+  TemplateBuilderCanvas,
+  TemplateBuilderInspector,
+  TemplateBuilderPreview,
+} from "@bambamboole/pdf-ua-template-builder";
+import "@bambamboole/pdf-ua-template-builder/style.css";
+
+export default function StackedBuilder() {
+  return (
+    <TemplateBuilderProvider apiUrl="http://localhost:8080">
+      <div className="flex flex-col gap-3">
+        <TemplateBuilderToolbar />
+        <TemplateBuilderPalette />
+        <div className="grid grid-cols-[minmax(320px,360px)_1fr]">
+          <TemplateBuilderInspector className="border-r border-solid border-border" />
+          <TemplateBuilderCanvas className="h-[36rem]" />
+        </div>
+        <TemplateBuilderPreview className="h-[40rem]" />
+      </div>
+    </TemplateBuilderProvider>
+  );
+}
+```
+
+`TemplateBuilderProvider` accepts the same props as `TemplateBuilder` except
+`className` (`apiUrl`, `initialTemplate`, `initialData`, `onChange`,
+`onRendered`). Because the provider does not impose a height, give the canvas and
+preview regions explicit sizes when you are not filling the viewport. For fully
+custom panes, `useTemplateBuilderContext()` exposes the underlying state and
+actions.
+
 ## Backend
 
 The component talks to a `pdf-ua-api` instance via:

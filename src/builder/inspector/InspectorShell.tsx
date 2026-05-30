@@ -1,9 +1,20 @@
 import type { ReactNode } from "react";
 
-export function InspectorShell({ ariaLabel, children }: { ariaLabel: string; children: ReactNode }) {
+const inspectorShellClass =
+  "grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto bg-surface p-4";
+
+export function InspectorShell({
+  ariaLabel,
+  className,
+  children,
+}: {
+  ariaLabel: string;
+  className?: string;
+  children: ReactNode;
+}) {
   return (
     <aside
-      className="col-start-1 row-start-3 grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto border-0 border-r border-solid border-border bg-surface p-4 max-[760px]:col-start-1 max-[760px]:row-auto max-[760px]:border-r-0 max-[760px]:border-t"
+      className={className ? `${inspectorShellClass} ${className}` : inspectorShellClass}
       aria-label={ariaLabel}
     >
       {children}
