@@ -27,7 +27,6 @@ export function usePdfUaApi({ initialApiUrl, apiUrl, onRendered }: UsePdfUaApiOp
   const [error, setError] = useState<string | null>(null);
 
   const initialApiUrlRef = useRef(initialApiUrl);
-  const mounted = useRef(false);
   const schemaRequestId = useRef(0);
   const renderRequestId = useRef(0);
   const pdfUrlRef = useRef<string | null>(null);
@@ -38,10 +37,7 @@ export function usePdfUaApi({ initialApiUrl, apiUrl, onRendered }: UsePdfUaApiOp
   }, [onRendered]);
 
   useEffect(() => {
-    mounted.current = true;
-
     return () => {
-      mounted.current = false;
       revokeObjectUrl(pdfUrlRef.current);
       pdfUrlRef.current = null;
     };
@@ -56,15 +52,15 @@ export function usePdfUaApi({ initialApiUrl, apiUrl, onRendered }: UsePdfUaApiOp
     try {
       const nextSchema = await fetchTemplateSchema(url);
 
-      if (mounted.current && requestId === schemaRequestId.current) {
+      if (requestId === schemaRequestId.current) {
         setSchema(nextSchema);
       }
     } catch (cause) {
-      if (mounted.current && requestId === schemaRequestId.current) {
+      if (requestId === schemaRequestId.current) {
         setError(errorMessage(cause));
       }
     } finally {
-      if (mounted.current && requestId === schemaRequestId.current) {
+      if (requestId === schemaRequestId.current) {
         setSchemaLoading(false);
       }
     }
@@ -89,7 +85,7 @@ export function usePdfUaApi({ initialApiUrl, apiUrl, onRendered }: UsePdfUaApiOp
         });
         const nextPdfUrl = URL.createObjectURL(pdf);
 
-        if (!mounted.current || requestId !== renderRequestId.current) {
+        if (requestId !== renderRequestId.current) {
           revokeObjectUrl(nextPdfUrl);
           return;
         }
@@ -101,11 +97,11 @@ export function usePdfUaApi({ initialApiUrl, apiUrl, onRendered }: UsePdfUaApiOp
         });
         onRenderedRef.current?.(pdf);
       } catch (cause) {
-        if (mounted.current && requestId === renderRequestId.current) {
+        if (requestId === renderRequestId.current) {
           setError(errorMessage(cause));
         }
       } finally {
-        if (mounted.current && requestId === renderRequestId.current) {
+        if (requestId === renderRequestId.current) {
           setPdfLoading(false);
         }
       }
