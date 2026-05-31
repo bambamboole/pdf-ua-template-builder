@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import type { TemplateSchemaResponse } from "../../types/template";
 import { createEditorModel, resolveSelectedEditorBlock } from "../state/editorModel";
 import { BlockInspector } from "./BlockInspector";
@@ -40,12 +40,39 @@ describe("BlockInspector", () => {
 
     expect(screen.getByRole("complementary", { name: "Block inspector" })).toBeInTheDocument();
     expect(screen.getByText("Heading")).toBeInTheDocument();
-    expect(screen.getByText("heading-1")).toBeInTheDocument();
-    expect(screen.getByText(selectedBlockUid)).toBeInTheDocument();
+    expect(screen.getByLabelText("ID")).toHaveValue("heading-1");
     expect(screen.getByText("Content")).toBeInTheDocument();
     expect(screen.getByText("Layout")).toBeInTheDocument();
     expect(screen.getByText("Typography")).toBeInTheDocument();
     expect(screen.getByText("Spacing")).toBeInTheDocument();
+  });
+
+  it("edits the block id", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
+    });
+    const selectedBlockUid = model.rows[0]?.blocks[0]?.uid ?? "";
+    const selectedBlock = resolveSelectedEditorBlock(model, selectedBlockUid);
+    const onChangeBlock = vi.fn();
+
+    render(
+      <BlockInspector
+        block={selectedBlock}
+        schema={schema}
+        data={{}}
+        onChangeBlock={onChangeBlock}
+        onRemoveBlock={() => undefined}
+        onClose={() => undefined}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("ID"), { target: { value: "summary" } });
+
+    expect(onChangeBlock).toHaveBeenLastCalledWith(
+      selectedBlockUid,
+      expect.objectContaining({ type: "heading", id: "summary" }),
+    );
   });
 
   it("shows the empty state when no block is selected", () => {

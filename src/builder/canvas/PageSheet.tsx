@@ -7,9 +7,11 @@ export interface PageSheetProps {
   format: PageFormat;
   orientation: Orientation;
   children: ReactNode;
+  /** Show the "{format} · {orientation} / {width}mm" caption. Off for the footer sheet. */
+  showMeta?: boolean;
 }
 
-export function PageSheet({ format, orientation, children }: PageSheetProps) {
+export function PageSheet({ format, orientation, children, showMeta = true }: PageSheetProps) {
   const [widthMm] = pageSizeForFormat(format, orientation);
   const style: CSSProperties = { maxWidth: `${mmToPx(widthMm)}px` };
 
@@ -21,12 +23,14 @@ export function PageSheet({ format, orientation, children }: PageSheetProps) {
       className="mx-auto grid w-full gap-3 rounded-xl border border-solid border-border bg-page p-6 shadow-page transition-[max-width] duration-200"
       style={style}
     >
-      <div className="mb-2 flex items-center justify-between text-2xs uppercase tracking-[0.06em] text-fg-subtle">
-        <span>
-          {format} · {orientation}
-        </span>
-        <span>{Math.round(widthMm)}mm</span>
-      </div>
+      {showMeta ? (
+        <div className="mb-2 flex items-center justify-between text-2xs uppercase tracking-[0.06em] text-fg-subtle">
+          <span>
+            {format} · {orientation}
+          </span>
+          <span>{Math.round(widthMm)}mm</span>
+        </div>
+      ) : null}
       {children}
     </div>
   );

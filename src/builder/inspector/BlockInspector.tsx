@@ -2,6 +2,7 @@ import type { Block } from "../../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
 import { Button } from "../primitives/Button";
 import { Chip } from "../primitives/Chip";
+import { TextField } from "../controls";
 import { getBlockChrome, getBlockSummary } from "../blocks/blockChrome";
 import type { EditorBlock } from "../state/editorModel";
 import { BlockContentControls } from "./BlockContentControls";
@@ -45,8 +46,6 @@ export function BlockInspector({
   const chrome = getBlockChrome(block.block.type);
   const summary = getBlockSummary(block.block);
   const blockId = typeof block.block.id === "string" ? block.block.id : null;
-  const hasRuntimeData = blockId ? data[blockId] !== undefined : false;
-  const schemaSupportsBlock = schema["x-pdfUa"].blockOrder.includes(block.block.type);
   const contentControls = (
     <BlockContentControls
       block={block.block}
@@ -78,16 +77,15 @@ export function BlockInspector({
         }
       />
 
-      <dl className="m-0 grid gap-2">
-        <MetaRow label="Type" value={block.block.type} />
-        <MetaRow label="ID" value={blockId ?? "Not set"} />
-        <MetaRow label="UID" value={block.uid} />
-        <MetaRow label="Schema" value={schemaSupportsBlock ? "Available" : "Unsupported"} />
-        <MetaRow
-          label="Data"
-          value={hasRuntimeData ? "Runtime data available" : "No runtime data"}
-        />
-      </dl>
+      <TextField
+        name="block.id"
+        label="ID"
+        value={blockId ?? ""}
+        placeholder="Optional identifier"
+        onChange={(value) =>
+          onChangeBlock(block.uid, { ...block.block, id: value ? value : undefined })
+        }
+      />
 
       <div className="grid gap-2" aria-label="Inspector sections">
         {contentControls}
@@ -125,16 +123,3 @@ export function BlockInspector({
   );
 }
 
-interface MetaRowProps {
-  label: string;
-  value: string;
-}
-
-function MetaRow({ label, value }: MetaRowProps) {
-  return (
-    <div className="grid grid-cols-[72px_minmax(0,1fr)] items-baseline gap-2">
-      <dt className="text-2xs font-semibold uppercase tracking-wide text-fg-subtle">{label}</dt>
-      <dd className="m-0 min-w-0 break-words font-mono text-2xs text-fg">{value}</dd>
-    </div>
-  );
-}
