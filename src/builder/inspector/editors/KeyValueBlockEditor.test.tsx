@@ -122,6 +122,12 @@ describe("KeyValueBlockEditor state helpers", () => {
     expect(next.config?.fields?.[0]).toEqual({ key: "invoiceNo", label: "Invoice number" });
   });
 
+  it("rejects renaming a field key onto another field's key", () => {
+    const next = renameFieldKey(baseBlock, 0, "issueDate");
+
+    expect(next).toBe(baseBlock);
+  });
+
   it("setFieldLabel updates only the label", () => {
     const next = setFieldLabel(baseBlock, 1, "Issued on");
 

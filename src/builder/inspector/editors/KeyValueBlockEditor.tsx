@@ -61,6 +61,10 @@ export function renameFieldKey(
     return block;
   }
 
+  if (fields.some((field, currentIndex) => currentIndex !== index && field.key === nextKey)) {
+    return block;
+  }
+
   return applyFields(
     block,
     fields.map((field, currentIndex) =>

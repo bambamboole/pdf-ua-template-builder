@@ -101,6 +101,30 @@ describe("editor model", () => {
     ]);
   });
 
+  it("reorders blocks within a shared row", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [headingBlock, textBlock, dividerBlock] }],
+    });
+    const rowUid = model.rows[0]?.uid ?? "";
+    const headingUid = model.rows[0]?.blocks[0]?.uid ?? "";
+    const dividerUid = model.rows[0]?.blocks[2]?.uid ?? "";
+
+    const headingToEnd = moveBlock(model, headingUid, rowUid, 2);
+    const dividerToFront = moveBlock(model, dividerUid, rowUid, 0);
+
+    expect(serializeTemplate(headingToEnd).rows?.[0]?.blocks.map((block) => block.type)).toEqual([
+      "text",
+      "divider",
+      "heading",
+    ]);
+    expect(serializeTemplate(dividerToFront).rows?.[0]?.blocks.map((block) => block.type)).toEqual([
+      "divider",
+      "heading",
+      "text",
+    ]);
+  });
+
   it("moves a block to a new row at the end", () => {
     const model = createEditorModel(template);
     const headingUid = model.rows[0]?.blocks[0]?.uid ?? "";
@@ -322,6 +346,37 @@ describe("editor model", () => {
       { ...textBlock, config: { align: "center", width: "40%" } },
     ]);
   });
+
+  it("omits width for blocks without a provided width instead of writing undefined", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [
+        {
+          blocks: [
+            { ...headingBlock, config: { level: 2 } },
+            { ...textBlock, config: { align: "center" } },
+          ],
+        },
+      ],
+    });
+    const rowUid = model.rows[0]?.uid ?? "";
+    const resized = setRowWidths(model, rowUid, ["60%"]);
+    const blocks = serializeTemplate(resized).rows?.[0]?.blocks;
+
+    expect(blocks?.[0]).toStrictEqual({ ...headingBlock, config: { level: 2, width: "60%" } });
+    expect(blocks?.[1]).toStrictEqual({ ...textBlock, config: { align: "center" } });
+  });
+
+  it("clears width and prunes empty config when an empty width is provided", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [{ ...textBlock, config: { width: "40%" } }] }],
+    });
+    const rowUid = model.rows[0]?.uid ?? "";
+    const cleared = setRowWidths(model, rowUid, [""]);
+
+    expect(serializeTemplate(cleared).rows?.[0]?.blocks?.[0]).toStrictEqual(textBlock);
+  });
 });
 
 describe("createNextBlockId", () => {
@@ -340,6 +395,20 @@ describe("createNextBlockId", () => {
 
     expect(createNextBlockId(model, "heading")).toBe("heading-2");
     expect(createNextBlockId(model, "divider")).toBe("divider-1");
+  });
+
+  it("avoids ids already used by footer blocks", () => {
+    const model = createEditorModel({
+      version: 1,
+      config: {
+        page: {
+          footer: { rows: [{ blocks: [{ type: "text", id: "text-1", text: "Legal" }] }] },
+        },
+      },
+      rows: [{ blocks: [headingBlock] }],
+    });
+
+    expect(createNextBlockId(model, "text")).toBe("text-2");
   });
 });
 
