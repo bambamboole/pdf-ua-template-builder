@@ -1,4 +1,4 @@
-import type { Block } from "../../types/generated/template";
+import type { Block } from "../../../types/generated/template";
 
 export interface BlockEditorProps {
   block: Block;

@@ -1,4 +1,4 @@
-import { useTemplateBuilder } from "../context/BuilderContext";
+import { useBuilderActions, useBuilderState } from "../context/BuilderContext";
 import { PdfPane } from "./PdfPane";
 
 export interface PreviewProps {
@@ -6,8 +6,8 @@ export interface PreviewProps {
 }
 
 export function Preview({ className }: PreviewProps = {}) {
-  const { pdfUrl, error, pdfLoading, serializedTemplate, data, schema, renderPdf } =
-    useTemplateBuilder();
+  const { pdfUrl, error, pdfLoading, serializedTemplate, data, schema } = useBuilderState();
+  const { renderPdf } = useBuilderActions();
 
   return (
     <PdfPane

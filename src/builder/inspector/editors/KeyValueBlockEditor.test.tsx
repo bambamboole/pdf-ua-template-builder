@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { KeyValueBlock } from "../../types/generated/template";
+import type { KeyValueBlock } from "../../../types/generated/template";
 import {
   KeyValueBlockEditor,
   addField,

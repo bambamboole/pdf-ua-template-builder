@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { Orientation, PageFormat, Template } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
 import { Chip } from "../primitives/Chip";
-import { SelectField } from "../forms/controls";
+import { SelectField } from "../controls";
 import { PAGE_SIZES_MM } from "../lib/pageSizes";
 import { InspectorHeader, InspectorSection, InspectorShell } from "./InspectorShell";
 import { SpacingControls } from "./SpacingControls";

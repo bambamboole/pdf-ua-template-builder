@@ -61,7 +61,7 @@ describe("TemplateBuilderProvider", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() => render(<ContextProbe />)).toThrow(
-      /must be used within a <TemplateBuilder.Provider>/,
+      /must be used within a <TemplateBuilderProvider>/,
     );
 
     consoleError.mockRestore();

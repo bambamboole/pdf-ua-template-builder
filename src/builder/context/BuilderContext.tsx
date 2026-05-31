@@ -61,7 +61,8 @@ export interface TemplateBuilderProviderProps {
   children: ReactNode;
 }
 
-export interface BuilderContextValue {
+/** Editor state and derived values. Changes as the user edits. */
+export interface BuilderState {
   schema: TemplateSchemaResponse | null;
   schemaLoading: boolean;
   model: EditorModel;
@@ -76,6 +77,10 @@ export interface BuilderContextValue {
   pdfUrl: string | null;
   pdfLoading: boolean;
   error: string | null;
+}
+
+/** Stable editor actions. Identity never changes for the provider's lifetime. */
+export interface BuilderActions {
   renderPdf: () => void;
   loadExample: (example: TemplateExample) => void;
   addBlock: (type: string) => void;
@@ -92,16 +97,36 @@ export interface BuilderContextValue {
   changePageNumbers: (value: PageNumbersValue) => void;
 }
 
-const BuilderContext = createContext<BuilderContextValue | null>(null);
+export type BuilderContextValue = BuilderState & BuilderActions;
 
-export function useTemplateBuilder(): BuilderContextValue {
-  const value = useContext(BuilderContext);
+const BuilderStateContext = createContext<BuilderState | null>(null);
+const BuilderActionsContext = createContext<BuilderActions | null>(null);
+
+/** Subscribe to editor state. Re-renders on edits. */
+export function useBuilderState(): BuilderState {
+  const value = useContext(BuilderStateContext);
 
   if (!value) {
-    throw new Error("useTemplateBuilder must be used within a <TemplateBuilder.Provider>.");
+    throw new Error("useBuilderState must be used within a <TemplateBuilderProvider>.");
   }
 
   return value;
+}
+
+/** Read the stable editor actions. Does not re-render on edits. */
+export function useBuilderActions(): BuilderActions {
+  const value = useContext(BuilderActionsContext);
+
+  if (!value) {
+    throw new Error("useBuilderActions must be used within a <TemplateBuilderProvider>.");
+  }
+
+  return value;
+}
+
+/** Headless escape hatch returning both state and actions. */
+export function useTemplateBuilder(): BuilderContextValue {
+  return { ...useBuilderState(), ...useBuilderActions() };
 }
 
 export function TemplateBuilderProvider({
@@ -120,7 +145,14 @@ export function TemplateBuilderProvider({
   const modelRef = useRef(model);
   modelRef.current = model;
 
-  const { schema, schemaLoading, pdfUrl, pdfLoading, error, renderPdf } = usePdfUaApi({
+  const {
+    schema,
+    schemaLoading,
+    pdfUrl,
+    pdfLoading,
+    error,
+    renderPdf: renderPdfRequest,
+  } = usePdfUaApi({
     initialApiUrl: apiUrl,
     apiUrl,
     onRendered,
@@ -147,13 +179,19 @@ export function TemplateBuilderProvider({
     () => (schemaObject ? getBlockTypes(schemaObject) : []),
     [schemaObject],
   );
-  const pageSize = getPageSize(model);
-  const footerRepeat = getFooterRepeat(model);
-  const pageNumbers = getPageNumbers(model);
   const selectedBlock = useMemo(
     () => resolveSelectedEditorBlock(model, selectedBlockUid),
     [model, selectedBlockUid],
   );
+
+  // Latest values for actions that would otherwise need them as deps, keeping
+  // every action's identity stable for the provider's lifetime.
+  const serializedTemplateRef = useRef(serializedTemplate);
+  serializedTemplateRef.current = serializedTemplate;
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const schemaRef = useRef(schemaObject);
+  schemaRef.current = schemaObject;
 
   const { activeDrag, sensors, onDragStart, onDragEnd, onDragCancel } = useBuilderDragDrop(
     schemaObject,
@@ -193,15 +231,14 @@ export function TemplateBuilderProvider({
     dispatch({ type: "setData", data: nextData });
   }, []);
 
-  const addBlock = useCallback(
-    (type: string) => {
-      if (!schemaObject) {
-        return;
-      }
-      dispatch({ type: "addBlock", schema: schemaObject, blockType: type });
-    },
-    [schemaObject],
-  );
+  const addBlock = useCallback((type: string) => {
+    const currentSchema = schemaRef.current;
+
+    if (!currentSchema) {
+      return;
+    }
+    dispatch({ type: "addBlock", schema: currentSchema, blockType: type });
+  }, []);
 
   const changeFormat = useCallback((format: PageFormat) => {
     dispatch({ type: "setFormat", format });
@@ -219,27 +256,13 @@ export function TemplateBuilderProvider({
     dispatch({ type: "setPageNumbers", value });
   }, []);
 
-  const handleRenderPdf = useCallback(() => {
-    void renderPdf(serializedTemplate, data);
-  }, [renderPdf, serializedTemplate, data]);
+  const renderPdf = useCallback(() => {
+    void renderPdfRequest(serializedTemplateRef.current, dataRef.current);
+  }, [renderPdfRequest]);
 
-  const value = useMemo<BuilderContextValue>(
+  const actions = useMemo<BuilderActions>(
     () => ({
-      schema,
-      schemaLoading,
-      model,
-      data,
-      serializedTemplate,
-      selectedBlockUid,
-      selectedBlock,
-      blockTypes,
-      pageSize,
-      footerRepeat,
-      pageNumbers,
-      pdfUrl,
-      pdfLoading,
-      error,
-      renderPdf: handleRenderPdf,
+      renderPdf,
       loadExample,
       addBlock,
       changeBlock,
@@ -255,21 +278,7 @@ export function TemplateBuilderProvider({
       changePageNumbers,
     }),
     [
-      schema,
-      schemaLoading,
-      model,
-      data,
-      serializedTemplate,
-      selectedBlockUid,
-      selectedBlock,
-      blockTypes,
-      pageSize,
-      footerRepeat,
-      pageNumbers,
-      pdfUrl,
-      pdfLoading,
-      error,
-      handleRenderPdf,
+      renderPdf,
       loadExample,
       addBlock,
       changeBlock,
@@ -286,22 +295,56 @@ export function TemplateBuilderProvider({
     ],
   );
 
-  return (
-    <BuilderContext.Provider value={value}>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragCancel={onDragCancel}
-      >
-        {children}
+  const stateValue = useMemo<BuilderState>(
+    () => ({
+      schema,
+      schemaLoading,
+      model,
+      data,
+      serializedTemplate,
+      selectedBlockUid,
+      selectedBlock,
+      blockTypes,
+      pageSize: getPageSize(model),
+      footerRepeat: getFooterRepeat(model),
+      pageNumbers: getPageNumbers(model),
+      pdfUrl,
+      pdfLoading,
+      error,
+    }),
+    [
+      schema,
+      schemaLoading,
+      model,
+      data,
+      serializedTemplate,
+      selectedBlockUid,
+      selectedBlock,
+      blockTypes,
+      pdfUrl,
+      pdfLoading,
+      error,
+    ],
+  );
 
-        <DragOverlay dropAnimation={null}>
-          {activeDrag ? <ActiveDragPreview drag={activeDrag} /> : null}
-        </DragOverlay>
-      </DndContext>
-    </BuilderContext.Provider>
+  return (
+    <BuilderActionsContext.Provider value={actions}>
+      <BuilderStateContext.Provider value={stateValue}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragCancel={onDragCancel}
+        >
+          {children}
+
+          <DragOverlay dropAnimation={null}>
+            {activeDrag ? <ActiveDragPreview drag={activeDrag} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </BuilderStateContext.Provider>
+    </BuilderActionsContext.Provider>
   );
 }
 

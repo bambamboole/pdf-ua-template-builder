@@ -1,5 +1,9 @@
-import { useTemplateBuilder, type TemplateExample } from "../context/BuilderContext";
-import { Select } from "../forms/controls";
+import {
+  useBuilderActions,
+  useBuilderState,
+  type TemplateExample,
+} from "../context/BuilderContext";
+import { Select } from "../controls";
 import { Button } from "../primitives/Button";
 import { BlockPalette } from "./BlockPalette";
 
@@ -10,7 +14,8 @@ export interface PaletteProps {
 }
 
 export function Palette({ className, examples }: PaletteProps = {}) {
-  const { blockTypes, addBlock, loadExample, schema } = useTemplateBuilder();
+  const { blockTypes, schema } = useBuilderState();
+  const { addBlock, loadExample } = useBuilderActions();
   const exampleEntries = examples ? Object.entries(examples) : [];
 
   return (

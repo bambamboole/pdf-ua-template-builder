@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { TableBlock } from "../../types/generated/template";
+import type { TableBlock } from "../../../types/generated/template";
 import {
   TableBlockEditor,
   addColumn,

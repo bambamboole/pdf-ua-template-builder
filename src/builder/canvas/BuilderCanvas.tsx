@@ -11,7 +11,7 @@ import type {
   EditorRow,
   PageNumbersValue,
 } from "../state/editorModel";
-import { Checkbox, Select } from "../forms/controls";
+import { Checkbox, Select } from "../controls";
 import { ColumnResizer } from "./ColumnResizer";
 import { gridTemplateForWidths } from "./columns";
 import { PageSheet } from "./PageSheet";

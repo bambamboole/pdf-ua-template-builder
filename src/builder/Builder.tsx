@@ -1,6 +1,6 @@
 import { Palette } from "./blocks/Palette";
 import { Canvas } from "./canvas/Canvas";
-import { useTemplateBuilder, type TemplateExample } from "./context/BuilderContext";
+import { useBuilderState, type TemplateExample } from "./context/BuilderContext";
 import { Inspector } from "./inspector/Inspector";
 
 export interface BuilderProps {
@@ -10,7 +10,7 @@ export interface BuilderProps {
 }
 
 export function Builder({ className, examples }: BuilderProps = {}) {
-  const { schema } = useTemplateBuilder();
+  const { schema } = useBuilderState();
 
   return (
     <section
