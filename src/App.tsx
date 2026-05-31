@@ -7,8 +7,8 @@ import { HtmlEditor } from "./html-editor/HtmlEditor";
 type Mode = "builder" | "json" | "html";
 
 const TABS: { id: Mode; label: string }[] = [
-  { id: "builder", label: "Builder" },
-  { id: "json", label: "JSON editor" },
+  { id: "builder", label: "Template builder" },
+  { id: "json", label: "Template editor" },
   { id: "html", label: "HTML editor" },
 ];
 

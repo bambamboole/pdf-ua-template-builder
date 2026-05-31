@@ -31,7 +31,10 @@ describe("App shell", () => {
   it("shows the builder by default", () => {
     render(<App />);
 
-    expect(screen.getByRole("tab", { name: "Builder" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Template builder" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     expect(screen.getByRole("complementary", { name: "Block palette" })).toBeInTheDocument();
   });
 
@@ -52,7 +55,7 @@ describe("App shell", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("tab", { name: "JSON editor" }));
+    await user.click(screen.getByRole("tab", { name: "Template editor" }));
 
     expect(screen.getByLabelText("Template JSON editor")).toBeInTheDocument();
   });

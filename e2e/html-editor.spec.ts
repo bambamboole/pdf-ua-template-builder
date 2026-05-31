@@ -14,9 +14,9 @@ test.describe("editor mode tabs", () => {
     await page.goto("/");
 
     await expect(blockPalette(page)).toBeVisible();
-    await expect(modeTab(page, "Builder")).toHaveAttribute("aria-selected", "true");
+    await expect(modeTab(page, "Template builder")).toHaveAttribute("aria-selected", "true");
 
-    await modeTab(page, "JSON editor").click();
+    await modeTab(page, "Template editor").click();
     await expect(jsonEditor(page)).toBeVisible();
 
     await modeTab(page, "HTML editor").click();
