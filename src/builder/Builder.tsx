@@ -13,7 +13,7 @@ export interface BuilderProps {
 export function Builder({ className, examples }: BuilderProps = {}) {
   return (
     <section
-      className={`grid min-w-0 min-h-0 bg-app grid-rows-[auto_auto_minmax(0,1fr)]${className ? ` ${className}` : ""}`}
+      className={`pdfua-template-builder grid min-w-0 min-h-0 bg-app grid-rows-[auto_auto_minmax(0,1fr)]${className ? ` ${className}` : ""}`}
       aria-label="Template authoring"
     >
       <PageSettings />
