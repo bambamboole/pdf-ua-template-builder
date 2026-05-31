@@ -8,16 +8,17 @@ Guidance for Claude Code when working in this repository.
 - Styled with Tailwind CSS v4 (see Styling). Built both as an app and as a component library (`vite build --mode lib`).
 - Runtime backend is `../pdf-ua-api`, expected locally at `http://localhost:8080` unless `VITE_PDF_UA_API_URL` is set.
 - The backend owns the template rendering contract. Treat `schemas/template.schema.json` and `src/types/generated/template.d.ts` as generated artifacts derived from `pdf-ua-api`.
-- The builder lives under `src/builder/` (`TemplateBuilder.tsx` and `Builder.tsx` plus `canvas/`, `inspector/`, `blocks/`, `controls/`, `context/`, `state/`, `schema/`, `hooks/`, `primitives/`, `lib/`); the PDF preview lives in `src/render/` and the JSON editor in `src/editor/`. `src/index.ts` re-exports them as the library entry.
+- The builder lives under `src/builder/` (`TemplateBuilder.tsx` and `Builder.tsx` plus `canvas/`, `inspector/`, `blocks/`, `controls/`, `context/`, `state/`, `schema/`, `hooks/`, `primitives/`, `lib/`); the PDF preview lives in `src/render/`, the JSON editor in `src/editor/`, and the raw-HTML editor in `src/html-editor/`. `src/index.ts` re-exports them as the library entry. The playground app (`src/App.tsx`) switches between the three editors with a top tab bar.
 
 ## Important Paths
 
-- `src/api/pdfUaApi.ts`: fetch wrapper for `GET /schema` and `POST /render/template`.
+- `src/api/pdfUaApi.ts`: fetch wrapper for `GET /schema`, `POST /render/template` (template → PDF), and `POST /convert` (raw HTML → PDF).
 - `src/builder/TemplateBuilder.tsx`: all-in-one preset composing a `Builder` and a `Preview` side by side. The `Builder` stacks document `PageSettings`, the block `Palette`, and the `Canvas`; the block `Inspector` is a flyout pinned over the canvas while a block is selected.
 - `src/builder/context/BuilderContext.tsx`: `TemplateBuilderProvider`, split into a stable actions context and a state context; `useTemplateBuilder` merges both as the headless escape hatch.
 - `src/builder/`: builder feature code — `canvas/`, `inspector/` (with `inspector/editors/` block editors), `blocks/`, `controls/` (shared form primitives), `context/`, `state/` (editor model + serialization), `schema/` (schema adapter + example), `hooks/`, `primitives/`, `lib/`.
 - `src/render/`: PDF preview pane and render context (`Preview`, `PdfPane`, `usePdfUaApi`).
 - `src/editor/`: standalone CodeMirror JSON template editor (`TemplateEditor`, `CodeEditor`).
+- `src/html-editor/`: standalone CodeMirror raw-HTML editor (`HtmlEditor`, `HtmlCodeEditor`, `HtmlEditorContext`, `useHtmlPreview`) with a PDF preview produced by `POST /convert`.
 - `src/index.ts`: library entry re-exporting `TemplateBuilder` and editor/schema/API helpers.
 - `src/styles/app.css`: Tailwind v4 entry and the semantic theme tokens (see Styling).
 - `src/types/template.ts`: local API-facing type aliases around generated schema types.
@@ -45,6 +46,7 @@ Guidance for Claude Code when working in this repository.
 - Current frontend wrapper calls:
   - `GET /schema` for compact runtime metadata.
   - `POST /render/template` with `{ template, data, options }` for PDF Blob rendering.
+  - `POST /convert` with `{ html, baseUrl?, attachments? }` for raw HTML → PDF/UA Blob rendering (used by the HTML editor).
 - Keep request and response parsing centralized in `src/api/pdfUaApi.ts`; do not scatter raw `fetch` calls across UI components.
 - If `pdf-ua-api` runs with `API_KEY`, add auth support deliberately through the API wrapper and environment config.
 - The backend renders authoritative PDFs. Do not recreate compliance-sensitive PDF/UA behavior in the browser.

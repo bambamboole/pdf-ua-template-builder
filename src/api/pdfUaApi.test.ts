@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Template } from "../types/generated/template";
-import { fetchTemplateSchema, renderTemplatePdf } from "./pdfUaApi";
+import { fetchTemplateSchema, renderHtmlPdf, renderTemplatePdf } from "./pdfUaApi";
 
 const mockFetch = vi.fn<typeof fetch>();
 
@@ -150,6 +150,56 @@ describe("renderTemplatePdf", () => {
 
     await expect(renderTemplatePdf("http://api.test", { template })).rejects.toThrow(
       "invalid template",
+    );
+  });
+});
+
+describe("renderHtmlPdf", () => {
+  it("posts the HTML to /convert and returns the blob", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response("%PDF-1.7", {
+        status: 200,
+        headers: { "content-type": "application/pdf" },
+      }),
+    );
+
+    const blob = await renderHtmlPdf("http://api.test", { html: "<h1>Hi</h1>" });
+
+    expect(await blob.text()).toBe("%PDF-1.7");
+    const [url, init] = lastCall();
+    expect(url).toBe("http://api.test/convert");
+    expect(init.method).toBe("POST");
+    expect(init.headers).toMatchObject({
+      Accept: "application/pdf",
+      "Content-Type": "application/json",
+    });
+    expect(JSON.parse(String(init.body))).toEqual({ html: "<h1>Hi</h1>" });
+  });
+
+  it("includes baseUrl when provided and omits unset fields", async () => {
+    mockFetch.mockResolvedValueOnce(new Response("%PDF", { status: 200 }));
+
+    await renderHtmlPdf("http://api.test", {
+      html: "<p>x</p>",
+      baseUrl: "https://assets.test",
+    });
+
+    expect(JSON.parse(String(lastCall()[1].body))).toEqual({
+      html: "<p>x</p>",
+      baseUrl: "https://assets.test",
+    });
+  });
+
+  it("throws the parsed error on a failed conversion", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "HTML content cannot be empty" }), {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    await expect(renderHtmlPdf("http://api.test", { html: "" })).rejects.toThrow(
+      "HTML content cannot be empty",
     );
   });
 });
