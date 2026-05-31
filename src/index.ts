@@ -5,8 +5,8 @@ export type { TemplateBuilderProps } from "./builder/TemplateBuilder";
 
 export { Builder } from "./builder/Builder";
 export type { BuilderProps } from "./builder/Builder";
-export { Preview } from "./builder/preview/Preview";
-export type { PreviewProps } from "./builder/preview/Preview";
+export { Preview } from "./render/Preview";
+export type { PreviewProps } from "./render/Preview";
 
 export { TemplateBuilderProvider, useTemplateBuilder } from "./builder/context/BuilderContext";
 export type {

@@ -20,7 +20,8 @@ import type { TemplateData, TemplateSchemaResponse } from "../../types/template"
 import { getBlockSummary } from "../blocks/blockChrome";
 import { BlockCardPreview } from "../canvas/BlockCardPreview";
 import { useBuilderDragDrop, type ActiveDrag } from "../hooks/useBuilderDragDrop";
-import { usePdfUaApi } from "../hooks/usePdfUaApi";
+import { usePdfUaApi } from "../../render/usePdfUaApi";
+import { RenderProvider, type RenderContextValue } from "../../render/RenderContext";
 import { Chip } from "../primitives/Chip";
 import {
   getFooterRepeat,
@@ -327,6 +328,19 @@ export function TemplateBuilderProvider({
     ],
   );
 
+  const renderValue = useMemo<RenderContextValue>(
+    () => ({
+      template: serializedTemplate,
+      data,
+      pdfUrl,
+      pdfLoading,
+      error,
+      renderPdf,
+      renderDisabled: !schema || pdfLoading,
+    }),
+    [serializedTemplate, data, pdfUrl, pdfLoading, error, renderPdf, schema],
+  );
+
   return (
     <BuilderActionsContext.Provider value={actions}>
       <BuilderStateContext.Provider value={stateValue}>
@@ -337,7 +351,7 @@ export function TemplateBuilderProvider({
           onDragEnd={onDragEnd}
           onDragCancel={onDragCancel}
         >
-          {children}
+          <RenderProvider value={renderValue}>{children}</RenderProvider>
 
           <DragOverlay dropAnimation={null}>
             {activeDrag ? <ActiveDragPreview drag={activeDrag} /> : null}
