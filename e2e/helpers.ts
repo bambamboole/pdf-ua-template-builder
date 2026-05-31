@@ -1,7 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 
-export function toolbar(page: Page): Locator {
-  return page.locator('header[aria-label="Template builder toolbar"]');
+export function pageSettings(page: Page): Locator {
+  return page.locator('section[aria-label="Page settings"]');
 }
 
 export function blockPalette(page: Page): Locator {
