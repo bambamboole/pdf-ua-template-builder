@@ -39,3 +39,15 @@ export function firstColumnResizer(page: Page): Locator {
 export function pdfObject(page: Page): Locator {
   return page.locator('object[type="application/pdf"]');
 }
+
+export function modeTab(page: Page, name: string): Locator {
+  return page.getByRole("tab", { name });
+}
+
+export function htmlEditor(page: Page): Locator {
+  return page.locator('div[aria-label="Template HTML editor"]');
+}
+
+export function jsonEditor(page: Page): Locator {
+  return page.locator('div[aria-label="Template JSON editor"]');
+}

@@ -1,0 +1,62 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import App from "./App";
+
+vi.mock("./api/pdfUaApi", () => ({
+  fetchTemplateSchema: vi.fn().mockResolvedValue({
+    "x-pdfUa": {
+      kind: "template",
+      templateVersion: 1,
+      renderEndpoint: "/render/template",
+      templateFields: [],
+      attachmentFields: [],
+      externalFontFields: [],
+      bundledFonts: [],
+      blockOrder: [],
+      pageFormats: [],
+    },
+  }),
+  renderTemplatePdf: vi.fn(),
+  renderHtmlPdf: vi.fn(),
+  resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
+}));
+
+describe("App shell", () => {
+  beforeEach(() => {
+    URL.createObjectURL = vi.fn(() => "blob:mock-pdf");
+    URL.revokeObjectURL = vi.fn();
+  });
+
+  it("shows the builder by default", () => {
+    render(<App />);
+
+    expect(screen.getByRole("tab", { name: "Template builder" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByRole("complementary", { name: "Block palette" })).toBeInTheDocument();
+  });
+
+  it("switches to the HTML editor tab", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("tab", { name: "HTML editor" }));
+
+    expect(screen.getByLabelText("Template HTML editor")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "HTML editor" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
+  it("switches to the JSON editor tab", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("tab", { name: "Template editor" }));
+
+    expect(screen.getByLabelText("Template JSON editor")).toBeInTheDocument();
+  });
+});

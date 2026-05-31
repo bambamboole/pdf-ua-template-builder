@@ -64,6 +64,7 @@ export default defineConfig(({ mode }) => {
         // Anchored so it does not also catch the bundled `/schemas/...json` asset import.
         "^/schema$": proxyTarget,
         "/render": proxyTarget,
+        "/convert": proxyTarget,
       },
     },
     test: {

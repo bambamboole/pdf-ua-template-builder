@@ -26,11 +26,19 @@ test.describe("builder shell", () => {
   test("adds a block from the palette and selects it", async ({ page }) => {
     await page.goto("/");
 
-    await expect(canvasBlocks(page)).toHaveCount(0);
-    await addBlockButton(page, "Text").click();
-    await expect(canvasBlocks(page)).toHaveCount(1);
+    // The builder seeds with the invoice example; wait for it to render and the
+    // schema-backed palette to be ready before counting blocks.
+    await expect(canvasBlocks(page).first()).toBeVisible();
+    await expect(loadExampleButton(page)).toBeEnabled();
+    const initialCount = await canvasBlocks(page).count();
 
-    await canvasBlocks(page).first().click();
+    await addBlockButton(page, "Text").click();
+    await expect(canvasBlocks(page)).toHaveCount(initialCount + 1);
+
+    // A new block is appended to the body, which is the first page sheet
+    // (the footer sheet and preview follow it in the DOM).
+    const bodySheet = page.locator('[data-theme="light"]').first();
+    await bodySheet.getByRole("article").last().click();
     await expect(blockInspector(page)).toBeVisible();
     await expect(blockInspector(page).getByText("Content")).toBeVisible();
     await expect(blockInspector(page).getByLabel("Text", { exact: true })).toBeVisible();

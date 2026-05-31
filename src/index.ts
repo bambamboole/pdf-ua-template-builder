@@ -53,7 +53,25 @@ export type {
   TemplateEditorContextValue,
 } from "./editor/TemplateEditorContext";
 
-export { fetchTemplateSchema, renderTemplatePdf, resolveDefaultApiUrl } from "./api/pdfUaApi";
+export { HtmlEditor } from "./html-editor/HtmlEditor";
+export type { HtmlEditorProps } from "./html-editor/HtmlEditor";
+export { HtmlCodeEditor } from "./html-editor/HtmlCodeEditor";
+export type { HtmlCodeEditorProps } from "./html-editor/HtmlCodeEditor";
+export { HtmlPreview } from "./html-editor/HtmlPreview";
+export type { HtmlPreviewProps } from "./html-editor/HtmlPreview";
+export { HtmlEditorProvider, useHtmlEditor } from "./html-editor/HtmlEditorContext";
+export type {
+  HtmlEditorProviderProps,
+  HtmlEditorContextValue,
+} from "./html-editor/HtmlEditorContext";
+
+export {
+  fetchTemplateSchema,
+  renderTemplatePdf,
+  renderHtmlPdf,
+  resolveDefaultApiUrl,
+} from "./api/pdfUaApi";
+export type { ConvertHtmlRequest } from "./api/pdfUaApi";
 export type { TemplateData, TemplateSchemaResponse } from "./types/template";
 export type {
   Align,
