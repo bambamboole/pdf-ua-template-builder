@@ -40,6 +40,19 @@ export type {
   ResolvedPageSize,
 } from "./builder/state/editorModel";
 
+export { TemplateEditor } from "./editor/TemplateEditor";
+export type { TemplateEditorProps } from "./editor/TemplateEditor";
+export { CodeEditor } from "./editor/CodeEditor";
+export type { CodeEditorProps } from "./editor/CodeEditor";
+export {
+  TemplateEditorProvider,
+  useTemplateEditor,
+} from "./editor/TemplateEditorContext";
+export type {
+  TemplateEditorProviderProps,
+  TemplateEditorContextValue,
+} from "./editor/TemplateEditorContext";
+
 export { fetchTemplateSchema, renderTemplatePdf, resolveDefaultApiUrl } from "./api/pdfUaApi";
 export type { TemplateData, TemplateSchemaResponse } from "./types/template";
 export type {
