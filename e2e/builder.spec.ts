@@ -7,16 +7,16 @@ import {
   firstColumnResizer,
   loadExampleButton,
   outputPane,
+  pageSettings,
   pdfObject,
   renderButton,
-  toolbar,
 } from "./helpers";
 
 test.describe("builder shell", () => {
   test("loads the builder shell and schema without error", async ({ page }) => {
     await page.goto("/");
 
-    await expect(toolbar(page)).toBeVisible();
+    await expect(pageSettings(page)).toBeVisible();
     await expect(loadExampleButton(page)).toBeEnabled();
     await expect(blockPalette(page)).toBeVisible();
     await expect(outputPane(page)).toBeVisible();

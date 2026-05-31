@@ -30,7 +30,7 @@ function DefaultLayout({
 }) {
   return (
     <main
-      className={`grid h-screen overflow-hidden bg-app text-fg grid-cols-[minmax(40rem,1.55fr)_minmax(28rem,0.95fr)] max-[1080px]:h-auto max-[1080px]:grid-cols-1 max-[1080px]:overflow-visible${className ? ` ${className}` : ""}`}
+      className={`pdfua-template-builder grid h-screen overflow-hidden bg-app text-fg grid-cols-[minmax(40rem,1.55fr)_minmax(28rem,0.95fr)] max-[1080px]:h-auto max-[1080px]:grid-cols-1 max-[1080px]:overflow-visible${className ? ` ${className}` : ""}`}
     >
       <Builder examples={examples} className="border-0 border-r border-solid border-border" />
       <Preview />

@@ -12,7 +12,9 @@ Instructions for coding agents working in this repository.
 ## Repository Map
 
 - `src/api/pdfUaApi.ts`: centralized API client for schema loading and PDF rendering.
-- `src/builder/`: the builder UI — `TemplateBuilder.tsx` root plus `canvas/`, `inspector/`, `forms/` (with `forms/controls/` primitives), `blocks/`, `state/`, `schema/`, `lib/`.
+- `src/builder/`: the builder UI — `TemplateBuilder.tsx` and `Builder.tsx` plus `canvas/`, `inspector/` (with `inspector/editors/`), `blocks/`, `controls/` (shared form primitives), `context/`, `state/`, `schema/`, `hooks/`, `primitives/`, `lib/`.
+- `src/editor/`: the standalone CodeMirror JSON template editor (`TemplateEditor`, `CodeEditor`).
+- `src/render/`: the PDF preview pane and render context (`Preview`, `PdfPane`, `usePdfUaApi`).
 - `src/index.ts`: library entry that re-exports `TemplateBuilder` and editor/schema/API helpers.
 - `src/styles/app.css`: Tailwind v4 entry plus the semantic theme tokens.
 - `src/types/template.ts`: local public template/data/render types.
@@ -29,7 +31,7 @@ Instructions for coding agents working in this repository.
 - `npm run fmt`: run oxfmt.
 - `npm run fmt:check`: check formatting.
 - `npm run build`: typecheck and build.
-- `npm run sync:schema`: copy schema from `../pdf-ua-api/app/src/main/resources/schemas/template.schema.json`.
+- `npm run sync:schema`: fetch the schema from the running backend (`$PDF_UA_SCHEMA_URL`, default `http://localhost:9999/schema`) into `schemas/template.schema.json`.
 - `npm run generate:types`: regenerate TypeScript declarations from `schemas/template.schema.json`.
 
 ## Development Rules

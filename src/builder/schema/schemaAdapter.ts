@@ -4,6 +4,7 @@ import type {
   JsonSchemaValue,
   TemplateSchemaMetadata,
 } from "../../types/template";
+import { isRecord } from "../lib/records";
 
 export type { JsonSchemaObject, JsonSchemaValue };
 
@@ -234,7 +235,7 @@ function isStringArray(value: unknown): value is string[] {
 }
 
 function isSchemaObject(value: unknown): value is JsonSchemaObject {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return isRecord(value);
 }
 
 function decodeJsonPointerSegment(segment: string): string {

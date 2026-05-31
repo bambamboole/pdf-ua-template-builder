@@ -172,8 +172,8 @@ export function TemplateBuilderProvider({
       skipNextChangeRef.current = false;
       return;
     }
-    onChangeRef.current?.(serializeTemplate(model), data);
-  }, [model, data]);
+    onChangeRef.current?.(serializedTemplate, data);
+  }, [serializedTemplate, data]);
 
   const schemaObject: JsonSchemaObject | null = schema;
   const blockTypes = useMemo(

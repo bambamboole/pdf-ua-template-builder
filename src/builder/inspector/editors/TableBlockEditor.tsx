@@ -70,6 +70,10 @@ export function renameColumnKey(
     return block;
   }
 
+  if (columns.some((column, currentIndex) => currentIndex !== index && column.key === nextKey)) {
+    return block;
+  }
+
   return applyColumns(
     block,
     columns.map((column, currentIndex) =>
@@ -226,6 +230,10 @@ export function TableBlockEditor({
     const previous = columns[index];
 
     if (!previous || previous.key === nextKey) {
+      return;
+    }
+
+    if (columns.some((column, currentIndex) => currentIndex !== index && column.key === nextKey)) {
       return;
     }
 

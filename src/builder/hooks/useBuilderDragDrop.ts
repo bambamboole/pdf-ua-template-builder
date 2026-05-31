@@ -1,15 +1,8 @@
-import {
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { useCallback, useState, type Dispatch, type RefObject } from "react";
 import type { Block } from "../../types/generated/template";
 import type { JsonSchemaObject } from "../../types/template";
+import { useBuilderSensors } from "../lib/sensors";
 import { getDragData } from "../state/dragDrop";
 import { findEditorBlock, type EditorModel } from "../state/editorModel";
 import type { EditorAction } from "../state/editorReducer";
@@ -22,7 +15,7 @@ export type ActiveDrag =
 
 interface BuilderDragDrop {
   activeDrag: ActiveDrag;
-  sensors: ReturnType<typeof useSensors>;
+  sensors: ReturnType<typeof useBuilderSensors>;
   onDragStart: (event: DragStartEvent) => void;
   onDragEnd: (event: DragEndEvent) => void;
   onDragCancel: () => void;
@@ -35,14 +28,7 @@ export function useBuilderDragDrop(
 ): BuilderDragDrop {
   const [activeDrag, setActiveDrag] = useState<ActiveDrag>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 4 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+  const sensors = useBuilderSensors();
 
   const onDragStart = useCallback(
     (event: DragStartEvent) => {

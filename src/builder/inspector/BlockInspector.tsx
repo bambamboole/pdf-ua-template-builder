@@ -1,3 +1,4 @@
+import { useEffect, useRef, type KeyboardEvent } from "react";
 import type { Block } from "../../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
 import { Button } from "../primitives/Button";
@@ -34,6 +35,33 @@ export function BlockInspector({
   onClose,
   className,
 }: BlockInspectorProps) {
+  const shellRef = useRef<HTMLElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+
+  // Move focus into the non-modal flyout when it opens and restore it to the
+  // triggering element when it closes, so keyboard users are not stranded.
+  useEffect(() => {
+    if (!block) {
+      return;
+    }
+
+    returnFocusRef.current = document.activeElement as HTMLElement | null;
+    shellRef.current?.focus();
+
+    return () => {
+      returnFocusRef.current?.focus?.();
+    };
+    // Selecting a different block keeps the panel mounted; only run on open/close.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleKeyDown(event: KeyboardEvent<HTMLElement>): void {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      onClose();
+    }
+  }
+
   if (!block) {
     return (
       <InspectorShell ariaLabel="Block inspector" className={className}>
@@ -60,7 +88,12 @@ export function BlockInspector({
   );
 
   return (
-    <InspectorShell ariaLabel="Block inspector" className={className}>
+    <InspectorShell
+      ref={shellRef}
+      ariaLabel="Block inspector"
+      className={className}
+      onKeyDown={handleKeyDown}
+    >
       <InspectorHeader
         chip={<Chip>{chrome.chip}</Chip>}
         title={chrome.label}

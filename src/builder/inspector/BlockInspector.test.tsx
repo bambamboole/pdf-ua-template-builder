@@ -75,6 +75,99 @@ describe("BlockInspector", () => {
     );
   });
 
+  it("moves focus into the panel when a block is selected", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
+    });
+    const selectedBlock = resolveSelectedEditorBlock(
+      model,
+      model.rows[0]?.blocks[0]?.uid ?? "",
+    );
+
+    render(
+      <BlockInspector
+        block={selectedBlock}
+        schema={schema}
+        data={{}}
+        onChangeBlock={() => undefined}
+        onRemoveBlock={() => undefined}
+        onClose={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole("complementary", { name: "Block inspector" })).toHaveFocus();
+  });
+
+  it("calls onClose when Escape is pressed inside the panel", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
+    });
+    const selectedBlock = resolveSelectedEditorBlock(
+      model,
+      model.rows[0]?.blocks[0]?.uid ?? "",
+    );
+    const onClose = vi.fn();
+
+    render(
+      <BlockInspector
+        block={selectedBlock}
+        schema={schema}
+        data={{}}
+        onChangeBlock={() => undefined}
+        onRemoveBlock={() => undefined}
+        onClose={onClose}
+      />,
+    );
+
+    fireEvent.keyDown(screen.getByRole("complementary", { name: "Block inspector" }), {
+      key: "Escape",
+    });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("restores focus to the previously focused element when the panel closes", () => {
+    const model = createEditorModel({
+      version: 1,
+      rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
+    });
+    const selectedBlock = resolveSelectedEditorBlock(
+      model,
+      model.rows[0]?.blocks[0]?.uid ?? "",
+    );
+
+    function Harness({ open }: { open: boolean }) {
+      return (
+        <>
+          <button type="button">trigger</button>
+          {open ? (
+            <BlockInspector
+              block={selectedBlock}
+              schema={schema}
+              data={{}}
+              onChangeBlock={() => undefined}
+              onRemoveBlock={() => undefined}
+              onClose={() => undefined}
+            />
+          ) : null}
+        </>
+      );
+    }
+
+    const { rerender } = render(<Harness open={false} />);
+    const trigger = screen.getByRole("button", { name: "trigger" });
+    trigger.focus();
+    expect(trigger).toHaveFocus();
+
+    rerender(<Harness open />);
+    expect(screen.getByRole("complementary", { name: "Block inspector" })).toHaveFocus();
+
+    rerender(<Harness open={false} />);
+    expect(trigger).toHaveFocus();
+  });
+
   it("shows the empty state when no block is selected", () => {
     const model = createEditorModel({
       version: 1,

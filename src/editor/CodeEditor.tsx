@@ -20,7 +20,7 @@ export function CodeEditor({ className }: CodeEditorProps = {}) {
 
   return (
     <div
-      className={`min-w-0 min-h-0 overflow-auto bg-surface${className ? ` ${className}` : ""}`}
+      className={`pdfua-template-builder min-w-0 min-h-0 overflow-auto bg-surface${className ? ` ${className}` : ""}`}
       aria-label="Template JSON editor"
     >
       <ReactCodeMirror

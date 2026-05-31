@@ -424,12 +424,14 @@ export function reconcileSelectedBlockUid(
 }
 
 export function createNextBlockId(model: EditorModel, blockType: string): string {
+  const template = serializeTemplate(model);
+  const allRows = [...(template.rows ?? []), ...(template.config?.page?.footer?.rows ?? [])];
   const usedIds = new Set(
-    serializeTemplate(model).rows?.flatMap((row) =>
+    allRows.flatMap((row) =>
       row.blocks
         .map((block) => block.id)
         .filter((id): id is string => typeof id === "string" && id.length > 0),
-    ) ?? [],
+    ),
   );
   let nextId = 1;
 
@@ -441,13 +443,22 @@ export function createNextBlockId(model: EditorModel, blockType: string): string
 }
 
 function setBlockWidth(block: Block, width: string | undefined): Block {
-  return {
-    ...cloneBlock(block),
-    config: {
-      ...block.config,
-      width,
-    },
-  } as Block;
+  const cloned = cloneBlock(block);
+  const nextConfig: Record<string, unknown> = { ...cloned.config };
+
+  if (width === undefined || width === "") {
+    delete nextConfig.width;
+  } else {
+    nextConfig.width = width;
+  }
+
+  if (Object.keys(nextConfig).length === 0) {
+    const { config: _config, ...rest } = cloned;
+
+    return rest as Block;
+  }
+
+  return { ...cloned, config: nextConfig } as Block;
 }
 
 function insertAt<T>(items: readonly T[], item: T, index: number): T[] {

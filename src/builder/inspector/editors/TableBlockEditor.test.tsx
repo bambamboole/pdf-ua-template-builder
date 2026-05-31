@@ -132,6 +132,12 @@ describe("TableBlockEditor column helpers", () => {
     expect(next.config?.columns?.[0]).toEqual({ key: "item", label: "Description", align: "left" });
   });
 
+  it("rejects renaming a column key onto another column's key", () => {
+    const next = renameColumnKey(baseBlock, 0, "quantity");
+
+    expect(next).toBe(baseBlock);
+  });
+
   it("renameColumnKeyInRows renames the matching key in every data row", () => {
     expect(renameColumnKeyInRows(baseRows, "description", "item")).toEqual([
       { item: "Service A", quantity: "2" },
