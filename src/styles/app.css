@@ -15,6 +15,7 @@
   --pdfua-canvas: var(--color-stone-200);
   --pdfua-surface: var(--color-white);
   --pdfua-surface-muted: var(--color-stone-100);
+  --pdfua-page: var(--color-stone-100);
 
   --pdfua-border: var(--color-stone-200);
   --pdfua-border-strong: var(--color-stone-300);
@@ -45,13 +46,13 @@
  * The two blocks are intentionally identical. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --pdfua-app: var(--color-stone-950);
-    --pdfua-canvas: var(--color-stone-950);
-    --pdfua-surface: var(--color-stone-900);
-    --pdfua-surface-muted: var(--color-stone-800);
+    --pdfua-app: var(--color-stone-900);
+    --pdfua-canvas: var(--color-stone-900);
+    --pdfua-surface: var(--color-stone-800);
+    --pdfua-surface-muted: var(--color-stone-700);
 
-    --pdfua-border: var(--color-stone-700);
-    --pdfua-border-strong: var(--color-stone-600);
+    --pdfua-border: var(--color-stone-600);
+    --pdfua-border-strong: var(--color-stone-500);
 
     --pdfua-fg: var(--color-stone-100);
     --pdfua-fg-muted: var(--color-stone-400);
@@ -76,13 +77,13 @@
 
 [data-theme="dark"],
 .dark {
-  --pdfua-app: var(--color-stone-950);
-  --pdfua-canvas: var(--color-stone-950);
-  --pdfua-surface: var(--color-stone-900);
-  --pdfua-surface-muted: var(--color-stone-800);
+  --pdfua-app: var(--color-stone-900);
+  --pdfua-canvas: var(--color-stone-900);
+  --pdfua-surface: var(--color-stone-800);
+  --pdfua-surface-muted: var(--color-stone-700);
 
-  --pdfua-border: var(--color-stone-700);
-  --pdfua-border-strong: var(--color-stone-600);
+  --pdfua-border: var(--color-stone-600);
+  --pdfua-border-strong: var(--color-stone-500);
 
   --pdfua-fg: var(--color-stone-100);
   --pdfua-fg-muted: var(--color-stone-400);
@@ -112,6 +113,7 @@
   --color-canvas: var(--pdfua-canvas);
   --color-surface: var(--pdfua-surface);
   --color-surface-muted: var(--pdfua-surface-muted);
+  --color-page: var(--pdfua-page);
   --color-border: var(--pdfua-border);
   --color-border-strong: var(--pdfua-border-strong);
   --color-fg: var(--pdfua-fg);
