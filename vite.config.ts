@@ -62,6 +62,11 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       setupFiles: ["./src/test/setup.ts"],
       exclude: [...configDefaults.exclude, "e2e/**"],
+      server: {
+        deps: {
+          inline: ["codemirror-json-schema"],
+        },
+      },
     },
   };
 });
