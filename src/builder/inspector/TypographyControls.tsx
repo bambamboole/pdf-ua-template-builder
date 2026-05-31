@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { Block, Template, TypographyConfig } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
-import { ColorField, NumberField, SelectField } from "../forms/controls";
+import { ColorField, NumberField, SelectField } from "../controls";
 import { setBlockTypographyField, setTemplateTypographyField } from "../state/configUpdates";
 import { ALIGN_OPTIONS } from "./alignOptions";
 

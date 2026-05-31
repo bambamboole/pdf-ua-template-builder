@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TemplateSchemaResponse } from "../../types/template";
 import { fetchTemplateSchema, renderTemplatePdf } from "../../api/pdfUaApi";
-import { BuilderProvider, useTemplateBuilder } from "./BuilderContext";
+import { TemplateBuilderProvider, useTemplateBuilder } from "./BuilderContext";
 
 vi.mock("../../api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn(),
@@ -48,7 +48,7 @@ function ContextProbe() {
   );
 }
 
-describe("BuilderProvider", () => {
+describe("TemplateBuilderProvider", () => {
   beforeEach(() => {
     mockFetchSchema.mockReset();
     mockFetchSchema.mockResolvedValue(builderSchema);
@@ -61,7 +61,7 @@ describe("BuilderProvider", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() => render(<ContextProbe />)).toThrow(
-      /must be used within a <TemplateBuilder.Provider>/,
+      /must be used within a <TemplateBuilderProvider>/,
     );
 
     consoleError.mockRestore();
@@ -69,9 +69,9 @@ describe("BuilderProvider", () => {
 
   it("auto-loads the schema on mount and exposes it through context", async () => {
     render(
-      <BuilderProvider apiUrl="https://example.test">
+      <TemplateBuilderProvider apiUrl="https://example.test">
         <ContextProbe />
-      </BuilderProvider>,
+      </TemplateBuilderProvider>,
     );
 
     expect(mockFetchSchema).toHaveBeenCalledWith("https://example.test");

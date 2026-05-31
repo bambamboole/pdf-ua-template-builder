@@ -1,7 +1,7 @@
 import type { ChangeEvent, ReactNode } from "react";
-import type { ImageBlock } from "../../types/generated/template";
+import type { ImageBlock } from "../../../types/generated/template";
 import type { BlockEditorProps } from "./blockEditors";
-import { Field, Input } from "./controls";
+import { Field, Input } from "../../controls";
 
 export function ImageBlockEditor({ block, onChangeBlock }: BlockEditorProps): ReactNode {
   const imageBlock = block as ImageBlock;

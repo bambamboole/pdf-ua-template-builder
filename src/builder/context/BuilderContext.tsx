@@ -7,7 +7,6 @@ import {
   useMemo,
   useReducer,
   useRef,
-  useState,
   type ReactNode,
 } from "react";
 import { resolveDefaultApiUrl } from "../../api/pdfUaApi";
@@ -36,13 +35,18 @@ import {
 } from "../state/editorModel";
 import { createEditorState, editorReducer } from "../state/editorReducer";
 import { getBlockTypes, type JsonSchemaObject } from "../schema/schemaAdapter";
-import { createInvoiceExample } from "../schema/invoiceExample";
 
 const emptyTemplate: Template = {
   version: 1,
 };
 
-export interface BuilderProviderProps {
+/** A loadable example: a template plus its optional runtime data. */
+export interface TemplateExample {
+  template: Template;
+  data?: TemplateData;
+}
+
+export interface TemplateBuilderProviderProps {
   /** Base URL of a running pdf-ua-api instance. Defaults to "" (relative URLs / proxy). */
   apiUrl?: string;
   /** Template loaded into the editor on first render. */
@@ -57,11 +61,10 @@ export interface BuilderProviderProps {
   children: ReactNode;
 }
 
-export interface BuilderContextValue {
+/** Editor state and derived values. Changes as the user edits. */
+export interface BuilderState {
   schema: TemplateSchemaResponse | null;
   schemaLoading: boolean;
-  apiUrl: string;
-  setApiUrl: (url: string) => void;
   model: EditorModel;
   data: TemplateData;
   serializedTemplate: Template;
@@ -74,9 +77,12 @@ export interface BuilderContextValue {
   pdfUrl: string | null;
   pdfLoading: boolean;
   error: string | null;
-  loadSchema: () => void;
+}
+
+/** Stable editor actions. Identity never changes for the provider's lifetime. */
+export interface BuilderActions {
   renderPdf: () => void;
-  loadExample: () => void;
+  loadExample: (example: TemplateExample) => void;
   addBlock: (type: string) => void;
   changeBlock: (blockUid: string, block: Block) => void;
   changeTemplateSettings: (template: Template) => void;
@@ -91,28 +97,47 @@ export interface BuilderContextValue {
   changePageNumbers: (value: PageNumbersValue) => void;
 }
 
-const BuilderContext = createContext<BuilderContextValue | null>(null);
+export type BuilderContextValue = BuilderState & BuilderActions;
 
-export function useTemplateBuilder(): BuilderContextValue {
-  const value = useContext(BuilderContext);
+const BuilderStateContext = createContext<BuilderState | null>(null);
+const BuilderActionsContext = createContext<BuilderActions | null>(null);
+
+/** Subscribe to editor state. Re-renders on edits. */
+export function useBuilderState(): BuilderState {
+  const value = useContext(BuilderStateContext);
 
   if (!value) {
-    throw new Error("useTemplateBuilder must be used within a <TemplateBuilder.Provider>.");
+    throw new Error("useBuilderState must be used within a <TemplateBuilderProvider>.");
   }
 
   return value;
 }
 
-export function BuilderProvider({
-  apiUrl: initialApiUrlProp,
+/** Read the stable editor actions. Does not re-render on edits. */
+export function useBuilderActions(): BuilderActions {
+  const value = useContext(BuilderActionsContext);
+
+  if (!value) {
+    throw new Error("useBuilderActions must be used within a <TemplateBuilderProvider>.");
+  }
+
+  return value;
+}
+
+/** Headless escape hatch returning both state and actions. */
+export function useTemplateBuilder(): BuilderContextValue {
+  return { ...useBuilderState(), ...useBuilderActions() };
+}
+
+export function TemplateBuilderProvider({
+  apiUrl: apiUrlProp,
   initialTemplate,
   initialData,
   onChange,
   onRendered,
   children,
-}: BuilderProviderProps) {
-  const defaultApiUrl = resolveDefaultApiUrl(initialApiUrlProp);
-  const [apiUrl, setApiUrl] = useState(defaultApiUrl);
+}: TemplateBuilderProviderProps) {
+  const apiUrl = resolveDefaultApiUrl(apiUrlProp);
   const [state, dispatch] = useReducer(editorReducer, undefined, () =>
     createEditorState(initialTemplate ?? emptyTemplate, initialData ?? {}),
   );
@@ -120,8 +145,15 @@ export function BuilderProvider({
   const modelRef = useRef(model);
   modelRef.current = model;
 
-  const { schema, schemaLoading, pdfUrl, pdfLoading, error, loadSchema, renderPdf } = usePdfUaApi({
-    initialApiUrl: defaultApiUrl,
+  const {
+    schema,
+    schemaLoading,
+    pdfUrl,
+    pdfLoading,
+    error,
+    renderPdf: renderPdfRequest,
+  } = usePdfUaApi({
+    initialApiUrl: apiUrl,
     apiUrl,
     onRendered,
   });
@@ -147,13 +179,19 @@ export function BuilderProvider({
     () => (schemaObject ? getBlockTypes(schemaObject) : []),
     [schemaObject],
   );
-  const pageSize = getPageSize(model);
-  const footerRepeat = getFooterRepeat(model);
-  const pageNumbers = getPageNumbers(model);
   const selectedBlock = useMemo(
     () => resolveSelectedEditorBlock(model, selectedBlockUid),
     [model, selectedBlockUid],
   );
+
+  // Latest values for actions that would otherwise need them as deps, keeping
+  // every action's identity stable for the provider's lifetime.
+  const serializedTemplateRef = useRef(serializedTemplate);
+  serializedTemplateRef.current = serializedTemplate;
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const schemaRef = useRef(schemaObject);
+  schemaRef.current = schemaObject;
 
   const { activeDrag, sensors, onDragStart, onDragEnd, onDragCancel } = useBuilderDragDrop(
     schemaObject,
@@ -161,10 +199,8 @@ export function BuilderProvider({
     modelRef,
   );
 
-  const loadExample = useCallback(() => {
-    const example = createInvoiceExample();
-
-    dispatch({ type: "loadExample", template: example.template, data: example.data });
+  const loadExample = useCallback((example: TemplateExample) => {
+    dispatch({ type: "loadExample", template: example.template, data: example.data ?? {} });
   }, []);
 
   const changeBlock = useCallback((blockUid: string, block: Block) => {
@@ -195,15 +231,14 @@ export function BuilderProvider({
     dispatch({ type: "setData", data: nextData });
   }, []);
 
-  const addBlock = useCallback(
-    (type: string) => {
-      if (!schemaObject) {
-        return;
-      }
-      dispatch({ type: "addBlock", schema: schemaObject, blockType: type });
-    },
-    [schemaObject],
-  );
+  const addBlock = useCallback((type: string) => {
+    const currentSchema = schemaRef.current;
+
+    if (!currentSchema) {
+      return;
+    }
+    dispatch({ type: "addBlock", schema: currentSchema, blockType: type });
+  }, []);
 
   const changeFormat = useCallback((format: PageFormat) => {
     dispatch({ type: "setFormat", format });
@@ -221,34 +256,13 @@ export function BuilderProvider({
     dispatch({ type: "setPageNumbers", value });
   }, []);
 
-  const handleLoadSchema = useCallback(() => {
-    void loadSchema(apiUrl);
-  }, [loadSchema, apiUrl]);
+  const renderPdf = useCallback(() => {
+    void renderPdfRequest(serializedTemplateRef.current, dataRef.current);
+  }, [renderPdfRequest]);
 
-  const handleRenderPdf = useCallback(() => {
-    void renderPdf(serializedTemplate, data);
-  }, [renderPdf, serializedTemplate, data]);
-
-  const value = useMemo<BuilderContextValue>(
+  const actions = useMemo<BuilderActions>(
     () => ({
-      schema,
-      schemaLoading,
-      apiUrl,
-      setApiUrl,
-      model,
-      data,
-      serializedTemplate,
-      selectedBlockUid,
-      selectedBlock,
-      blockTypes,
-      pageSize,
-      footerRepeat,
-      pageNumbers,
-      pdfUrl,
-      pdfLoading,
-      error,
-      loadSchema: handleLoadSchema,
-      renderPdf: handleRenderPdf,
+      renderPdf,
       loadExample,
       addBlock,
       changeBlock,
@@ -264,23 +278,7 @@ export function BuilderProvider({
       changePageNumbers,
     }),
     [
-      schema,
-      schemaLoading,
-      apiUrl,
-      model,
-      data,
-      serializedTemplate,
-      selectedBlockUid,
-      selectedBlock,
-      blockTypes,
-      pageSize,
-      footerRepeat,
-      pageNumbers,
-      pdfUrl,
-      pdfLoading,
-      error,
-      handleLoadSchema,
-      handleRenderPdf,
+      renderPdf,
       loadExample,
       addBlock,
       changeBlock,
@@ -297,22 +295,56 @@ export function BuilderProvider({
     ],
   );
 
-  return (
-    <BuilderContext.Provider value={value}>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragCancel={onDragCancel}
-      >
-        {children}
+  const stateValue = useMemo<BuilderState>(
+    () => ({
+      schema,
+      schemaLoading,
+      model,
+      data,
+      serializedTemplate,
+      selectedBlockUid,
+      selectedBlock,
+      blockTypes,
+      pageSize: getPageSize(model),
+      footerRepeat: getFooterRepeat(model),
+      pageNumbers: getPageNumbers(model),
+      pdfUrl,
+      pdfLoading,
+      error,
+    }),
+    [
+      schema,
+      schemaLoading,
+      model,
+      data,
+      serializedTemplate,
+      selectedBlockUid,
+      selectedBlock,
+      blockTypes,
+      pdfUrl,
+      pdfLoading,
+      error,
+    ],
+  );
 
-        <DragOverlay dropAnimation={null}>
-          {activeDrag ? <ActiveDragPreview drag={activeDrag} /> : null}
-        </DragOverlay>
-      </DndContext>
-    </BuilderContext.Provider>
+  return (
+    <BuilderActionsContext.Provider value={actions}>
+      <BuilderStateContext.Provider value={stateValue}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragCancel={onDragCancel}
+        >
+          {children}
+
+          <DragOverlay dropAnimation={null}>
+            {activeDrag ? <ActiveDragPreview drag={activeDrag} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </BuilderStateContext.Provider>
+    </BuilderActionsContext.Provider>
   );
 }
 

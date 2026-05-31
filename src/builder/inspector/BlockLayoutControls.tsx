@@ -6,8 +6,8 @@ import {
   TextField,
   UnitField,
   type SelectFieldOption,
-} from "../forms/controls";
-import { setTableNumberRows } from "../forms/TableBlockEditor";
+} from "../controls";
+import { setTableNumberRows } from "./editors/TableBlockEditor";
 import { setBlockConfigField } from "../state/configUpdates";
 import { ALIGN_OPTIONS } from "./alignOptions";
 

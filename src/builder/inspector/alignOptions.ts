@@ -1,5 +1,5 @@
 import type { Align } from "../../types/generated/template";
-import type { SelectFieldOption } from "../forms/controls";
+import type { SelectFieldOption } from "../controls";
 
 export const ALIGN_OPTIONS = [
   { value: "left", label: "Left" },

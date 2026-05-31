@@ -1,15 +1,15 @@
 import { arrayMove } from "@dnd-kit/sortable";
 import type { ReactNode } from "react";
-import type { Align, Block, TableBlock, TableColumn } from "../../types/generated/template";
-import { NUMBER_COLUMN_RESERVE, percentWidth } from "../canvas/columns";
-import { isRecord, nextKeyIndex, omitKey, renameKey } from "../lib/records";
-import { AddButton } from "../primitives/Button";
-import { InspectorSection } from "../inspector/InspectorShell";
-import { setBlockConfigField } from "../state/configUpdates";
+import type { Align, Block, TableBlock, TableColumn } from "../../../types/generated/template";
+import { NUMBER_COLUMN_RESERVE, percentWidth } from "../../canvas/columns";
+import { isRecord, nextKeyIndex, omitKey, renameKey } from "../../lib/records";
+import { AddButton } from "../../primitives/Button";
+import { InspectorSection } from "../InspectorShell";
+import { setBlockConfigField } from "../../state/configUpdates";
 import type { BlockEditorProps } from "./blockEditors";
 import { SortableList } from "./SortableList";
 import { SortableRow } from "./SortableRow";
-import { AlignSelect, Field, Input } from "./controls";
+import { AlignSelect, Field, Input } from "../../controls";
 
 const hintClass = "m-0 text-2xs text-fg-muted";
 

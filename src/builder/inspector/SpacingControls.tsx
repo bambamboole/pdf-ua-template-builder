@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Block, SpacingConfig, Template } from "../../types/generated/template";
-import { NumberField } from "../forms/controls";
+import { NumberField } from "../controls";
 import { setBlockSpacingField, setTemplatePageMargin } from "../state/configUpdates";
 
 const spacingSides = ["top", "right", "bottom", "left"] as const;

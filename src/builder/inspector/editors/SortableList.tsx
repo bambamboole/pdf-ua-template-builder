@@ -1,7 +1,7 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { ReactNode } from "react";
-import { useBuilderSensors } from "../lib/sensors";
+import { useBuilderSensors } from "../../lib/sensors";
 
 export interface SortableListProps {
   count: number;

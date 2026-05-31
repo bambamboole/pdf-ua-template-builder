@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import type { Block } from "../../types/generated/template";
-import { ImageBlockEditor } from "../forms/ImageBlockEditor";
-import { KeyValueBlockEditor } from "../forms/KeyValueBlockEditor";
-import { TableBlockEditor } from "../forms/TableBlockEditor";
-import { SelectField, TextAreaField, TextField, type SelectFieldOption } from "../forms/controls";
+import { ImageBlockEditor } from "./editors/ImageBlockEditor";
+import { KeyValueBlockEditor } from "./editors/KeyValueBlockEditor";
+import { TableBlockEditor } from "./editors/TableBlockEditor";
+import { SelectField, TextAreaField, TextField, type SelectFieldOption } from "../controls";
 import { setBlockConfigField } from "../state/configUpdates";
 import { InspectorSection } from "./InspectorShell";
 

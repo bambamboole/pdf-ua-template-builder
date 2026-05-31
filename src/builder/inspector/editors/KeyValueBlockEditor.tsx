@@ -5,14 +5,14 @@ import type {
   KeyValueBlock,
   KeyValueField,
   KeyValueValues,
-} from "../../types/generated/template";
-import { isRecord, nextKeyIndex, omitKey, renameKey } from "../lib/records";
-import { AddButton } from "../primitives/Button";
+} from "../../../types/generated/template";
+import { isRecord, nextKeyIndex, omitKey, renameKey } from "../../lib/records";
+import { AddButton } from "../../primitives/Button";
 import type { BlockEditorProps } from "./blockEditors";
-import { InspectorSection } from "../inspector/InspectorShell";
+import { InspectorSection } from "../InspectorShell";
 import { SortableList } from "./SortableList";
 import { SortableRow } from "./SortableRow";
-import { Field, Input } from "./controls";
+import { Field, Input } from "../../controls";
 
 export function moveField(
   fields: readonly KeyValueField[],

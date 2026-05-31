@@ -1,4 +1,4 @@
-import { useTemplateBuilder } from "../context/BuilderContext";
+import { useBuilderActions, useBuilderState } from "../context/BuilderContext";
 import { BuilderCanvas } from "./BuilderCanvas";
 
 export interface CanvasProps {
@@ -15,6 +15,8 @@ export function Canvas({ className }: CanvasProps = {}) {
     footerRepeat,
     pageNumbers,
     selectedBlockUid,
+  } = useBuilderState();
+  const {
     removeBlock,
     selectBlock,
     changeBlock,
@@ -22,7 +24,7 @@ export function Canvas({ className }: CanvasProps = {}) {
     setRowWidths,
     toggleFooterRepeat,
     changePageNumbers,
-  } = useTemplateBuilder();
+  } = useBuilderActions();
 
   if (!schema) {
     return (

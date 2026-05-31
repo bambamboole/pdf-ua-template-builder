@@ -8,13 +8,14 @@ Guidance for Claude Code when working in this repository.
 - Styled with Tailwind CSS v4 (see Styling). Built both as an app and as a component library (`vite build --mode lib`).
 - Runtime backend is `../pdf-ua-api`, expected locally at `http://localhost:8080` unless `VITE_PDF_UA_API_URL` is set.
 - The backend owns the template rendering contract. Treat `schemas/template.schema.json` and `src/types/generated/template.d.ts` as generated artifacts derived from `pdf-ua-api`.
-- The builder lives under `src/builder/` (`TemplateBuilder.tsx` plus `canvas/`, `inspector/`, `forms/`, `blocks/`, `state/`, `schema/`); `src/index.ts` re-exports it as the library entry.
+- The builder lives under `src/builder/` (`TemplateBuilder.tsx` and `Builder.tsx` plus `canvas/`, `inspector/`, `preview/`, `blocks/`, `controls/`, `context/`, `state/`, `schema/`); `src/index.ts` re-exports it as the library entry.
 
 ## Important Paths
 
 - `src/api/pdfUaApi.ts`: fetch wrapper for `GET /schema` and `POST /render/template`.
-- `src/builder/TemplateBuilder.tsx`: root builder component; composes topbar, block palette, canvas, inspectors, and PDF pane.
-- `src/builder/`: builder feature code — `canvas/`, `inspector/`, `forms/` (with `forms/controls/` form primitives), `blocks/`, `state/` (editor model + serialization), `schema/` (schema adapter + example), `lib/`.
+- `src/builder/TemplateBuilder.tsx`: all-in-one preset composing a `Builder` (palette + canvas + inspector) and a `Preview` side by side.
+- `src/builder/context/BuilderContext.tsx`: `TemplateBuilderProvider`, split into a stable actions context and a state context; `useTemplateBuilder` merges both as the headless escape hatch.
+- `src/builder/`: builder feature code — `canvas/`, `inspector/` (with `inspector/editors/` block editors), `preview/`, `blocks/`, `controls/` (shared form primitives), `context/`, `state/` (editor model + serialization), `schema/` (schema adapter + example), `lib/`.
 - `src/index.ts`: library entry re-exporting `TemplateBuilder` and editor/schema/API helpers.
 - `src/styles/app.css`: Tailwind v4 entry and the semantic theme tokens (see Styling).
 - `src/types/template.ts`: local API-facing type aliases around generated schema types.

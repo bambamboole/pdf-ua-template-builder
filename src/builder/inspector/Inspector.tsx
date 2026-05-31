@@ -1,4 +1,4 @@
-import { useTemplateBuilder } from "../context/BuilderContext";
+import { useBuilderActions, useBuilderState } from "../context/BuilderContext";
 import { BlockInspector } from "./BlockInspector";
 import { DocumentSettingsInspector } from "./DocumentSettingsInspector";
 
@@ -7,12 +7,8 @@ export interface InspectorProps {
 }
 
 export function Inspector({ className }: InspectorProps = {}) {
+  const { schema, selectedBlock, data, serializedTemplate, pageSize } = useBuilderState();
   const {
-    schema,
-    selectedBlock,
-    data,
-    serializedTemplate,
-    pageSize,
     changeBlock,
     changeData,
     removeBlock,
@@ -20,7 +16,7 @@ export function Inspector({ className }: InspectorProps = {}) {
     changeTemplateSettings,
     changeFormat,
     changeOrientation,
-  } = useTemplateBuilder();
+  } = useBuilderActions();
 
   if (!schema) {
     return null;

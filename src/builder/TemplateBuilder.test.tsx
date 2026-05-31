@@ -5,6 +5,9 @@ import type { Template } from "../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../types/template";
 import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
 import { TemplateBuilder } from "./TemplateBuilder";
+import { createInvoiceExample } from "./schema/invoiceExample";
+
+const examples = { Invoice: createInvoiceExample() };
 
 vi.mock("../api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn(),
@@ -55,7 +58,7 @@ describe("TemplateBuilder", () => {
   });
 
   it("loads the schema on mount and enables building once it resolves", async () => {
-    render(<TemplateBuilder />);
+    render(<TemplateBuilder examples={examples} />);
 
     expect(mockFetchSchema).toHaveBeenCalledWith("");
     expect(screen.getByRole("button", { name: "Load example" })).toBeDisabled();
@@ -68,7 +71,7 @@ describe("TemplateBuilder", () => {
   it("surfaces a schema load failure", async () => {
     mockFetchSchema.mockRejectedValue(new Error("schema unavailable"));
 
-    render(<TemplateBuilder />);
+    render(<TemplateBuilder examples={examples} />);
 
     expect(await screen.findByRole("alert")).toHaveTextContent("schema unavailable");
     expect(screen.getByRole("button", { name: "Load example" })).toBeDisabled();
@@ -106,7 +109,7 @@ describe("TemplateBuilder", () => {
     const user = userEvent.setup();
     const onChange = vi.fn<(template: Template, data: TemplateData) => void>();
 
-    render(<TemplateBuilder onChange={onChange} />);
+    render(<TemplateBuilder examples={examples} onChange={onChange} />);
     const loadExample = await waitFor(() => {
       const button = screen.getByRole("button", { name: "Load example" });
       expect(button).toBeEnabled();
