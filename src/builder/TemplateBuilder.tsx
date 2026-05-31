@@ -2,7 +2,7 @@ import type { Template } from "../types/generated/template";
 import type { TemplateData } from "../types/template";
 import { Builder } from "./Builder";
 import { TemplateBuilderProvider, type TemplateExample } from "./context/BuilderContext";
-import { Preview } from "./preview/Preview";
+import { Preview } from "../render/Preview";
 
 export interface TemplateBuilderProps {
   /** Base URL of a running pdf-ua-api instance. Defaults to "" (relative URLs / proxy). */

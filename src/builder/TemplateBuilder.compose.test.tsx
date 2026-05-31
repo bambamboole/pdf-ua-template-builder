@@ -5,7 +5,7 @@ import type { TemplateSchemaResponse } from "../types/template";
 import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
 import { Builder } from "./Builder";
 import { TemplateBuilderProvider } from "./context/BuilderContext";
-import { Preview } from "./preview/Preview";
+import { Preview } from "../render/Preview";
 import { createInvoiceExample } from "./schema/invoiceExample";
 
 vi.mock("../api/pdfUaApi", () => ({

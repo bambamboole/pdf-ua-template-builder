@@ -1,13 +1,16 @@
 # @bambamboole/pdf-ua-template-builder
 
-An embeddable React template builder for the
-[pdf-ua-api](https://github.com/bambamboole/pdf-ua-api) PDF/UA renderer.
+Embeddable React components for authoring
+[pdf-ua-api](https://github.com/bambamboole/pdf-ua-api) PDF/UA templates — a
+visual drag-and-drop **builder** and a schema-validated **JSON editor**, each
+with a live rendered-PDF preview.
 
-- Hybrid block cards that expand inline for editing
+- **Visual builder** — hybrid block cards that expand inline for editing
+- **JSON editor** — CodeMirror with schema-aware autocomplete, validation, and hover
 - Page-format aware canvas (A3/A4/A5/A6/Letter/Legal/Tabloid + orientation)
 - Repeated footer area and page-number controls
 - Animated drag-and-drop with full keyboard accessibility (powered by dnd-kit)
-- Lightweight neutral UI built around CSS custom properties
+- Light/dark theming and composable provider + parts, built on CSS custom properties
 
 ## Install
 
@@ -89,12 +92,58 @@ does not impose a height, give `Builder` and `Preview` explicit sizes when you
 are not filling the viewport. For fully custom parts, the `useTemplateBuilder()`
 hook exposes the underlying state and actions.
 
+## JSON editor
+
+Prefer raw JSON? `TemplateEditor` is a drop-in alternative to `TemplateBuilder`:
+a CodeMirror editor with schema-aware autocomplete, validation, and hover (driven
+by the bundled template JSON Schema), paired with the same rendered-PDF preview.
+
+```tsx
+import { TemplateEditor, createInvoiceExample } from "@bambamboole/pdf-ua-template-builder";
+import "@bambamboole/pdf-ua-template-builder/style.css";
+
+const example = createInvoiceExample();
+
+export default function App() {
+  return (
+    <TemplateEditor
+      apiUrl="http://localhost:8080"
+      initialTemplate={example.template}
+      data={example.data}
+      onChange={(template, text) => console.log("edited", template, text)}
+      onRendered={(pdf) => console.log("rendered pdf blob", pdf)}
+    />
+  );
+}
+```
+
+The editor owns the JSON text; `data` is passed straight through to render.
+`onChange(template, text)` fires on every edit — `template` is `null` while the
+JSON is invalid, and Render is disabled until it parses. Schema problems surface
+as inline editor diagnostics.
+
+It composes exactly like the builder, and shares the same `Preview`:
+
+```tsx
+import { TemplateEditorProvider, CodeEditor, Preview } from "@bambamboole/pdf-ua-template-builder";
+
+<TemplateEditorProvider apiUrl="http://localhost:8080" initialTemplate={example.template}>
+  <div className="flex flex-col gap-3">
+    <CodeEditor className="h-[36rem]" />
+    <Preview className="h-[40rem]" />
+  </div>
+</TemplateEditorProvider>
+```
+
+`useTemplateEditor()` exposes the text and parsed state (`{ text, setText,
+template, error, data }`) for custom UIs.
+
 ## Dark mode
 
-The builder ships a dark theme built from the same semantic tokens. It turns on
-automatically when the OS prefers dark (`prefers-color-scheme: dark`) and whenever
-an ancestor element carries `data-theme="dark"` (or a `.dark` class) — so it syncs
-with hosts like Starlight out of the box. Force a mode explicitly with
+The builder and editor ship a dark theme built from the same semantic tokens. It
+turns on automatically when the OS prefers dark (`prefers-color-scheme: dark`) and
+whenever an ancestor element carries `data-theme="dark"` (or a `.dark` class) — so
+it syncs with hosts like Starlight out of the box. Force a mode explicitly with
 `data-theme="light"` or `data-theme="dark"` on a wrapper element:
 
 ```tsx
@@ -103,8 +152,8 @@ with hosts like Starlight out of the box. Force a mode explicitly with
 </div>
 ```
 
-The editor page and the rendered-PDF preview stay light ("paper") in both themes,
-matching the white PDF the backend produces.
+The on-canvas page and the rendered-PDF preview stay light ("paper") in both
+themes, matching the white PDF the backend produces.
 
 ## Backend
 
@@ -146,7 +195,7 @@ npm run lint         # oxlint
 ```
 
 `npm run dev` proxies `/schema` and `/render/*` to a local `pdf-ua-api`
-(default: `http://localhost:8080`, override with `PDF_UA_API_PROXY_URL`).
+(default: `http://localhost:9999`, override with `PDF_UA_API_PROXY_URL`).
 
 ## License
 

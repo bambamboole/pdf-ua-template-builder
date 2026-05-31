@@ -31,7 +31,14 @@ export default defineConfig(({ mode }) => {
         cssCodeSplit: false,
         sourcemap: true,
         rollupOptions: {
-          external: ["react", "react-dom", "react/jsx-runtime"],
+          external: (id) =>
+            id === "react" ||
+            id === "react-dom" ||
+            id === "react/jsx-runtime" ||
+            id === "codemirror-json-schema" ||
+            id.startsWith("@codemirror/") ||
+            id.startsWith("@lezer/") ||
+            id.startsWith("@uiw/"),
           output: {
             assetFileNames: (asset) =>
               asset.names?.some((name) => name.endsWith(".css")) ? "style.css" : "[name][extname]",
@@ -47,7 +54,8 @@ export default defineConfig(({ mode }) => {
       port: 5174,
       strictPort: false,
       proxy: {
-        "/schema": proxyTarget,
+        // Anchored so it does not also catch the bundled `/schemas/...json` asset import.
+        "^/schema$": proxyTarget,
         "/render": proxyTarget,
       },
     },
@@ -55,6 +63,11 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       setupFiles: ["./src/test/setup.ts"],
       exclude: [...configDefaults.exclude, "e2e/**"],
+      server: {
+        deps: {
+          inline: ["codemirror-json-schema"],
+        },
+      },
     },
   };
 });

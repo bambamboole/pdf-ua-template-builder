@@ -1,13 +1,13 @@
-import { useBuilderActions, useBuilderState } from "../context/BuilderContext";
 import { PdfPane } from "./PdfPane";
+import { useRenderContext } from "./RenderContext";
 
 export interface PreviewProps {
   className?: string;
 }
 
 export function Preview({ className }: PreviewProps = {}) {
-  const { pdfUrl, error, pdfLoading, serializedTemplate, data, schema } = useBuilderState();
-  const { renderPdf } = useBuilderActions();
+  const { template, data, pdfUrl, pdfLoading, error, renderPdf, renderDisabled } =
+    useRenderContext();
 
   return (
     <PdfPane
@@ -15,10 +15,10 @@ export function Preview({ className }: PreviewProps = {}) {
       pdfUrl={pdfUrl}
       error={error}
       loading={pdfLoading}
-      template={serializedTemplate}
+      template={template ?? undefined}
       data={data}
       onRender={renderPdf}
-      renderDisabled={!schema || pdfLoading}
+      renderDisabled={renderDisabled}
     />
   );
 }
