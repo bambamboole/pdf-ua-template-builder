@@ -1,4 +1,5 @@
 import type { UniqueIdentifier } from "@dnd-kit/core";
+import { isRecord } from "../lib/records";
 import type { EditorArea, EditorModel } from "./editorModel";
 
 export interface DragData {
@@ -16,7 +17,7 @@ export interface DropTarget {
 }
 
 export function getDragData(value: unknown): DragData {
-  return isObject(value) ? (value as DragData) : {};
+  return isRecord(value) ? (value as DragData) : {};
 }
 
 export function getDropTarget(
@@ -84,8 +85,4 @@ function getRowBlockCount(model: EditorModel, rowUid: string): number {
     model.rows.find((candidate) => candidate.uid === rowUid) ??
     model.footerRows.find((candidate) => candidate.uid === rowUid);
   return row?.blocks.length ?? 0;
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
