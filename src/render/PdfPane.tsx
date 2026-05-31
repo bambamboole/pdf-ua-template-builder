@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
-import type { Template } from "../../types/generated/template";
-import type { TemplateData } from "../../types/template";
-import { Button } from "../primitives/Button";
+import type { Template } from "../types/generated/template";
+import type { TemplateData } from "../types/template";
+import { Button } from "../builder/primitives/Button";
 
 export type OutputTab = "pdf" | "data";
 

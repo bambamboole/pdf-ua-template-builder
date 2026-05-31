@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchTemplateSchema, renderTemplatePdf } from "../../api/pdfUaApi";
-import type { Template } from "../../types/generated/template";
-import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
+import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
+import type { Template } from "../types/generated/template";
+import type { TemplateData, TemplateSchemaResponse } from "../types/template";
 
 interface UsePdfUaApiOptions {
   initialApiUrl: string;
   apiUrl: string;
   onRendered?: (pdf: Blob) => void;
+  loadSchemaOnMount?: boolean;
 }
 
 interface PdfUaApi {
@@ -19,7 +20,12 @@ interface PdfUaApi {
   renderPdf: (template: Template, data: TemplateData) => Promise<void>;
 }
 
-export function usePdfUaApi({ initialApiUrl, apiUrl, onRendered }: UsePdfUaApiOptions): PdfUaApi {
+export function usePdfUaApi({
+  initialApiUrl,
+  apiUrl,
+  onRendered,
+  loadSchemaOnMount = true,
+}: UsePdfUaApiOptions): PdfUaApi {
   const [schema, setSchema] = useState<TemplateSchemaResponse | null>(null);
   const [schemaLoading, setSchemaLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -67,8 +73,10 @@ export function usePdfUaApi({ initialApiUrl, apiUrl, onRendered }: UsePdfUaApiOp
   }, []);
 
   useEffect(() => {
-    void loadSchema(initialApiUrlRef.current);
-  }, [loadSchema]);
+    if (loadSchemaOnMount) {
+      void loadSchema(initialApiUrlRef.current);
+    }
+  }, [loadSchema, loadSchemaOnMount]);
 
   const renderPdf = useCallback(
     async (template: Template, data: TemplateData) => {
