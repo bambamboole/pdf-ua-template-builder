@@ -82,29 +82,23 @@ export function BuilderCanvas({
         />
       </PageSheet>
 
-      <div
-        className="mx-auto flex w-full items-center justify-between gap-3 rounded-lg border border-dashed border-border bg-canvas px-4 py-2"
-        style={pageWidth}
-        aria-label="Page footer settings"
-      >
-        <div>
+      <PageSheet format={format} orientation={orientation} showMeta={false}>
+        <div
+          className="mb-2 flex items-center justify-between gap-3"
+          aria-label="Page footer settings"
+        >
           <h2 className="m-0 text-2xs font-semibold uppercase tracking-[0.06em] text-fg-subtle">
             Footer
           </h2>
-          <p className="mt-0.5 m-0 text-2xs text-fg-subtle">
-            Repeated content rendered in the page footer area.
-          </p>
+          <label className="inline-flex items-center gap-2 text-xs font-medium text-fg-muted">
+            <Checkbox
+              checked={footerRepeat}
+              onChange={(event) => onToggleFooterRepeat(event.currentTarget.checked)}
+            />
+            Repeat on every page
+          </label>
         </div>
-        <label className="inline-flex items-center gap-2 text-xs font-medium text-fg-muted">
-          <Checkbox
-            checked={footerRepeat}
-            onChange={(event) => onToggleFooterRepeat(event.currentTarget.checked)}
-          />
-          Repeat on every page
-        </label>
-      </div>
 
-      <PageSheet format={format} orientation={orientation} showMeta={false}>
         <CanvasArea
           area="footer"
           rows={model.footerRows}
