@@ -13,7 +13,7 @@ Guidance for Claude Code when working in this repository.
 ## Important Paths
 
 - `src/api/pdfUaApi.ts`: fetch wrapper for `GET /schema` and `POST /render/template`.
-- `src/builder/TemplateBuilder.tsx`: all-in-one preset composing a `Builder` (palette + canvas + inspector) and a `Preview` side by side.
+- `src/builder/TemplateBuilder.tsx`: all-in-one preset composing a `Builder` and a `Preview` side by side. The `Builder` stacks document `PageSettings`, the block `Palette`, and the `Canvas`; the block `Inspector` is a flyout pinned over the canvas while a block is selected.
 - `src/builder/context/BuilderContext.tsx`: `TemplateBuilderProvider`, split into a stable actions context and a state context; `useTemplateBuilder` merges both as the headless escape hatch.
 - `src/builder/`: builder feature code — `canvas/`, `inspector/` (with `inspector/editors/` block editors), `preview/`, `blocks/`, `controls/` (shared form primitives), `context/`, `state/` (editor model + serialization), `schema/` (schema adapter + example), `lib/`.
 - `src/index.ts`: library entry re-exporting `TemplateBuilder` and editor/schema/API helpers.
@@ -68,9 +68,9 @@ Guidance for Claude Code when working in this repository.
 ## Styling
 
 - This project styles with Tailwind CSS v4, wired through `@tailwindcss/vite` in `vite.config.ts`. There is no `tailwind.config.js`; theme config is CSS-first in `src/styles/app.css`.
-- Style with utility classes in JSX. Use the semantic color tokens (`bg-surface`, `bg-surface-muted`, `text-fg`, `text-fg-muted`, `text-fg-subtle`, `border-border`, `text-accent`, `bg-danger-soft`, …), the `text-2xs` size, and the named shadows (`shadow-page`, `shadow-pop`, `drop-shadow-drag`) instead of hardcoded palette values, so the UI stays re-themeable.
+- Style with utility classes in JSX. Use the semantic color tokens (`bg-surface`, `bg-surface-muted`, `bg-page`, `text-fg`, `text-fg-muted`, `text-fg-subtle`, `border-border`, `text-accent`, `bg-danger-soft`, …), the `text-2xs` size, and the named shadows (`shadow-page`, `shadow-pop`, `drop-shadow-drag`) instead of hardcoded palette values, so the UI stays re-themeable. `bg-page` is the WYSIWYG "paper" surface (a soft off-white) — distinct from `bg-surface` chrome panels.
 - Semantic tokens are backed by `--pdfua-*` CSS variables on `:root`. Re-theme by overriding those variables (globally or scoped to a wrapper element), not by rewriting utility classes everywhere.
-- A dark theme repoints the same tokens, activated by `@media (prefers-color-scheme: dark)` and by `[data-theme="dark"]` / `.dark` on any ancestor (`[data-theme="light"]` forces light). WYSIWYG "paper" surfaces (the canvas page sheet, the PDF preview) opt back into light with `data-theme="light"` so they match the white rendered PDF. Keep new chrome on the semantic tokens so it themes automatically; only mark something `data-theme="light"` if it must mirror printed paper.
+- A dark theme repoints the same tokens, activated by `@media (prefers-color-scheme: dark)` and by `[data-theme="dark"]` / `.dark` on any ancestor (`[data-theme="light"]` forces light). WYSIWYG "paper" surfaces (the canvas page sheet, the PDF preview) use the `page` token for their background and opt back into light with `data-theme="light"` so their content stays dark-on-light like the rendered PDF. Keep new chrome on the semantic tokens so it themes automatically; only mark something `data-theme="light"` if it must mirror printed paper.
 - Do not introduce a component library or another CSS framework. Match the existing utility patterns before inventing new ones.
 - Builder UI should be dense, work-focused, and predictable. Favor clear panes, toolbars, tabs, inspectors, and stable canvas dimensions over marketing-style layouts.
 

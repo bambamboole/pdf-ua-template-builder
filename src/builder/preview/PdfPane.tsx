@@ -128,14 +128,14 @@ function PdfView({ pdfUrl, loading }: { pdfUrl: string | null; loading: boolean 
         type="application/pdf"
         // The rendered PDF is white paper, so its frame stays light in dark mode.
         data-theme="light"
-        className="h-full w-full min-h-0 rounded-lg border border-solid border-border bg-surface shadow-page max-[1080px]:h-[34rem]"
+        className="h-full w-full min-h-0 rounded-lg border border-solid border-border bg-page shadow-page max-[1080px]:h-[34rem]"
       />
     );
   }
   return (
     <div
       data-theme="light"
-      className="grid h-full place-items-center rounded-lg border border-dashed border-border-strong bg-surface p-6 text-center text-sm text-fg-muted max-[1080px]:h-[34rem]"
+      className="grid h-full place-items-center rounded-lg border border-dashed border-border-strong bg-page p-6 text-center text-sm text-fg-muted max-[1080px]:h-[34rem]"
     >
       {loading
         ? "Rendering the latest template…"

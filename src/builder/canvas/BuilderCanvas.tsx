@@ -12,6 +12,8 @@ import type {
   PageNumbersValue,
 } from "../state/editorModel";
 import { Checkbox, Select } from "../controls";
+import { mmToPx } from "../lib/displayScale";
+import { pageSizeForFormat } from "../lib/pageSizes";
 import { ColumnResizer } from "./ColumnResizer";
 import { gridTemplateForWidths } from "./columns";
 import { PageSheet } from "./PageSheet";
@@ -52,9 +54,12 @@ export function BuilderCanvas({
   onChangePageNumbers,
   className,
 }: BuilderCanvasProps) {
+  const [widthMm] = pageSizeForFormat(format, orientation);
+  const pageWidth: CSSProperties = { maxWidth: `${mmToPx(widthMm)}px` };
+
   return (
     <div
-      className={`min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6${className ? ` ${className}` : ""}`}
+      className={`grid content-start gap-4 min-w-0 min-h-0 overflow-auto bg-canvas px-4 pb-8 pt-6${className ? ` ${className}` : ""}`}
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
           onDeselect();
@@ -75,62 +80,57 @@ export function BuilderCanvas({
           onChangeBlock={onChangeBlock}
           onSetRowWidths={onSetRowWidths}
         />
-
-        <section
-          className="mt-6 grid gap-3 border-0 border-t border-dashed border-border pt-4"
-          aria-label="Page footer"
-        >
-          <header className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="m-0 text-2xs font-semibold uppercase tracking-[0.06em] text-fg-subtle">
-                Footer
-              </h2>
-              <p className="mt-0.5 m-0 text-2xs text-fg-subtle">
-                Repeated content rendered in the page footer area.
-              </p>
-            </div>
-            <label className="inline-flex items-center gap-2 text-xs font-medium text-fg-muted">
-              <Checkbox
-                checked={footerRepeat}
-                onChange={(event) => onToggleFooterRepeat(event.currentTarget.checked)}
-              />
-              Repeat on every page
-            </label>
-          </header>
-
-          <CanvasArea
-            area="footer"
-            rows={model.footerRows}
-            data={data}
-            selectedBlockUid={selectedBlockUid}
-            newRowId="new-footer-row"
-            emptyLabel="Drop a block here to start the footer"
-            fillLabel="Drop a block here to add a footer row"
-            onRemoveBlock={onRemoveBlock}
-            onSelectBlock={onSelectBlock}
-            onChangeBlock={onChangeBlock}
-            onSetRowWidths={onSetRowWidths}
-          />
-
-          <footer className="mt-2 flex justify-center border-0 border-t border-dashed border-border pt-3">
-            <label className="inline-flex items-center gap-3 text-2xs font-medium uppercase tracking-[0.06em] text-fg-muted">
-              Page numbers
-              <Select
-                className="w-auto py-0 text-sm font-normal normal-case tracking-normal"
-                value={pageNumbers}
-                onChange={(event) =>
-                  onChangePageNumbers(event.currentTarget.value as PageNumbersValue)
-                }
-              >
-                <option value="disabled">Disabled</option>
-                <option value="left">Left</option>
-                <option value="center">Center</option>
-                <option value="right">Right</option>
-              </Select>
-            </label>
-          </footer>
-        </section>
       </PageSheet>
+
+      <PageSheet format={format} orientation={orientation} showMeta={false}>
+        <div
+          className="mb-2 flex items-center justify-between gap-3"
+          aria-label="Page footer settings"
+        >
+          <h2 className="m-0 text-2xs font-semibold uppercase tracking-[0.06em] text-fg-subtle">
+            Footer
+          </h2>
+          <label className="inline-flex items-center gap-2 text-xs font-medium text-fg-muted">
+            <Checkbox
+              checked={footerRepeat}
+              onChange={(event) => onToggleFooterRepeat(event.currentTarget.checked)}
+            />
+            Repeat on every page
+          </label>
+        </div>
+
+        <CanvasArea
+          area="footer"
+          rows={model.footerRows}
+          data={data}
+          selectedBlockUid={selectedBlockUid}
+          newRowId="new-footer-row"
+          emptyLabel="Drop a block here to start the footer"
+          fillLabel="Drop a block here to add a footer row"
+          onRemoveBlock={onRemoveBlock}
+          onSelectBlock={onSelectBlock}
+          onChangeBlock={onChangeBlock}
+          onSetRowWidths={onSetRowWidths}
+        />
+      </PageSheet>
+
+      <div className="mx-auto flex w-full justify-center" style={pageWidth}>
+        <label className="inline-flex items-center gap-3 text-2xs font-medium uppercase tracking-[0.06em] text-fg-muted">
+          Page numbers
+          <Select
+            className="w-auto py-0 text-sm font-normal normal-case tracking-normal"
+            value={pageNumbers}
+            onChange={(event) =>
+              onChangePageNumbers(event.currentTarget.value as PageNumbersValue)
+            }
+          >
+            <option value="disabled">Disabled</option>
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </Select>
+        </label>
+      </div>
     </div>
   );
 }

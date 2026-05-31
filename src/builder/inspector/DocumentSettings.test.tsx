@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Orientation, PageFormat, Template } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
-import { DocumentSettingsInspector } from "./DocumentSettingsInspector";
+import { DocumentSettings } from "./DocumentSettings";
 
 const metadata = {
   kind: "template",
@@ -16,10 +16,10 @@ const metadata = {
   pageFormats: [{ name: "A4", widthMm: 210, heightMm: 297 }],
 } satisfies TemplateSchemaMetadata;
 
-describe("DocumentSettingsInspector", () => {
-  it("renders document-scoped settings instead of selected-block copy", () => {
+describe("DocumentSettings", () => {
+  it("renders the document-scoped settings as a 'Page settings' bar", () => {
     render(
-      <DocumentSettingsInspector
+      <DocumentSettings
         template={{ version: 1 }}
         metadata={metadata}
         format="A4"
@@ -30,11 +30,7 @@ describe("DocumentSettingsInspector", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("complementary", { name: "Document settings inspector" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Document settings" })).toBeInTheDocument();
-    expect(screen.getByText("Changes apply to the whole template.")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Page settings" })).toBeInTheDocument();
     expect(screen.getByText("Page setup")).toBeInTheDocument();
     expect(screen.getByText("Page margins")).toBeInTheDocument();
     expect(screen.getByText("Template typography")).toBeInTheDocument();
@@ -45,7 +41,7 @@ describe("DocumentSettingsInspector", () => {
   it("updates template typography defaults", () => {
     const onChangeTemplate = vi.fn();
     render(
-      <DocumentSettingsInspector
+      <DocumentSettings
         template={{ version: 1 }}
         metadata={metadata}
         format="A4"
@@ -79,7 +75,7 @@ describe("DocumentSettingsInspector", () => {
     } satisfies Template;
     const onChangeTemplate = vi.fn();
     render(
-      <DocumentSettingsInspector
+      <DocumentSettings
         template={template}
         metadata={metadata}
         format="A4"
@@ -111,7 +107,7 @@ describe("DocumentSettingsInspector", () => {
     const onChangeFormat = vi.fn<(format: PageFormat) => void>();
     const onChangeOrientation = vi.fn<(orientation: Orientation) => void>();
     render(
-      <DocumentSettingsInspector
+      <DocumentSettings
         template={{ version: 1 }}
         metadata={metadata}
         format="A4"
