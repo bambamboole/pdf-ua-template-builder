@@ -13,7 +13,7 @@ Guidance for Claude Code when working in this repository.
 ## Important Paths
 
 - `src/api/pdfUaApi.ts`: fetch wrapper for `GET /schema` and `POST /render/template`.
-- `src/builder/TemplateBuilder.tsx`: all-in-one preset composing a `Builder` (palette + canvas + inspector) and a `Preview` side by side.
+- `src/builder/TemplateBuilder.tsx`: all-in-one preset composing a `Builder` and a `Preview` side by side. The `Builder` stacks document `PageSettings`, the block `Palette`, and the `Canvas`; the block `Inspector` is a flyout pinned over the canvas while a block is selected.
 - `src/builder/context/BuilderContext.tsx`: `TemplateBuilderProvider`, split into a stable actions context and a state context; `useTemplateBuilder` merges both as the headless escape hatch.
 - `src/builder/`: builder feature code — `canvas/`, `inspector/` (with `inspector/editors/` block editors), `preview/`, `blocks/`, `controls/` (shared form primitives), `context/`, `state/` (editor model + serialization), `schema/` (schema adapter + example), `lib/`.
 - `src/index.ts`: library entry re-exporting `TemplateBuilder` and editor/schema/API helpers.
