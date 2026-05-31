@@ -33,6 +33,7 @@ export interface TemplateEditorContextValue {
 }
 
 const emptyTemplate: Template = { version: 1 };
+const emptyData: TemplateData = {};
 
 const TemplateEditorContext = createContext<TemplateEditorContextValue | null>(null);
 
@@ -49,7 +50,7 @@ export function useTemplateEditor(): TemplateEditorContextValue {
 export function TemplateEditorProvider({
   apiUrl: apiUrlProp,
   initialTemplate,
-  data = {},
+  data = emptyData,
   onChange,
   onRendered,
   children,
