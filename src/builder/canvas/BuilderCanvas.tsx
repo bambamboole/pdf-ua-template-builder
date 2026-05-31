@@ -83,7 +83,7 @@ export function BuilderCanvas({
       </PageSheet>
 
       <div
-        className="mx-auto flex w-full items-center justify-between gap-3 rounded-lg border border-dashed border-border bg-surface-muted px-4 py-2"
+        className="mx-auto flex w-full items-center justify-between gap-3 rounded-lg border border-dashed border-border bg-canvas px-4 py-2"
         style={pageWidth}
         aria-label="Page footer settings"
       >
