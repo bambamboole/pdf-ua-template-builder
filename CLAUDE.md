@@ -8,14 +8,16 @@ Guidance for Claude Code when working in this repository.
 - Styled with Tailwind CSS v4 (see Styling). Built both as an app and as a component library (`vite build --mode lib`).
 - Runtime backend is `../pdf-ua-api`, expected locally at `http://localhost:8080` unless `VITE_PDF_UA_API_URL` is set.
 - The backend owns the template rendering contract. Treat `schemas/template.schema.json` and `src/types/generated/template.d.ts` as generated artifacts derived from `pdf-ua-api`.
-- The builder lives under `src/builder/` (`TemplateBuilder.tsx` and `Builder.tsx` plus `canvas/`, `inspector/`, `preview/`, `blocks/`, `controls/`, `context/`, `state/`, `schema/`); `src/index.ts` re-exports it as the library entry.
+- The builder lives under `src/builder/` (`TemplateBuilder.tsx` and `Builder.tsx` plus `canvas/`, `inspector/`, `blocks/`, `controls/`, `context/`, `state/`, `schema/`, `hooks/`, `primitives/`, `lib/`); the PDF preview lives in `src/render/` and the JSON editor in `src/editor/`. `src/index.ts` re-exports them as the library entry.
 
 ## Important Paths
 
 - `src/api/pdfUaApi.ts`: fetch wrapper for `GET /schema` and `POST /render/template`.
 - `src/builder/TemplateBuilder.tsx`: all-in-one preset composing a `Builder` and a `Preview` side by side. The `Builder` stacks document `PageSettings`, the block `Palette`, and the `Canvas`; the block `Inspector` is a flyout pinned over the canvas while a block is selected.
 - `src/builder/context/BuilderContext.tsx`: `TemplateBuilderProvider`, split into a stable actions context and a state context; `useTemplateBuilder` merges both as the headless escape hatch.
-- `src/builder/`: builder feature code — `canvas/`, `inspector/` (with `inspector/editors/` block editors), `preview/`, `blocks/`, `controls/` (shared form primitives), `context/`, `state/` (editor model + serialization), `schema/` (schema adapter + example), `lib/`.
+- `src/builder/`: builder feature code — `canvas/`, `inspector/` (with `inspector/editors/` block editors), `blocks/`, `controls/` (shared form primitives), `context/`, `state/` (editor model + serialization), `schema/` (schema adapter + example), `hooks/`, `primitives/`, `lib/`.
+- `src/render/`: PDF preview pane and render context (`Preview`, `PdfPane`, `usePdfUaApi`).
+- `src/editor/`: standalone CodeMirror JSON template editor (`TemplateEditor`, `CodeEditor`).
 - `src/index.ts`: library entry re-exporting `TemplateBuilder` and editor/schema/API helpers.
 - `src/styles/app.css`: Tailwind v4 entry and the semantic theme tokens (see Styling).
 - `src/types/template.ts`: local API-facing type aliases around generated schema types.
@@ -33,7 +35,7 @@ Guidance for Claude Code when working in this repository.
 - `npm run lint:fix`: oxlint autofix.
 - `npm run fmt`: oxfmt.
 - `npm run fmt:check`: formatting check.
-- `npm run sync:schema`: copy the backend-owned template schema from `../pdf-ua-api`.
+- `npm run sync:schema`: fetch the backend-owned template schema from the running API (`$PDF_UA_SCHEMA_URL`, default `http://localhost:9999/schema`) into `schemas/template.schema.json`.
 - `npm run generate:types`: regenerate `src/types/generated/template.d.ts` from `schemas/template.schema.json`.
 
 ## Backend Contract

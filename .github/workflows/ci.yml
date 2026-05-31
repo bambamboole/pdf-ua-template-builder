@@ -28,3 +28,20 @@ jobs:
       - run: npm run lint:github
       - run: npm test
       - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      # `npm run dev` (the Playwright webServer) brings up the pdf-ua-api
+      # container via docker compose and starts Vite.
+      - run: npm run test:e2e

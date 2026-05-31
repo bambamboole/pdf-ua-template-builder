@@ -44,7 +44,7 @@
     "wysiwyg"
   ],
   "scripts": {
-    "dev": "docker compose up -d --force-recreate && vite",
+    "dev": "docker compose up -d && vite",
     "build": "tsc --noEmit && vite build --mode lib",
     "build:app": "tsc --noEmit && vite build",
     "preview": "vite preview",
@@ -60,6 +60,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

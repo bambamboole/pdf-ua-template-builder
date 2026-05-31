@@ -2,10 +2,23 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { configDefaults, defineConfig } from "vitest/config";
 import dts from "vite-plugin-dts";
+import pkg from "./package.json";
 
 declare const process: { env: Record<string, string | undefined> };
 
 const proxyTarget = process.env.PDF_UA_API_PROXY_URL ?? "http://localhost:9999";
+
+// Externalize every declared dependency and peer dependency (and their subpaths)
+// so runtime deps are resolved from the consumer instead of bundled. Deriving the
+// list from package.json keeps it from drifting as dependencies change.
+const externalPackages = [
+  ...Object.keys(pkg.dependencies ?? {}),
+  ...Object.keys(pkg.peerDependencies ?? {}),
+];
+
+function isExternal(id: string): boolean {
+  return externalPackages.some((name) => id === name || id.startsWith(`${name}/`));
+}
 
 export default defineConfig(({ mode }) => {
   const isLib = mode === "lib";
@@ -19,6 +32,7 @@ export default defineConfig(({ mode }) => {
           include: ["src/**/*"],
           exclude: ["**/*.test.*", "src/test/**", "src/main.tsx", "src/App.tsx", "src/env.d.ts"],
           tsconfigPath: "./tsconfig.json",
+          entryRoot: "src",
         }),
       ],
       build: {
@@ -31,14 +45,7 @@ export default defineConfig(({ mode }) => {
         cssCodeSplit: false,
         sourcemap: true,
         rollupOptions: {
-          external: (id) =>
-            id === "react" ||
-            id === "react-dom" ||
-            id === "react/jsx-runtime" ||
-            id === "codemirror-json-schema" ||
-            id.startsWith("@codemirror/") ||
-            id.startsWith("@lezer/") ||
-            id.startsWith("@uiw/"),
+          external: isExternal,
           output: {
             assetFileNames: (asset) =>
               asset.names?.some((name) => name.endsWith(".css")) ? "style.css" : "[name][extname]",
