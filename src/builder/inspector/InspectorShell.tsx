@@ -1,23 +1,28 @@
-import type { ReactNode } from "react";
+import { forwardRef, type KeyboardEvent, type ReactNode } from "react";
 
-export function InspectorShell({
-  ariaLabel,
-  className,
-  children,
-}: {
+export interface InspectorShellProps {
   ariaLabel: string;
   className?: string;
+  onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
   children: ReactNode;
-}) {
+}
+
+export const InspectorShell = forwardRef<HTMLElement, InspectorShellProps>(function InspectorShell(
+  { ariaLabel, className, onKeyDown, children },
+  ref,
+) {
   return (
     <aside
-      className={`grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto bg-surface p-4${className ? ` ${className}` : ""}`}
+      ref={ref}
+      tabIndex={-1}
+      onKeyDown={onKeyDown}
+      className={`grid min-h-0 min-w-0 content-start gap-4 overflow-x-hidden overflow-y-auto bg-surface p-4 outline-none${className ? ` ${className}` : ""}`}
       aria-label={ariaLabel}
     >
       {children}
     </aside>
   );
-}
+});
 
 export interface InspectorHeaderProps {
   title: string;
