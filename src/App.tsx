@@ -12,6 +12,88 @@ const TABS: { id: Mode; label: string }[] = [
   { id: "html", label: "HTML editor" },
 ];
 
+const SAMPLE_INVOICE_HTML = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Invoice INV-1001</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #1a1a1a;
+        line-height: 1.5;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      h1 {
+        font-size: 1.75rem;
+        margin: 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #ddd;
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+      }
+      td.amount,
+      th.amount {
+        text-align: right;
+      }
+      tfoot td {
+        font-weight: 600;
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Invoice</h1>
+      <p>No. INV-1001</p>
+    </header>
+    <p>Acme GmbH · Musterstraße 1 · 12345 Berlin</p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Description</th>
+          <th scope="col" class="amount">Qty</th>
+          <th scope="col" class="amount">Unit price</th>
+          <th scope="col" class="amount">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Consulting services</td>
+          <td class="amount">10</td>
+          <td class="amount">€120.00</td>
+          <td class="amount">€1,200.00</td>
+        </tr>
+        <tr>
+          <td>Implementation</td>
+          <td class="amount">5</td>
+          <td class="amount">€150.00</td>
+          <td class="amount">€750.00</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">Total</td>
+          <td class="amount">€1,950.00</td>
+        </tr>
+      </tfoot>
+    </table>
+  </body>
+</html>
+`;
+
 export default function App() {
   const apiUrl = import.meta.env.VITE_PDF_UA_API_URL;
   const [mode, setMode] = useState<Mode>("builder");
@@ -42,6 +124,8 @@ export default function App() {
         {mode === "builder" ? (
           <TemplateBuilder
             apiUrl={apiUrl}
+            initialTemplate={invoice.template}
+            initialData={invoice.data}
             examples={{ Invoice: invoice }}
             className="h-full!"
           />
@@ -53,7 +137,7 @@ export default function App() {
             className="h-full!"
           />
         ) : (
-          <HtmlEditor apiUrl={apiUrl} className="h-full!" />
+          <HtmlEditor apiUrl={apiUrl} initialHtml={SAMPLE_INVOICE_HTML} className="h-full!" />
         )}
       </div>
     </div>
