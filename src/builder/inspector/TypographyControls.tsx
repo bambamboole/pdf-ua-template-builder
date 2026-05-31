@@ -45,16 +45,26 @@ export function TypographyControls(props: TypographyControlsProps): ReactNode {
 
   return (
     <div className="grid min-w-0 gap-2">
-      <SelectField
-        name={`${namePrefix}.family`}
-        label="Family"
-        value={typography?.family ?? undefined}
-        options={fontOptions}
-        optional
-        emptyLabel="Default"
-        onChange={(value) => handleChange("family", value)}
-      />
       <div className="grid grid-cols-2 gap-2">
+        <SelectField
+          name={`${namePrefix}.family`}
+          label="Family"
+          value={typography?.family ?? undefined}
+          options={fontOptions}
+          optional
+          emptyLabel="Default"
+          onChange={(value) => handleChange("family", value)}
+        />
+        <SelectField
+          name={`${namePrefix}.align`}
+          label="Align"
+          value={typography?.align ?? undefined}
+          optional
+          options={ALIGN_OPTIONS}
+          onChange={(value) => handleChange("align", value)}
+        />
+      </div>
+      <div className="grid grid-cols-3 gap-2">
         <NumberField
           name={`${namePrefix}.size`}
           label="Size"
@@ -72,14 +82,6 @@ export function TypographyControls(props: TypographyControlsProps): ReactNode {
           step={1}
           placeholder="400"
           onChange={(value) => handleChange("weight", value)}
-        />
-        <SelectField
-          name={`${namePrefix}.align`}
-          label="Align"
-          value={typography?.align ?? undefined}
-          optional
-          options={ALIGN_OPTIONS}
-          onChange={(value) => handleChange("align", value)}
         />
         <ColorField
           name={`${namePrefix}.color`}

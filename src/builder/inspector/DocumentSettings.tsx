@@ -48,7 +48,7 @@ export function DocumentSettings({
       className={`grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] items-start gap-3 border-0 border-b border-solid border-border bg-surface px-4 py-3${className ? ` ${className}` : ""}`}
     >
       <InspectorSection title="Page setup">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-2">
           <SelectField
             name="document.page.size.format"
             label="Page size"
