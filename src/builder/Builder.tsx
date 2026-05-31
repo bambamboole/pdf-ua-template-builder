@@ -13,13 +13,14 @@ export interface BuilderProps {
 export function Builder({ className, examples }: BuilderProps = {}) {
   return (
     <section
-      className={`pdfua-template-builder grid min-w-0 min-h-0 bg-app grid-rows-[auto_auto_minmax(0,1fr)]${className ? ` ${className}` : ""}`}
+      className={`pdfua-template-builder grid h-full min-w-0 min-h-0 bg-app${className ? ` ${className}` : ""}`}
+      style={{ gridTemplateRows: "auto auto 1fr" }}
       aria-label="Template authoring"
     >
       <PageSettings />
       <Palette examples={examples} />
 
-      <div className="relative min-h-0 min-w-0">
+      <div className="relative mt-2 min-h-0 min-w-0">
         <Canvas className="h-full" />
         <Inspector />
       </div>
