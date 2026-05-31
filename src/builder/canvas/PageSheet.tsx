@@ -15,6 +15,9 @@ export function PageSheet({ format, orientation, children }: PageSheetProps) {
 
   return (
     <div
+      // The page mirrors the white PDF the backend renders, so it stays light
+      // even in dark mode (the surrounding canvas/chrome still go dark).
+      data-theme="light"
       className="mx-auto grid w-full gap-3 rounded-xl border border-solid border-border bg-surface p-6 shadow-page transition-[max-width] duration-200"
       style={style}
     >

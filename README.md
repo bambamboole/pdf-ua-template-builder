@@ -89,6 +89,23 @@ does not impose a height, give `Builder` and `Preview` explicit sizes when you
 are not filling the viewport. For fully custom parts, the `useTemplateBuilder()`
 hook exposes the underlying state and actions.
 
+## Dark mode
+
+The builder ships a dark theme built from the same semantic tokens. It turns on
+automatically when the OS prefers dark (`prefers-color-scheme: dark`) and whenever
+an ancestor element carries `data-theme="dark"` (or a `.dark` class) — so it syncs
+with hosts like Starlight out of the box. Force a mode explicitly with
+`data-theme="light"` or `data-theme="dark"` on a wrapper element:
+
+```tsx
+<div data-theme="dark">
+  <TemplateBuilder apiUrl="http://localhost:8080" />
+</div>
+```
+
+The editor page and the rendered-PDF preview stay light ("paper") in both themes,
+matching the white PDF the backend produces.
+
 ## Backend
 
 The component talks to a `pdf-ua-api` instance via:

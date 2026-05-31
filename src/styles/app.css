@@ -9,7 +9,8 @@
  *
  *   :root { --pdfua-accent: oklch(0.6 0.2 250); }   // re-brand the accent
  */
-:root {
+:root,
+[data-theme="light"] {
   --pdfua-app: var(--color-stone-50);
   --pdfua-canvas: var(--color-stone-200);
   --pdfua-surface: var(--color-white);
@@ -34,6 +35,73 @@
 
   --pdfua-success: var(--color-emerald-700);
   --pdfua-success-soft: var(--color-emerald-100);
+
+  color-scheme: light;
+}
+
+/* Dark theme: the same semantic tokens repointed to dark values. Applied
+ * automatically when the OS prefers dark (unless a host forces light), and
+ * whenever an ancestor carries [data-theme="dark"] / .dark (e.g. Starlight).
+ * The two blocks are intentionally identical. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --pdfua-app: var(--color-stone-950);
+    --pdfua-canvas: var(--color-stone-950);
+    --pdfua-surface: var(--color-stone-900);
+    --pdfua-surface-muted: var(--color-stone-800);
+
+    --pdfua-border: var(--color-stone-700);
+    --pdfua-border-strong: var(--color-stone-600);
+
+    --pdfua-fg: var(--color-stone-100);
+    --pdfua-fg-muted: var(--color-stone-400);
+    --pdfua-fg-subtle: var(--color-stone-500);
+    --pdfua-on-dark: var(--color-stone-900);
+
+    --pdfua-accent: var(--color-indigo-400);
+    --pdfua-accent-soft: var(--color-indigo-950);
+
+    --pdfua-primary: var(--color-stone-100);
+    --pdfua-primary-strong: var(--color-white);
+
+    --pdfua-danger: var(--color-red-400);
+    --pdfua-danger-soft: var(--color-red-950);
+
+    --pdfua-success: var(--color-emerald-400);
+    --pdfua-success-soft: var(--color-emerald-950);
+
+    color-scheme: dark;
+  }
+}
+
+[data-theme="dark"],
+.dark {
+  --pdfua-app: var(--color-stone-950);
+  --pdfua-canvas: var(--color-stone-950);
+  --pdfua-surface: var(--color-stone-900);
+  --pdfua-surface-muted: var(--color-stone-800);
+
+  --pdfua-border: var(--color-stone-700);
+  --pdfua-border-strong: var(--color-stone-600);
+
+  --pdfua-fg: var(--color-stone-100);
+  --pdfua-fg-muted: var(--color-stone-400);
+  --pdfua-fg-subtle: var(--color-stone-500);
+  --pdfua-on-dark: var(--color-stone-900);
+
+  --pdfua-accent: var(--color-indigo-400);
+  --pdfua-accent-soft: var(--color-indigo-950);
+
+  --pdfua-primary: var(--color-stone-100);
+  --pdfua-primary-strong: var(--color-white);
+
+  --pdfua-danger: var(--color-red-400);
+  --pdfua-danger-soft: var(--color-red-950);
+
+  --pdfua-success: var(--color-emerald-400);
+  --pdfua-success-soft: var(--color-emerald-950);
+
+  color-scheme: dark;
 }
 
 /* Register the semantic tokens as Tailwind colors (bg-surface, text-accent, …).
