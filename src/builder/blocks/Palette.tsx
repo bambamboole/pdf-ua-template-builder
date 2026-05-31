@@ -20,7 +20,7 @@ export function Palette({ className, examples }: PaletteProps = {}) {
 
   return (
     <aside
-      className={`flex min-w-0 items-center overflow-hidden border-0 border-b border-solid border-border bg-surface px-4 py-2${className ? ` ${className}` : ""}`}
+      className={`flex h-[56px] min-w-0 items-center overflow-hidden border-0 border-b border-solid border-border bg-surface px-4${className ? ` ${className}` : ""}`}
       aria-label="Block palette"
     >
       <div className="flex w-full min-w-0 items-center gap-3">
