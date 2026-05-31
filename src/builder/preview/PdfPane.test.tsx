@@ -12,6 +12,8 @@ describe("PdfPane", () => {
     const object = container.querySelector("object");
     expect(object).toHaveAttribute("data", "blob:http://localhost:5174/test");
     expect(object).not.toHaveAttribute("sandbox");
+    // The rendered PDF is white paper, so it stays light even in dark mode.
+    expect(object).toHaveAttribute("data-theme", "light");
   });
 
   it("omits the Render button unless onRender is provided", () => {
