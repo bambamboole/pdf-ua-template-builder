@@ -28,14 +28,17 @@ describe("App shell", () => {
     URL.revokeObjectURL = vi.fn();
   });
 
-  it("shows the builder by default", () => {
+  it("shows the builder by default", async () => {
     render(<App />);
 
     expect(screen.getByRole("tab", { name: "Template builder" })).toHaveAttribute(
       "aria-selected",
       "true",
     );
-    expect(screen.getByRole("complementary", { name: "Block palette" })).toBeInTheDocument();
+    // The builder is lazy-loaded, so it resolves through a Suspense fallback first.
+    expect(
+      await screen.findByRole("complementary", { name: "Block palette" }),
+    ).toBeInTheDocument();
   });
 
   it("switches to the HTML editor tab", async () => {
@@ -44,7 +47,7 @@ describe("App shell", () => {
 
     await user.click(screen.getByRole("tab", { name: "HTML editor" }));
 
-    expect(screen.getByLabelText("Template HTML editor")).toBeInTheDocument();
+    expect(await screen.findByLabelText("Template HTML editor")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "HTML editor" })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -57,6 +60,6 @@ describe("App shell", () => {
 
     await user.click(screen.getByRole("tab", { name: "Template editor" }));
 
-    expect(screen.getByLabelText("Template JSON editor")).toBeInTheDocument();
+    expect(await screen.findByLabelText("Template JSON editor")).toBeInTheDocument();
   });
 });

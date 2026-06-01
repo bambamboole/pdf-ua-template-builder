@@ -37,16 +37,23 @@ export default defineConfig(({ mode }) => {
       ],
       build: {
         lib: {
-          entry: "src/index.ts",
-          name: "PdfUaTemplateBuilder",
+          // Subpath entries let consumers import a single feature (e.g. the builder
+          // without CodeMirror). Entry keys carry the `dir/index` shape so emitted JS
+          // sits next to the matching `.d.ts` that vite-plugin-dts writes per source.
+          entry: {
+            index: "src/index.ts",
+            "builder/index": "src/builder/index.ts",
+            "editor/index": "src/editor/index.ts",
+            "html-editor/index": "src/html-editor/index.ts",
+          },
           formats: ["es"],
-          fileName: () => "index.js",
         },
         cssCodeSplit: false,
         sourcemap: true,
         rollupOptions: {
           external: isExternal,
           output: {
+            entryFileNames: "[name].js",
             assetFileNames: (asset) =>
               asset.names?.some((name) => name.endsWith(".css")) ? "style.css" : "[name][extname]",
           },

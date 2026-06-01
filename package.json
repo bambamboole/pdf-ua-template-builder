@@ -17,6 +17,18 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./builder": {
+      "types": "./dist/builder/index.d.ts",
+      "import": "./dist/builder/index.js"
+    },
+    "./editor": {
+      "types": "./dist/editor/index.d.ts",
+      "import": "./dist/editor/index.js"
+    },
+    "./html-editor": {
+      "types": "./dist/html-editor/index.d.ts",
+      "import": "./dist/html-editor/index.js"
+    },
     "./style.css": "./dist/style.css"
   },
   "files": [

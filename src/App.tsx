@@ -1,8 +1,18 @@
-import { useMemo, useState } from "react";
-import { TemplateBuilder } from "./builder/TemplateBuilder";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { createInvoiceExample } from "./builder/schema/invoiceExample";
-import { TemplateEditor } from "./editor/TemplateEditor";
-import { HtmlEditor } from "./html-editor/HtmlEditor";
+
+// Lazy per-tab so each editor's heavy deps load only when its tab is opened:
+// the builder pulls dnd-kit, the JSON/HTML editors pull CodeMirror (+ the bundled
+// validation schema). Only the active tab's chunk is fetched.
+const TemplateBuilder = lazy(() =>
+  import("./builder/TemplateBuilder").then((m) => ({ default: m.TemplateBuilder })),
+);
+const TemplateEditor = lazy(() =>
+  import("./editor/TemplateEditor").then((m) => ({ default: m.TemplateEditor })),
+);
+const HtmlEditor = lazy(() =>
+  import("./html-editor/HtmlEditor").then((m) => ({ default: m.HtmlEditor })),
+);
 
 type Mode = "builder" | "json" | "html";
 
@@ -121,24 +131,32 @@ export default function App() {
       </header>
 
       <div className="min-h-0 flex-1 overflow-hidden">
-        {mode === "builder" ? (
-          <TemplateBuilder
-            apiUrl={apiUrl}
-            initialTemplate={invoice.template}
-            initialData={invoice.data}
-            examples={{ Invoice: invoice }}
-            className="h-full!"
-          />
-        ) : mode === "json" ? (
-          <TemplateEditor
-            apiUrl={apiUrl}
-            initialTemplate={invoice.template}
-            data={invoice.data}
-            className="h-full!"
-          />
-        ) : (
-          <HtmlEditor apiUrl={apiUrl} initialHtml={SAMPLE_INVOICE_HTML} className="h-full!" />
-        )}
+        <Suspense
+          fallback={
+            <div className="flex h-full items-center justify-center text-sm text-fg-muted">
+              Loading editor…
+            </div>
+          }
+        >
+          {mode === "builder" ? (
+            <TemplateBuilder
+              apiUrl={apiUrl}
+              initialTemplate={invoice.template}
+              initialData={invoice.data}
+              examples={{ Invoice: invoice }}
+              className="h-full!"
+            />
+          ) : mode === "json" ? (
+            <TemplateEditor
+              apiUrl={apiUrl}
+              initialTemplate={invoice.template}
+              data={invoice.data}
+              className="h-full!"
+            />
+          ) : (
+            <HtmlEditor apiUrl={apiUrl} initialHtml={SAMPLE_INVOICE_HTML} className="h-full!" />
+          )}
+        </Suspense>
       </div>
     </div>
   );
