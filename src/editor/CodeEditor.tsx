@@ -4,18 +4,23 @@ import { jsonSchema } from "codemirror-json-schema";
 import { useMemo } from "react";
 import { useTemplateEditor } from "./TemplateEditorContext";
 import { editorTheme } from "./editorTheme";
-import { templateSchema } from "./templateSchema";
 
 export interface CodeEditorProps {
   className?: string;
 }
 
 export function CodeEditor({ className }: CodeEditorProps = {}) {
-  const { text, setText } = useTemplateEditor();
+  const { text, setText, schema } = useTemplateEditor();
 
+  // The schema is fetched from the backend `/schema` at runtime; until it arrives the
+  // editor runs without schema validation/completion. ReactCodeMirror reconfigures when
+  // this array's identity changes, so the schema extension activates as soon as it loads.
   const extensions = useMemo(
-    () => [json(), jsonSchema(templateSchema as Parameters<typeof jsonSchema>[0]), ...editorTheme],
-    [],
+    () =>
+      schema
+        ? [json(), jsonSchema(schema as Parameters<typeof jsonSchema>[0]), ...editorTheme]
+        : [json(), ...editorTheme],
+    [schema],
   );
 
   return (
