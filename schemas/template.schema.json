@@ -36,15 +36,6 @@
         "version"
     ],
     "$defs": {
-        "align": {
-            "type": "string",
-            "title": "Align",
-            "enum": [
-                "left",
-                "center",
-                "right"
-            ]
-        },
         "pageFormat": {
             "type": "string",
             "title": "PageFormat",
@@ -66,83 +57,48 @@
                 "landscape"
             ]
         },
-        "dividerStyle": {
-            "type": "string",
-            "title": "DividerStyle",
-            "enum": [
-                "solid",
-                "dashed",
-                "dotted",
-                "double",
-                "none"
-            ]
-        },
-        "tableStyle": {
-            "type": "string",
-            "title": "TableStyle",
-            "enum": [
-                "striped",
-                "bordered",
-                "minimal"
-            ]
-        },
-        "pageBackgroundType": {
-            "type": "string",
-            "title": "PageBackgroundType",
-            "enum": [
-                "auto",
-                "image",
-                "pdf"
-            ]
-        },
-        "typographyConfig": {
+        "presetPageSize": {
             "type": "object",
-            "title": "TypographyConfig",
+            "title": "PresetPageSize",
             "properties": {
-                "family": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Bundled or external font family key."
+                "format": {
+                    "$ref": "#/$defs/pageFormat"
                 },
-                "size": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "description": "Font size in points.",
-                    "minimum": 1.0
-                },
-                "weight": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "description": "Numeric font weight."
-                },
-                "align": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Text alignment for this typography scope.",
-                    "enum": [
-                        "left",
-                        "center",
-                        "right",
-                        null
-                    ]
-                },
-                "color": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "CSS color value used for text."
+                "orientation": {
+                    "$ref": "#/$defs/orientation"
                 }
             },
             "additionalProperties": false
+        },
+        "customPageSize": {
+            "type": "object",
+            "title": "CustomPageSize",
+            "properties": {
+                "width": {
+                    "type": "integer",
+                    "minimum": 1.0
+                },
+                "height": {
+                    "type": "integer",
+                    "minimum": 1.0
+                }
+            },
+            "required": [
+                "width",
+                "height"
+            ],
+            "additionalProperties": false
+        },
+        "pageSize": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/presetPageSize"
+                },
+                {
+                    "$ref": "#/$defs/customPageSize"
+                }
+            ],
+            "title": "PageSize"
         },
         "spacingConfig": {
             "type": "object",
@@ -183,9 +139,127 @@
             },
             "additionalProperties": false
         },
-        "blockConfig": {
+        "align": {
+            "type": "string",
+            "title": "Align",
+            "enum": [
+                "left",
+                "center",
+                "right"
+            ]
+        },
+        "pageNumbersConfig": {
             "type": "object",
-            "title": "BlockConfig",
+            "title": "PageNumbersConfig",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "position": {
+                    "$ref": "#/$defs/align"
+                }
+            },
+            "additionalProperties": false
+        },
+        "pageBackgroundType": {
+            "type": "string",
+            "title": "PageBackgroundType",
+            "enum": [
+                "auto",
+                "image",
+                "pdf"
+            ]
+        },
+        "pageBackgroundConfig": {
+            "type": "object",
+            "title": "PageBackgroundConfig",
+            "properties": {
+                "src": {
+                    "type": "string",
+                    "description": "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
+                    "minLength": 1
+                },
+                "type": {
+                    "$ref": "#/$defs/pageBackgroundType"
+                }
+            },
+            "required": [
+                "src"
+            ],
+            "additionalProperties": false
+        },
+        "typographyConfig": {
+            "type": "object",
+            "title": "TypographyConfig",
+            "properties": {
+                "family": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Bundled or external font family key."
+                },
+                "size": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Font size in points.",
+                    "minimum": 1.0
+                },
+                "weight": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Font weight; one of the FontWeight enum values.",
+                    "enum": [
+                        "300",
+                        "400",
+                        "500",
+                        "600",
+                        "700",
+                        null
+                    ]
+                },
+                "align": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Text alignment for this typography scope.",
+                    "enum": [
+                        "left",
+                        "center",
+                        "right",
+                        null
+                    ]
+                },
+                "color": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "CSS color value used for text."
+                }
+            },
+            "additionalProperties": false
+        },
+        "dividerStyle": {
+            "type": "string",
+            "title": "DividerStyle",
+            "enum": [
+                "solid",
+                "dashed",
+                "dotted",
+                "double",
+                "none"
+            ]
+        },
+        "dividerConfig": {
+            "type": "object",
+            "title": "DividerConfig",
             "properties": {
                 "typography": {
                     "oneOf": [
@@ -226,10 +300,47 @@
                         "right",
                         null
                     ]
+                },
+                "thickness": {
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0.0
+                },
+                "lineColor": {
+                    "type": "string",
+                    "pattern": "^#[0-9A-Fa-f]{3,8}$",
+                    "default": "#d1d5db"
+                },
+                "style": {
+                    "$ref": "#/$defs/dividerStyle"
                 }
             },
             "additionalProperties": false,
-            "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
+            "tsType": "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }"
+        },
+        "dividerBlock": {
+            "type": "object",
+            "title": "DividerBlock",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "divider"
+                },
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Stable block identifier used for runtime data overrides."
+                },
+                "config": {
+                    "$ref": "#/$defs/dividerConfig"
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
         },
         "headingConfig": {
             "type": "object",
@@ -285,6 +396,110 @@
             "additionalProperties": false,
             "tsType": "BlockConfig & { level?: number }"
         },
+        "headingBlock": {
+            "type": "object",
+            "title": "HeadingBlock",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "heading"
+                },
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Stable block identifier used for runtime data overrides."
+                },
+                "text": {
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/headingConfig"
+                }
+            },
+            "required": [
+                "type",
+                "text"
+            ],
+            "additionalProperties": false
+        },
+        "blockConfig": {
+            "type": "object",
+            "title": "BlockConfig",
+            "properties": {
+                "typography": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/$defs/typographyConfig"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "spacing": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/$defs/spacingConfig"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "width": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                },
+                "align": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Horizontal placement of this block within its row cell.",
+                    "enum": [
+                        "left",
+                        "center",
+                        "right",
+                        null
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
+        },
+        "htmlBlock": {
+            "type": "object",
+            "title": "HtmlBlock",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "html"
+                },
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Stable block identifier used for runtime data overrides."
+                },
+                "html": {
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            },
+            "required": [
+                "type",
+                "html"
+            ],
+            "additionalProperties": false
+        },
         "imageConfig": {
             "type": "object",
             "title": "ImageConfig",
@@ -337,6 +552,40 @@
             },
             "additionalProperties": false,
             "tsType": "BlockConfig & { maxHeight?: number }"
+        },
+        "imageBlock": {
+            "type": "object",
+            "title": "ImageBlock",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "image"
+                },
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Stable block identifier used for runtime data overrides."
+                },
+                "src": {
+                    "type": "string",
+                    "description": "Public image URL, SVG markup, or uploaded image data URL."
+                },
+                "alt": {
+                    "type": "string",
+                    "description": "Alternative text for screen readers and PDF accessibility.",
+                    "default": ""
+                },
+                "config": {
+                    "$ref": "#/$defs/imageConfig"
+                }
+            },
+            "required": [
+                "type",
+                "src"
+            ],
+            "additionalProperties": false
         },
         "keyValueField": {
             "type": "object",
@@ -415,6 +664,44 @@
             "additionalProperties": false,
             "tsType": "BlockConfig & { labelWidth?: string; fields?: KeyValueField[] }"
         },
+        "keyValueBlock": {
+            "type": "object",
+            "title": "KeyValueBlock",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "key-value"
+                },
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Stable block identifier used for runtime data overrides."
+                },
+                "values": {
+                    "type": "object",
+                    "title": "KeyValueValues",
+                    "propertyNames": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "config": {
+                    "$ref": "#/$defs/keyValueConfig"
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
         "spacerConfig": {
             "type": "object",
             "title": "SpacerConfig",
@@ -468,66 +755,29 @@
             "additionalProperties": false,
             "tsType": "BlockConfig & { height?: number }"
         },
-        "dividerConfig": {
+        "spacerBlock": {
             "type": "object",
-            "title": "DividerConfig",
+            "title": "SpacerBlock",
             "properties": {
-                "typography": {
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/typographyConfig"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "spacing": {
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/spacingConfig"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "width": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "CSS width for this block, such as 50%, 80mm, or auto."
-                },
-                "align": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Horizontal placement of this block within its row cell.",
-                    "enum": [
-                        "left",
-                        "center",
-                        "right",
-                        null
-                    ]
-                },
-                "thickness": {
-                    "type": "integer",
-                    "default": 1,
-                    "minimum": 0.0
-                },
-                "lineColor": {
+                "type": {
                     "type": "string",
-                    "default": "#d1d5db",
-                    "pattern": "^#[0-9A-Fa-f]{3,8}$"
+                    "const": "spacer"
                 },
-                "style": {
-                    "$ref": "#/$defs/dividerStyle"
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Stable block identifier used for runtime data overrides."
+                },
+                "config": {
+                    "$ref": "#/$defs/spacerConfig"
                 }
             },
-            "additionalProperties": false,
-            "tsType": "BlockConfig & { thickness?: number; lineColor?: string; style?: DividerStyle }"
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
         },
         "tableColumn": {
             "type": "object",
@@ -568,6 +818,15 @@
                 "label"
             ],
             "additionalProperties": false
+        },
+        "tableStyle": {
+            "type": "string",
+            "title": "TableStyle",
+            "enum": [
+                "striped",
+                "bordered",
+                "minimal"
+            ]
         },
         "tableConfig": {
             "type": "object",
@@ -630,6 +889,30 @@
             "additionalProperties": false,
             "tsType": "BlockConfig & { numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle }"
         },
+        "tableBlock": {
+            "type": "object",
+            "title": "TableBlock",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "table"
+                },
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Stable block identifier used for runtime data overrides."
+                },
+                "config": {
+                    "$ref": "#/$defs/tableConfig"
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
         "textBlock": {
             "type": "object",
             "title": "TextBlock",
@@ -655,206 +938,6 @@
             "required": [
                 "type",
                 "text"
-            ],
-            "additionalProperties": false
-        },
-        "htmlBlock": {
-            "type": "object",
-            "title": "HtmlBlock",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "html"
-                },
-                "id": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Stable block identifier used for runtime data overrides."
-                },
-                "html": {
-                    "type": "string"
-                },
-                "config": {
-                    "$ref": "#/$defs/blockConfig"
-                }
-            },
-            "required": [
-                "type",
-                "html"
-            ],
-            "additionalProperties": false
-        },
-        "headingBlock": {
-            "type": "object",
-            "title": "HeadingBlock",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "heading"
-                },
-                "id": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Stable block identifier used for runtime data overrides."
-                },
-                "text": {
-                    "type": "string"
-                },
-                "config": {
-                    "$ref": "#/$defs/headingConfig"
-                }
-            },
-            "required": [
-                "type",
-                "text"
-            ],
-            "additionalProperties": false
-        },
-        "imageBlock": {
-            "type": "object",
-            "title": "ImageBlock",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "image"
-                },
-                "id": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Stable block identifier used for runtime data overrides."
-                },
-                "src": {
-                    "type": "string",
-                    "description": "Public image URL, SVG markup, or uploaded image data URL."
-                },
-                "alt": {
-                    "type": "string",
-                    "description": "Alternative text for screen readers and PDF accessibility.",
-                    "default": ""
-                },
-                "config": {
-                    "$ref": "#/$defs/imageConfig"
-                }
-            },
-            "required": [
-                "type",
-                "src"
-            ],
-            "additionalProperties": false
-        },
-        "keyValueBlock": {
-            "type": "object",
-            "title": "KeyValueBlock",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "key-value"
-                },
-                "id": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Stable block identifier used for runtime data overrides."
-                },
-                "values": {
-                    "type": "object",
-                    "title": "KeyValueValues",
-                    "propertyNames": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
-                    },
-                    "additionalProperties": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                },
-                "config": {
-                    "$ref": "#/$defs/keyValueConfig"
-                }
-            },
-            "required": [
-                "type"
-            ],
-            "additionalProperties": false
-        },
-        "spacerBlock": {
-            "type": "object",
-            "title": "SpacerBlock",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "spacer"
-                },
-                "id": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Stable block identifier used for runtime data overrides."
-                },
-                "config": {
-                    "$ref": "#/$defs/spacerConfig"
-                }
-            },
-            "required": [
-                "type"
-            ],
-            "additionalProperties": false
-        },
-        "dividerBlock": {
-            "type": "object",
-            "title": "DividerBlock",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "divider"
-                },
-                "id": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Stable block identifier used for runtime data overrides."
-                },
-                "config": {
-                    "$ref": "#/$defs/dividerConfig"
-                }
-            },
-            "required": [
-                "type"
-            ],
-            "additionalProperties": false
-        },
-        "tableBlock": {
-            "type": "object",
-            "title": "TableBlock",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "table"
-                },
-                "id": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Stable block identifier used for runtime data overrides."
-                },
-                "config": {
-                    "$ref": "#/$defs/tableConfig"
-                }
-            },
-            "required": [
-                "type"
             ],
             "additionalProperties": false
         },
@@ -899,81 +982,6 @@
             },
             "required": [
                 "blocks"
-            ],
-            "additionalProperties": false
-        },
-        "presetPageSize": {
-            "type": "object",
-            "title": "PresetPageSize",
-            "properties": {
-                "format": {
-                    "$ref": "#/$defs/pageFormat"
-                },
-                "orientation": {
-                    "$ref": "#/$defs/orientation"
-                }
-            },
-            "additionalProperties": false
-        },
-        "customPageSize": {
-            "type": "object",
-            "title": "CustomPageSize",
-            "properties": {
-                "width": {
-                    "type": "integer",
-                    "minimum": 1.0
-                },
-                "height": {
-                    "type": "integer",
-                    "minimum": 1.0
-                }
-            },
-            "required": [
-                "width",
-                "height"
-            ],
-            "additionalProperties": false
-        },
-        "pageSize": {
-            "oneOf": [
-                {
-                    "$ref": "#/$defs/presetPageSize"
-                },
-                {
-                    "$ref": "#/$defs/customPageSize"
-                }
-            ],
-            "title": "PageSize"
-        },
-        "pageNumbersConfig": {
-            "type": "object",
-            "title": "PageNumbersConfig",
-            "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "position": {
-                    "$ref": "#/$defs/align"
-                }
-            },
-            "additionalProperties": false
-        },
-        "pageBackgroundConfig": {
-            "type": "object",
-            "title": "PageBackgroundConfig",
-            "properties": {
-                "src": {
-                    "type": "string",
-                    "description": "HTTP, HTTPS, or base64 data URI for an image or PDF page background.",
-                    "minLength": 1
-                },
-                "type": {
-                    "$ref": "#/$defs/pageBackgroundType"
-                }
-            },
-            "required": [
-                "src"
             ],
             "additionalProperties": false
         },
@@ -1051,8 +1059,9 @@
                     "type": "string"
                 },
                 "weight": {
-                    "type": "integer",
-                    "default": 400
+                    "type": "string",
+                    "description": "One or more whitespace-separated FontWeight values, e.g. \"400\" or \"400 700\".",
+                    "default": "400"
                 },
                 "style": {
                     "type": "string",
@@ -1095,6 +1104,17 @@
                 "content"
             ],
             "additionalProperties": false
+        },
+        "fontWeight": {
+            "type": "string",
+            "title": "FontWeight",
+            "enum": [
+                "300",
+                "400",
+                "500",
+                "600",
+                "700"
+            ]
         }
     },
     "x-pdfUa": {
