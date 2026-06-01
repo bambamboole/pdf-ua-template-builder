@@ -10,7 +10,7 @@ import {
 } from "react";
 import { resolveDefaultApiUrl } from "../api/pdfUaApi";
 import type { Template } from "../types/generated/template";
-import type { TemplateData } from "../types/template";
+import type { TemplateData, TemplateSchemaResponse } from "../types/template";
 import { RenderProvider, type RenderContextValue } from "../render/RenderContext";
 import { usePdfUaApi } from "../render/usePdfUaApi";
 import { parseTemplate } from "./parseTemplate";
@@ -30,6 +30,8 @@ export interface TemplateEditorContextValue {
   template: Template | null;
   error: string | null;
   data: TemplateData;
+  /** Validation schema fetched from the backend `/schema`; null until it loads. */
+  schema: TemplateSchemaResponse | null;
 }
 
 const emptyTemplate: Template = { version: 1 };
@@ -76,11 +78,12 @@ export function TemplateEditorProvider({
   }, [text, template]);
 
   const {
+    schema,
     pdfUrl,
     pdfLoading,
     error: renderError,
     renderPdf: renderPdfRequest,
-  } = usePdfUaApi({ initialApiUrl: apiUrl, apiUrl, onRendered, loadSchemaOnMount: false });
+  } = usePdfUaApi({ initialApiUrl: apiUrl, apiUrl, onRendered });
 
   const templateRef = useRef(template);
   templateRef.current = template;
@@ -94,8 +97,8 @@ export function TemplateEditorProvider({
   }, [renderPdfRequest]);
 
   const editorValue = useMemo<TemplateEditorContextValue>(
-    () => ({ text, setText, template, error, data }),
-    [text, template, error, data],
+    () => ({ text, setText, template, error, data, schema }),
+    [text, template, error, data, schema],
   );
 
   const renderValue = useMemo<RenderContextValue>(
