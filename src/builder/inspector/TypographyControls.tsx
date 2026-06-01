@@ -1,9 +1,18 @@
 import type { ReactNode } from "react";
-import type { Block, Template, TypographyConfig } from "../../types/generated/template";
+import type { Block, FontWeight, Template, TypographyConfig } from "../../types/generated/template";
 import type { TemplateSchemaMetadata } from "../../types/template";
-import { ColorField, NumberField, SelectField } from "../controls";
+import { ColorField, NumberField, SelectField, type SelectFieldOption } from "../controls";
 import { setBlockTypographyField, setTemplateTypographyField } from "../state/configUpdates";
 import { ALIGN_OPTIONS } from "./alignOptions";
+
+// Backend FontWeight enum (1.x): weight is a string token, not a numeric value.
+const WEIGHT_OPTIONS = [
+  { value: "300", label: "300 · Light" },
+  { value: "400", label: "400 · Regular" },
+  { value: "500", label: "500 · Medium" },
+  { value: "600", label: "600 · Semibold" },
+  { value: "700", label: "700 · Bold" },
+] as const satisfies readonly SelectFieldOption<FontWeight>[];
 
 interface TypographyControlsBaseProps {
   metadata?: Pick<TemplateSchemaMetadata, "bundledFonts">;
@@ -74,13 +83,13 @@ export function TypographyControls(props: TypographyControlsProps): ReactNode {
           placeholder="12"
           onChange={(value) => handleChange("size", value)}
         />
-        <NumberField
+        <SelectField
           name={`${namePrefix}.weight`}
           label="Weight"
           value={typography?.weight ?? undefined}
-          min={1}
-          step={1}
-          placeholder="400"
+          options={WEIGHT_OPTIONS}
+          optional
+          emptyLabel="Default"
           onChange={(value) => handleChange("weight", value)}
         />
         <ColorField

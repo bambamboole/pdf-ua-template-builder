@@ -65,11 +65,6 @@ export type DividerConfig = BlockConfig & {thickness?: number; lineColor?: strin
 export type TableConfig = BlockConfig & {numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "align".
- */
-export type Align = "left" | "center" | "right";
-/**
- * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageFormat".
  */
 export type PageFormat = "A3" | "A4" | "A5" | "A6" | "Letter" | "Legal" | "Tabloid";
@@ -80,14 +75,14 @@ export type PageFormat = "A3" | "A4" | "A5" | "A6" | "Letter" | "Legal" | "Tablo
 export type Orientation = "portrait" | "landscape";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "dividerStyle".
+ * via the `definition` "pageSize".
  */
-export type DividerStyle = "solid" | "dashed" | "dotted" | "double" | "none";
+export type PageSize = PresetPageSize | CustomPageSize;
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "tableStyle".
+ * via the `definition` "align".
  */
-export type TableStyle = "striped" | "bordered" | "minimal";
+export type Align = "left" | "center" | "right";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageBackgroundType".
@@ -95,14 +90,19 @@ export type TableStyle = "striped" | "bordered" | "minimal";
 export type PageBackgroundType = "auto" | "image" | "pdf";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "dividerStyle".
+ */
+export type DividerStyle = "solid" | "dashed" | "dotted" | "double" | "none";
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "keyValueField".
  */
 export type KeyValueField = {key: string; label: string};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "pageSize".
+ * via the `definition` "tableStyle".
  */
-export type PageSize = PresetPageSize | CustomPageSize;
+export type TableStyle = "striped" | "bordered" | "minimal";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageFooterConfig".
@@ -120,6 +120,11 @@ export type PageConfig = {
   background?: PageBackgroundConfig | null;
   footer?: PageFooterConfig;
 };
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "fontWeight".
+ */
+export type FontWeight = "300" | "400" | "500" | "600" | "700";
 
 export interface Template {
   version: 1;
@@ -139,7 +144,10 @@ export interface Template {
  */
 export interface FontFace {
   src: string;
-  weight?: number;
+  /**
+   * One or more whitespace-separated FontWeight values, e.g. "400" or "400 700".
+   */
+  weight?: string;
   style?: string;
 }
 /**
@@ -276,29 +284,19 @@ export interface TableBlock {
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "typographyConfig".
+ * via the `definition` "presetPageSize".
  */
-export interface TypographyConfig {
-  /**
-   * Bundled or external font family key.
-   */
-  family?: string | null;
-  /**
-   * Font size in points.
-   */
-  size?: number | null;
-  /**
-   * Numeric font weight.
-   */
-  weight?: number | null;
-  /**
-   * Text alignment for this typography scope.
-   */
-  align?: "left" | "center" | "right" | null;
-  /**
-   * CSS color value used for text.
-   */
-  color?: string | null;
+export interface PresetPageSize {
+  format?: PageFormat;
+  orientation?: Orientation;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "customPageSize".
+ */
+export interface CustomPageSize {
+  width: number;
+  height: number;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
@@ -324,6 +322,51 @@ export interface SpacingConfig {
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "pageNumbersConfig".
+ */
+export interface PageNumbersConfig {
+  enabled?: boolean;
+  position?: Align;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "pageBackgroundConfig".
+ */
+export interface PageBackgroundConfig {
+  /**
+   * HTTP, HTTPS, or base64 data URI for an image or PDF page background.
+   */
+  src: string;
+  type?: PageBackgroundType;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "typographyConfig".
+ */
+export interface TypographyConfig {
+  /**
+   * Bundled or external font family key.
+   */
+  family?: string | null;
+  /**
+   * Font size in points.
+   */
+  size?: number | null;
+  /**
+   * Font weight; one of the FontWeight enum values.
+   */
+  weight?: "300" | "400" | "500" | "600" | "700" | null;
+  /**
+   * Text alignment for this typography scope.
+   */
+  align?: "left" | "center" | "right" | null;
+  /**
+   * CSS color value used for text.
+   */
+  color?: string | null;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "tableColumn".
  */
 export interface TableColumn {
@@ -343,39 +386,4 @@ export interface TableColumn {
    * Column width as a CSS width value, such as 20mm or 15%.
    */
   width?: string | null;
-}
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "presetPageSize".
- */
-export interface PresetPageSize {
-  format?: PageFormat;
-  orientation?: Orientation;
-}
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "customPageSize".
- */
-export interface CustomPageSize {
-  width: number;
-  height: number;
-}
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "pageNumbersConfig".
- */
-export interface PageNumbersConfig {
-  enabled?: boolean;
-  position?: Align;
-}
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "pageBackgroundConfig".
- */
-export interface PageBackgroundConfig {
-  /**
-   * HTTP, HTTPS, or base64 data URI for an image or PDF page background.
-   */
-  src: string;
-  type?: PageBackgroundType;
 }

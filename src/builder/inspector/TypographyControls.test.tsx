@@ -28,7 +28,7 @@ describe("TypographyControls", () => {
             typography: {
               family: "Inter",
               size: 14,
-              weight: 700,
+              weight: "700",
               align: "center",
               color: "#112233",
             },
@@ -41,7 +41,7 @@ describe("TypographyControls", () => {
 
     expect(screen.getByLabelText("Family")).toHaveValue("Inter");
     expect(screen.getByLabelText("Size")).toHaveValue(14);
-    expect(screen.getByLabelText("Weight")).toHaveValue(700);
+    expect(screen.getByLabelText("Weight")).toHaveValue("700");
     expect(screen.getByLabelText("Align")).toHaveValue("center");
     expect(screen.getByLabelText("Color")).toHaveValue("#112233");
   });
