@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchTemplateSchema, renderTemplatePreview } from "../api/pdfUaApi";
+import { errorMessage, revokeObjectUrl } from "../lib/preview";
 import type { Template } from "../types/generated/template";
 import type { PdfValidationResponse, TemplateData, TemplateSchemaResponse } from "../types/template";
 
@@ -121,14 +122,4 @@ export function usePdfUaApi({
   );
 
   return { schema, schemaLoading, pdfUrl, validation, pdfLoading, error, loadSchema, renderPdf };
-}
-
-function revokeObjectUrl(url: string | null): void {
-  if (url) {
-    URL.revokeObjectURL(url);
-  }
-}
-
-function errorMessage(cause: unknown): string {
-  return cause instanceof Error ? cause.message : String(cause);
 }

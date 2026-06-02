@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { renderHtmlPreview } from "../api/pdfUaApi";
+import { errorMessage, revokeObjectUrl } from "../lib/preview";
 import type { PdfValidationResponse } from "../types/template";
 
 interface UseHtmlPreviewOptions {
@@ -75,14 +76,4 @@ export function useHtmlPreview({ apiUrl, baseUrl, onRendered }: UseHtmlPreviewOp
   );
 
   return { pdfUrl, validation, loading, error, render };
-}
-
-function revokeObjectUrl(url: string | null): void {
-  if (url) {
-    URL.revokeObjectURL(url);
-  }
-}
-
-function errorMessage(cause: unknown): string {
-  return cause instanceof Error ? cause.message : String(cause);
 }

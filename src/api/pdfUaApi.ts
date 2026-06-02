@@ -40,6 +40,17 @@ function joinUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 }
 
+function postJson(baseUrl: string, path: string, body: unknown, accept: string): Promise<Response> {
+  return fetch(joinUrl(baseUrl, path), {
+    method: "POST",
+    headers: {
+      Accept: accept,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 async function parseError(response: Response): Promise<string> {
   const contentType = response.headers.get("content-type") ?? "";
   const fallback = `${response.status} ${response.statusText || "Request failed"}`;
@@ -114,7 +125,12 @@ export async function renderTemplatePdf(
   baseUrl: string,
   request: RenderTemplateRequest,
 ): Promise<Blob> {
-  const response = await postTemplateRender(baseUrl, request, "application/pdf, application/json;q=0.1");
+  const response = await postJson(
+    baseUrl,
+    "/render/template",
+    { template: request.template, data: request.data ?? {} },
+    "application/pdf, application/json;q=0.1",
+  );
 
   if (!response.ok) {
     throw new Error(await parseError(response));
@@ -127,7 +143,12 @@ export async function renderTemplatePreview(
   baseUrl: string,
   request: RenderTemplateRequest,
 ): Promise<RenderedPdfPreview> {
-  const response = await postTemplateRender(baseUrl, request, "application/json");
+  const response = await postJson(
+    baseUrl,
+    "/render/template",
+    { template: request.template, data: request.data ?? {} },
+    "application/json",
+  );
 
   if (!response.ok) {
     throw new Error(await parseError(response));
@@ -136,36 +157,11 @@ export async function renderTemplatePreview(
   return parsePreviewResponse(response);
 }
 
-function postTemplateRender(
-  baseUrl: string,
-  request: RenderTemplateRequest,
-  accept: string,
-): Promise<Response> {
-  return fetch(joinUrl(baseUrl, "/render/template"), {
-    method: "POST",
-    headers: {
-      Accept: accept,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      template: request.template,
-      data: request.data ?? {},
-    }),
-  });
-}
-
 export async function renderHtmlPdf(
   baseUrl: string,
   request: ConvertHtmlRequest,
 ): Promise<Blob> {
-  const response = await fetch(joinUrl(baseUrl, "/render/html"), {
-    method: "POST",
-    headers: {
-      Accept: "application/pdf",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(request),
-  });
+  const response = await postJson(baseUrl, "/render/html", request, "application/pdf");
 
   if (!response.ok) {
     throw new Error(await parseError(response));
@@ -178,14 +174,7 @@ export async function renderHtmlPreview(
   baseUrl: string,
   request: ConvertHtmlRequest,
 ): Promise<RenderedPdfPreview> {
-  const response = await fetch(joinUrl(baseUrl, "/render/html"), {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(request),
-  });
+  const response = await postJson(baseUrl, "/render/html", request, "application/json");
 
   if (!response.ok) {
     throw new Error(await parseError(response));
