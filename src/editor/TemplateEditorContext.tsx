@@ -78,6 +78,7 @@ export function TemplateEditorProvider({
   const {
     schema,
     pdfUrl,
+    validation,
     pdfLoading,
     error: renderError,
     renderPdf: renderPdfRequest,
@@ -104,12 +105,13 @@ export function TemplateEditorProvider({
       template,
       data,
       pdfUrl,
+      validation,
       pdfLoading,
       error: renderError,
       renderPdf,
       renderDisabled: template === null || pdfLoading,
     }),
-    [template, data, pdfUrl, pdfLoading, renderError, renderPdf],
+    [template, data, pdfUrl, validation, pdfLoading, renderError, renderPdf],
   );
 
   return (

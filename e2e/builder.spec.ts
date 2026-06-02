@@ -87,4 +87,7 @@ test("renders a PDF through the backend", async ({ page }) => {
 
   await expect(outputPane(page).getByText("Ready")).toBeVisible({ timeout: 60_000 });
   await expect(pdfObject(page)).toHaveAttribute("data", /^blob:/);
+
+  await outputPane(page).getByRole("tab", { name: "Validation" }).click();
+  await expect(outputPane(page).getByText(/checks passed/)).toBeVisible();
 });

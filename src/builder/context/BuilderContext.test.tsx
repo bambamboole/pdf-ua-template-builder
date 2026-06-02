@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TemplateSchemaResponse } from "../../types/template";
-import { fetchTemplateSchema, renderTemplatePdf } from "../../api/pdfUaApi";
+import { fetchTemplateSchema, renderTemplatePreview } from "../../api/pdfUaApi";
 import { TemplateBuilderProvider, useTemplateBuilder } from "./BuilderContext";
 
 vi.mock("../../api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn(),
-  renderTemplatePdf: vi.fn(),
+  renderTemplatePreview: vi.fn(),
   resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
 }));
 
@@ -52,7 +52,7 @@ describe("TemplateBuilderProvider", () => {
   beforeEach(() => {
     mockFetchSchema.mockReset();
     mockFetchSchema.mockResolvedValue(builderSchema);
-    vi.mocked(renderTemplatePdf).mockReset();
+    vi.mocked(renderTemplatePreview).mockReset();
     URL.createObjectURL = vi.fn(() => "blob:mock-pdf");
     URL.revokeObjectURL = vi.fn();
   });

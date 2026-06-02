@@ -32,4 +32,55 @@ describe("PdfPane", () => {
 
     expect(onRender).toHaveBeenCalledTimes(1);
   });
+
+  it("shows validation results in the validation tab", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <PdfPane
+        pdfUrl="blob:http://localhost:5174/test"
+        validation={validation}
+        error={null}
+        loading={false}
+      />,
+    );
+
+    expect(screen.queryByRole("tab", { name: "Data" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: "Validation" }));
+
+    expect(screen.getByText("Issues found")).toBeInTheDocument();
+    expect(screen.getByText("42 of 45 checks passed")).toBeInTheDocument();
+    expect(screen.getByText("Alt text is missing")).toBeInTheDocument();
+  });
 });
+
+const validation = {
+  isCompliant: false,
+  profiles: [
+    {
+      profile: "PDF/UA-1",
+      specification: "ISO 14289-1",
+      isCompliant: false,
+      totalChecks: 45,
+      passedChecks: 42,
+      failedChecks: 3,
+    },
+  ],
+  summary: {
+    totalChecks: 45,
+    passedChecks: 42,
+    failedChecks: 3,
+    categories: [{ category: "Images", passedChecks: 4, failedChecks: 1 }],
+  },
+  failures: [
+    {
+      profile: "PDF/UA-1",
+      clause: "7.18.1",
+      testNumber: 1,
+      category: "Images",
+      message: "Alt text is missing",
+      location: "page=1",
+    },
+  ],
+};

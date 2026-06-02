@@ -15,6 +15,74 @@ export interface JsonSchemaObject {
   [key: string]: unknown;
 }
 
+export interface PdfValidationProfile {
+  profile: string;
+  specification: string;
+  isCompliant: boolean;
+  totalChecks: number;
+  passedChecks: number;
+  failedChecks: number;
+}
+
+export interface PdfValidationCategory {
+  category: string;
+  passedChecks: number;
+  failedChecks: number;
+}
+
+export interface PdfValidationSummary {
+  totalChecks: number;
+  passedChecks: number;
+  failedChecks: number;
+  categories?: PdfValidationCategory[];
+}
+
+export interface PdfValidationFailure {
+  profile: string;
+  clause: string;
+  testNumber: number;
+  category: string;
+  message: string;
+  location?: string | null;
+  errorDetails?: string | null;
+}
+
+export interface PdfDocumentInfo {
+  pages: number;
+  tagged: boolean;
+  language?: string | null;
+  structureElements: number;
+  fonts: Array<{
+    name: string;
+    embedded: boolean;
+    type: string;
+  }>;
+  images: number;
+}
+
+export interface PdfMetadata {
+  title?: string | null;
+  subject?: string | null;
+  author?: string | null;
+  creator?: string | null;
+  producer?: string | null;
+  creationDate?: string | null;
+}
+
+export interface PdfValidationResponse {
+  isCompliant: boolean;
+  profiles: PdfValidationProfile[];
+  summary: PdfValidationSummary;
+  documentInfo?: PdfDocumentInfo | null;
+  failures?: PdfValidationFailure[];
+  metadata?: PdfMetadata | null;
+}
+
+export interface RenderedPdfPreview {
+  pdf: Blob;
+  validation: PdfValidationResponse;
+}
+
 export interface TemplatePageFormat {
   name: string;
   widthMm: number;

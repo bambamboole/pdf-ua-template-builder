@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { renderHtmlPdf } from "../api/pdfUaApi";
+import { renderHtmlPreview } from "../api/pdfUaApi";
+import type { PdfValidationResponse } from "../types/template";
 
 interface UseHtmlPreviewOptions {
   apiUrl: string;
@@ -9,6 +10,7 @@ interface UseHtmlPreviewOptions {
 
 interface HtmlPreview {
   pdfUrl: string | null;
+  validation: PdfValidationResponse | null;
   loading: boolean;
   error: string | null;
   render: (html: string) => Promise<void>;
@@ -16,6 +18,7 @@ interface HtmlPreview {
 
 export function useHtmlPreview({ apiUrl, baseUrl, onRendered }: UseHtmlPreviewOptions): HtmlPreview {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [validation, setValidation] = useState<PdfValidationResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,10 +43,11 @@ export function useHtmlPreview({ apiUrl, baseUrl, onRendered }: UseHtmlPreviewOp
       renderRequestId.current = requestId;
       setLoading(true);
       setError(null);
+      setValidation(null);
 
       try {
-        const pdf = await renderHtmlPdf(apiUrl, { html, baseUrl });
-        const nextPdfUrl = URL.createObjectURL(pdf);
+        const result = await renderHtmlPreview(apiUrl, { html, baseUrl });
+        const nextPdfUrl = URL.createObjectURL(result.pdf);
 
         if (requestId !== renderRequestId.current) {
           revokeObjectUrl(nextPdfUrl);
@@ -55,7 +59,8 @@ export function useHtmlPreview({ apiUrl, baseUrl, onRendered }: UseHtmlPreviewOp
           pdfUrlRef.current = nextPdfUrl;
           return nextPdfUrl;
         });
-        onRenderedRef.current?.(pdf);
+        setValidation(result.validation);
+        onRenderedRef.current?.(result.pdf);
       } catch (cause) {
         if (requestId === renderRequestId.current) {
           setError(errorMessage(cause));
@@ -69,7 +74,7 @@ export function useHtmlPreview({ apiUrl, baseUrl, onRendered }: UseHtmlPreviewOp
     [apiUrl, baseUrl],
   );
 
-  return { pdfUrl, loading, error, render };
+  return { pdfUrl, validation, loading, error, render };
 }
 
 function revokeObjectUrl(url: string | null): void {

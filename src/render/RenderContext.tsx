@@ -1,11 +1,12 @@
 import { createContext, useContext, type ReactNode } from "react";
 import type { Template } from "../types/generated/template";
-import type { TemplateData } from "../types/template";
+import type { PdfValidationResponse, TemplateData } from "../types/template";
 
 export interface RenderContextValue {
   template: Template | null;
   data: TemplateData;
   pdfUrl: string | null;
+  validation: PdfValidationResponse | null;
   pdfLoading: boolean;
   error: string | null;
   renderPdf: () => void;
