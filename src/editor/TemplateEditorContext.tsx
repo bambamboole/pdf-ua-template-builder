@@ -30,11 +30,11 @@ export interface TemplateEditorContextValue {
   template: Template | null;
   error: string | null;
   data: TemplateData;
-  /** Validation schema fetched from the backend `/schema`; null until it loads. */
+  /** Validation schema extracted from backend OpenAPI; null until it loads. */
   schema: TemplateSchemaResponse | null;
 }
 
-const emptyTemplate: Template = { version: 1 };
+const emptyTemplate: Template = { version: 2 };
 const emptyData: TemplateData = {};
 
 const TemplateEditorContext = createContext<TemplateEditorContextValue | null>(null);
@@ -58,9 +58,7 @@ export function TemplateEditorProvider({
   children,
 }: TemplateEditorProviderProps) {
   const apiUrl = resolveDefaultApiUrl(apiUrlProp);
-  const [text, setText] = useState(() =>
-    JSON.stringify(initialTemplate ?? emptyTemplate, null, 2),
-  );
+  const [text, setText] = useState(() => JSON.stringify(initialTemplate ?? emptyTemplate, null, 2));
 
   const { template, error } = useMemo(() => parseTemplate(text), [text]);
 

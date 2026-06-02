@@ -34,7 +34,7 @@ const builderSchema = {
   },
   "x-pdfUa": {
     kind: "template",
-    templateVersion: 1,
+    templateVersion: 2,
     renderEndpoint: "/render/template",
     templateFields: [],
     attachmentFields: [],
@@ -63,9 +63,7 @@ describe("TemplateBuilder", () => {
     expect(mockFetchSchema).toHaveBeenCalledWith("");
     expect(screen.getByRole("button", { name: "Load example" })).toBeDisabled();
 
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Load example" })).toBeEnabled(),
-    );
+    await waitFor(() => expect(screen.getByRole("button", { name: "Load example" })).toBeEnabled());
   });
 
   it("surfaces a schema load failure", async () => {
@@ -96,9 +94,8 @@ describe("TemplateBuilder", () => {
     expect(mockRenderPdf).toHaveBeenCalledWith(
       "",
       expect.objectContaining({
-        template: expect.objectContaining({ version: 1 }),
+        template: expect.objectContaining({ version: 2 }),
         data: {},
-        options: { title: "Template Preview" },
       }),
     );
     await waitFor(() => expect(onRendered).toHaveBeenCalledWith(pdf));

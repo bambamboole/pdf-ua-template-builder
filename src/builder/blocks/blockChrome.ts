@@ -30,24 +30,22 @@ export function getBlockSummary(block: Block): string {
     case "image":
       return truncate(block.alt ?? block.src);
     case "key-value": {
-      const fields = block.config?.fields ?? [];
+      const fields = block.fields ?? [];
 
       return fields.length > 0 ? `${fields.length} field${fields.length === 1 ? "" : "s"}` : "";
     }
     case "table": {
-      const columns = block.config?.columns ?? [];
+      const columns = block.columns ?? [];
 
-      return columns.length > 0
-        ? `${columns.length} column${columns.length === 1 ? "" : "s"}`
-        : "";
+      return columns.length > 0 ? `${columns.length} column${columns.length === 1 ? "" : "s"}` : "";
     }
     case "spacer": {
-      const height = block.config?.height;
+      const height = block.height;
 
-      return typeof height === "number" ? `${height}mm` : "";
+      return typeof height === "string" ? height : "";
     }
     case "divider": {
-      const style = block.config?.style;
+      const style = block.style;
 
       return typeof style === "string" ? style : "";
     }

@@ -21,7 +21,7 @@ describe("TemplateEditor", () => {
   });
 
   it("renders the editor and preview", () => {
-    render(<TemplateEditor initialTemplate={{ version: 1 }} />);
+    render(<TemplateEditor initialTemplate={{ version: 2 }} />);
 
     expect(screen.getByRole("complementary", { name: "Output" })).toBeInTheDocument();
     expect(screen.getByLabelText("Template JSON editor")).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe("TemplateEditor", () => {
 
   it("enables Render for a valid template and calls the API with the parsed template", async () => {
     const user = userEvent.setup();
-    render(<TemplateEditor apiUrl="https://example.test" initialTemplate={{ version: 1 }} />);
+    render(<TemplateEditor apiUrl="https://example.test" initialTemplate={{ version: 2 }} />);
 
     const renderButton = screen.getByRole("button", { name: "Render PDF" });
     expect(renderButton).toBeEnabled();
@@ -39,7 +39,7 @@ describe("TemplateEditor", () => {
     await waitFor(() => expect(mockRenderPdf).toHaveBeenCalledTimes(1));
     expect(mockRenderPdf).toHaveBeenCalledWith(
       "https://example.test",
-      expect.objectContaining({ template: { version: 1 }, data: {} }),
+      expect.objectContaining({ template: { version: 2 }, data: {} }),
     );
   });
 });

@@ -5,7 +5,7 @@ import { NUMBER_COLUMN_RESERVE, percentWidth } from "../../canvas/columns";
 import { isRecord, nextKeyIndex, omitKey, renameKey } from "../../lib/records";
 import { AddButton } from "../../primitives/Button";
 import { InspectorSection } from "../InspectorShell";
-import { setBlockConfigField } from "../../state/configUpdates";
+import { setBlockField } from "../../state/configUpdates";
 import type { BlockEditorProps } from "./blockEditors";
 import { SortableList } from "./SortableList";
 import { SortableRow } from "./SortableRow";
@@ -58,11 +58,7 @@ export function removeColumn(block: TableBlock, index: number): TableBlock {
   );
 }
 
-export function renameColumnKey(
-  block: TableBlock,
-  index: number,
-  nextKey: string,
-): TableBlock {
+export function renameColumnKey(block: TableBlock, index: number, nextKey: string): TableBlock {
   const columns = getColumns(block);
   const previous = columns[index];
 
@@ -82,11 +78,7 @@ export function renameColumnKey(
   );
 }
 
-export function setColumnLabel(
-  block: TableBlock,
-  index: number,
-  nextLabel: string,
-): TableBlock {
+export function setColumnLabel(block: TableBlock, index: number, nextLabel: string): TableBlock {
   const columns = getColumns(block);
 
   return applyColumns(
@@ -97,11 +89,7 @@ export function setColumnLabel(
   );
 }
 
-export function setColumnAlign(
-  block: TableBlock,
-  index: number,
-  nextAlign: string,
-): TableBlock {
+export function setColumnAlign(block: TableBlock, index: number, nextAlign: string): TableBlock {
   const columns = getColumns(block);
 
   return applyColumns(
@@ -123,9 +111,9 @@ export function setColumnAlign(
 }
 
 export function setTableNumberRows(block: TableBlock, value: boolean | undefined): TableBlock {
-  const previousOn = block.config?.numberRows === true;
+  const previousOn = block.numberRows === true;
   const nextOn = value === true;
-  const withFlag = setBlockConfigField(block, "numberRows", value);
+  const withFlag = setBlockField(block, "numberRows", value);
 
   if (previousOn === nextOn) {
     return withFlag;
@@ -185,10 +173,7 @@ export function setCellValue(
   );
 }
 
-export function removeColumnKeyFromRows(
-  rows: readonly TableRow[],
-  key: string,
-): TableRow[] {
+export function removeColumnKeyFromRows(rows: readonly TableRow[], key: string): TableRow[] {
   return rows.map((row) => omitKey(row, key));
 }
 
@@ -458,7 +443,7 @@ function dataRowKey(row: TableRow, columns: TableColumn[], index: number): strin
 }
 
 function getColumns(block: TableBlock): TableColumn[] {
-  const candidate = block.config?.columns;
+  const candidate = block.columns;
 
   return Array.isArray(candidate) ? (candidate as TableColumn[]) : [];
 }
@@ -472,22 +457,12 @@ function getRows(rowData: unknown): TableRow[] {
 }
 
 function applyColumns(block: TableBlock, columns: TableColumn[]): TableBlock {
-  const config = { ...block.config } as Record<string, unknown>;
+  const nextBlock: TableBlock = { ...block };
 
   if (columns.length === 0) {
-    delete config.columns;
+    delete nextBlock.columns;
   } else {
-    config.columns = columns;
-  }
-
-  const nextBlock: TableBlock = {
-    ...block,
-    config:
-      Object.keys(config).length === 0 ? undefined : (config as TableBlock["config"]),
-  };
-
-  if (nextBlock.config === undefined) {
-    delete (nextBlock as { config?: TableBlock["config"] }).config;
+    nextBlock.columns = columns;
   }
 
   return nextBlock;

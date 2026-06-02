@@ -10,12 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { resolveDefaultApiUrl } from "../../api/pdfUaApi";
-import type {
-  Block,
-  Orientation,
-  PageFormat,
-  Template,
-} from "../../types/generated/template";
+import type { Block, Orientation, PageFormat, Template } from "../../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
 import { getBlockSummary } from "../blocks/blockChrome";
 import { BlockCardPreview } from "../canvas/BlockCardPreview";
@@ -38,7 +33,7 @@ import { createEditorState, editorReducer } from "../state/editorReducer";
 import { getBlockTypes, type JsonSchemaObject } from "../schema/schemaAdapter";
 
 const emptyTemplate: Template = {
-  version: 1,
+  version: 2,
 };
 
 /** A loadable example: a template plus its optional runtime data. */

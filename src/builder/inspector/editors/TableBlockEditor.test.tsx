@@ -20,13 +20,11 @@ import {
 const baseBlock = {
   type: "table",
   id: "lineItems",
-  config: {
-    style: "striped",
-    columns: [
-      { key: "description", label: "Description", align: "left" },
-      { key: "quantity", label: "Qty", align: "right" },
-    ],
-  },
+  style: "striped",
+  columns: [
+    { key: "description", label: "Description", align: "left" },
+    { key: "quantity", label: "Qty", align: "right" },
+  ],
 } satisfies TableBlock;
 
 const baseRows = [
@@ -53,9 +51,7 @@ describe("TableBlockEditor render", () => {
   it("renders drag handles and ✕ remove buttons per column row", () => {
     render(<TableBlockEditor block={baseBlock} onChangeBlock={() => undefined} />);
 
-    expect(
-      screen.getByRole("button", { name: "Drag to reorder column 1" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Drag to reorder column 1" })).toBeInTheDocument();
     const removeButton = screen.getByRole("button", { name: "Remove column 1" });
     expect(removeButton).toBeInTheDocument();
     expect(removeButton).toHaveTextContent("✕");
@@ -77,12 +73,8 @@ describe("TableBlockEditor render", () => {
     expect(descriptionCells[0]).toHaveValue("Service A");
     expect(qtyCells[0]).toHaveValue("2");
     expect(descriptionCells[1]).toHaveValue("Service B");
-    expect(
-      screen.getByRole("button", { name: "Drag to reorder row 1" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Remove row 1" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Drag to reorder row 1" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove row 1" })).toBeInTheDocument();
   });
 
   it("shows a notice when the block has no id and the row editor cannot persist data", () => {
@@ -111,7 +103,7 @@ describe("TableBlockEditor column helpers", () => {
   it("addColumn appends with a sensible default key", () => {
     const next = addColumn(baseBlock);
 
-    expect(next.config?.columns).toEqual([
+    expect(next.columns).toEqual([
       { key: "description", label: "Description", align: "left" },
       { key: "quantity", label: "Qty", align: "right" },
       { key: "column3", label: "Column 3" },
@@ -121,15 +113,13 @@ describe("TableBlockEditor column helpers", () => {
   it("removeColumn drops the column from the block", () => {
     const next = removeColumn(baseBlock, 1);
 
-    expect(next.config?.columns).toEqual([
-      { key: "description", label: "Description", align: "left" },
-    ]);
+    expect(next.columns).toEqual([{ key: "description", label: "Description", align: "left" }]);
   });
 
   it("renameColumnKey updates only the key field on the block", () => {
     const next = renameColumnKey(baseBlock, 0, "item");
 
-    expect(next.config?.columns?.[0]).toEqual({ key: "item", label: "Description", align: "left" });
+    expect(next.columns?.[0]).toEqual({ key: "item", label: "Description", align: "left" });
   });
 
   it("rejects renaming a column key onto another column's key", () => {
@@ -148,37 +138,35 @@ describe("TableBlockEditor column helpers", () => {
   it("setColumnLabel updates only the label", () => {
     const next = setColumnLabel(baseBlock, 0, "Item");
 
-    expect(next.config?.columns?.[0]).toEqual({ key: "description", label: "Item", align: "left" });
+    expect(next.columns?.[0]).toEqual({ key: "description", label: "Item", align: "left" });
   });
 
   it("setColumnAlign clears the field when empty string is passed", () => {
     const next = setColumnAlign(baseBlock, 0, "");
 
-    expect(next.config?.columns?.[0]).toEqual({ key: "description", label: "Description" });
+    expect(next.columns?.[0]).toEqual({ key: "description", label: "Description" });
   });
 
   it("reserves 5% from the first column when enabling row numbers", () => {
     const block = {
       type: "table",
       id: "t",
-      config: {
-        columns: [
-          { key: "a", label: "A", width: "60%" },
-          { key: "b", label: "B", width: "40%" },
-        ],
-      },
+      columns: [
+        { key: "a", label: "A", width: "60%" },
+        { key: "b", label: "B", width: "40%" },
+      ],
     } satisfies TableBlock;
 
     const enabled = setTableNumberRows(block, true);
-    expect(enabled.config?.numberRows).toBe(true);
-    expect(enabled.config?.columns).toEqual([
+    expect(enabled.numberRows).toBe(true);
+    expect(enabled.columns).toEqual([
       { key: "a", label: "A", width: "55%" },
       { key: "b", label: "B", width: "40%" },
     ]);
 
     const disabled = setTableNumberRows(enabled, undefined);
-    expect(disabled.config?.numberRows).toBeUndefined();
-    expect(disabled.config?.columns).toEqual([
+    expect(disabled.numberRows).toBeUndefined();
+    expect(disabled.columns).toEqual([
       { key: "a", label: "A", width: "60%" },
       { key: "b", label: "B", width: "40%" },
     ]);
@@ -188,17 +176,15 @@ describe("TableBlockEditor column helpers", () => {
     const block = {
       type: "table",
       id: "t",
-      config: {
-        columns: [
-          { key: "a", label: "A" },
-          { key: "b", label: "B" },
-        ],
-      },
+      columns: [
+        { key: "a", label: "A" },
+        { key: "b", label: "B" },
+      ],
     } satisfies TableBlock;
 
     const enabled = setTableNumberRows(block, true);
-    expect(enabled.config?.numberRows).toBe(true);
-    expect(enabled.config?.columns).toEqual([
+    expect(enabled.numberRows).toBe(true);
+    expect(enabled.columns).toEqual([
       { key: "a", label: "A" },
       { key: "b", label: "B" },
     ]);
@@ -214,7 +200,7 @@ describe("TableBlockEditor row helpers", () => {
   });
 
   it("addRow appends an empty row keyed by the columns", () => {
-    expect(addRow(baseRows, baseBlock.config.columns)).toEqual([
+    expect(addRow(baseRows, baseBlock.columns)).toEqual([
       ...baseRows,
       { description: "", quantity: "" },
     ]);

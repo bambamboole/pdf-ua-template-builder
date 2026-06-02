@@ -12,9 +12,9 @@ export interface CodeEditorProps {
 export function CodeEditor({ className }: CodeEditorProps = {}) {
   const { text, setText, schema } = useTemplateEditor();
 
-  // The schema is fetched from the backend `/schema` at runtime; until it arrives the
-  // editor runs without schema validation/completion. ReactCodeMirror reconfigures when
-  // this array's identity changes, so the schema extension activates as soon as it loads.
+  // The Template schema is extracted from backend OpenAPI at runtime; until it arrives
+  // the editor runs without schema validation/completion. ReactCodeMirror reconfigures
+  // when this array's identity changes, so the schema extension activates as soon as it loads.
   const extensions = useMemo(
     () =>
       schema

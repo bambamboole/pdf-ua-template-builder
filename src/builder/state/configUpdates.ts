@@ -1,13 +1,7 @@
 import type {
   Block,
   BlockConfig,
-  DividerConfig,
-  HeadingConfig,
-  ImageConfig,
-  KeyValueConfig,
   SpacingConfig,
-  SpacerConfig,
-  TableConfig,
   Template,
   TemplateConfig,
   TypographyConfig,
@@ -16,31 +10,21 @@ import type {
 type EmptyConfigValue = "" | null | undefined;
 type BlockType = Block["type"];
 type BlockByType<TType extends BlockType> = Extract<Block, { type: TType }>;
-type BlockConfigByType = {
-  text: BlockConfig;
-  html: BlockConfig;
-  heading: HeadingConfig;
-  image: ImageConfig;
-  "key-value": KeyValueConfig;
-  spacer: SpacerConfig;
-  divider: DividerConfig;
-  table: TableConfig;
-};
-type BlockConfigFor<TType extends BlockType> = BlockConfigByType[TType];
 
-export function setBlockConfigField<
-  TType extends BlockType,
-  TKey extends keyof BlockConfigFor<TType>,
->(
+export function setBlockField<TType extends BlockType, TKey extends keyof BlockByType<TType>>(
   block: BlockByType<TType>,
   field: TKey,
-  value: BlockConfigFor<TType>[TKey] | EmptyConfigValue,
+  value: BlockByType<TType>[TKey] | EmptyConfigValue,
 ): BlockByType<TType> {
-  const nextConfig = setObjectField<BlockConfigFor<TType>, TKey>(
-    block.config as BlockConfigFor<TType> | undefined,
-    field,
-    value,
-  );
+  return setObjectField(block, field, value) as BlockByType<TType>;
+}
+
+export function setBlockConfigField<TType extends BlockType, TKey extends keyof BlockConfig>(
+  block: BlockByType<TType>,
+  field: TKey,
+  value: BlockConfig[TKey] | EmptyConfigValue,
+): BlockByType<TType> {
+  const nextConfig = setObjectField<BlockConfig, TKey>(block.config, field, value);
 
   return withBlockConfig(block, nextConfig);
 }
@@ -109,7 +93,7 @@ function setObjectField<TObject extends object, TKey extends keyof TObject>(
 
 function withBlockConfig<TType extends BlockType>(
   block: BlockByType<TType>,
-  config: BlockConfigFor<TType> | undefined,
+  config: BlockConfig | undefined,
 ): BlockByType<TType> {
   if (config === undefined) {
     const { config: _config, ...rest } = block;
@@ -127,7 +111,7 @@ function setCommonBlockConfigField<TType extends BlockType, TKey extends keyof B
 ): BlockByType<TType> {
   const nextConfig = setObjectField<BlockConfig, TKey>(block.config, field, value);
 
-  return withBlockConfig(block, nextConfig as BlockConfigFor<TType> | undefined);
+  return withBlockConfig(block, nextConfig);
 }
 
 function withTemplateConfig(template: Template, config: TemplateConfig | undefined): Template {

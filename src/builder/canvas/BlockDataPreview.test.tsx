@@ -32,7 +32,7 @@ describe("BlockDataPreview", () => {
       type: "key-value",
       id: "invoice-meta",
       values: { invoiceNumber: "RE-2026-001234" },
-      config: { fields: [{ key: "invoiceNumber", label: "Invoice number" }] },
+      fields: [{ key: "invoiceNumber", label: "Invoice number" }],
     };
 
     render(<BlockDataPreview block={block} />);
@@ -46,10 +46,8 @@ describe("BlockDataPreview", () => {
       type: "key-value",
       id: "invoice-meta",
       values: { invoiceNumber: "RE-2026-001234" },
-      config: {
-        labelWidth: "40%",
-        fields: [{ key: "invoiceNumber", label: "Invoice number" }],
-      },
+      labelWidth: "40%",
+      fields: [{ key: "invoiceNumber", label: "Invoice number" }],
     };
 
     render(<BlockDataPreview block={block} onChange={() => {}} />);
@@ -65,12 +63,14 @@ describe("BlockDataPreview", () => {
       type: "key-value",
       id: "invoice-meta",
       values: { invoiceNumber: "RE-2026-001234" },
-      config: { fields: [{ key: "invoiceNumber", label: "Invoice number" }] },
+      fields: [{ key: "invoiceNumber", label: "Invoice number" }],
     };
 
     render(<BlockDataPreview block={block} />);
 
-    expect(screen.queryByRole("button", { name: "Resize the label column" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Resize the label column" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("Invoice number").parentElement).toHaveStyle({
       gridTemplateColumns: "30% minmax(0, 1fr)",
     });
@@ -80,12 +80,10 @@ describe("BlockDataPreview", () => {
     const block: Block = {
       type: "table",
       id: "lineItems",
-      config: {
-        columns: [
-          { key: "description", label: "Description" },
-          { key: "total", label: "Total" },
-        ],
-      },
+      columns: [
+        { key: "description", label: "Description" },
+        { key: "total", label: "Total" },
+      ],
     };
 
     render(
@@ -104,11 +102,15 @@ describe("BlockDataPreview", () => {
     const block: Block = {
       type: "table",
       id: "lineItems",
-      config: { numberRows: true, columns: [{ key: "description", label: "Description" }] },
+      numberRows: true,
+      columns: [{ key: "description", label: "Description" }],
     };
 
     render(
-      <BlockDataPreview block={block} rowData={[{ description: "Row one" }, { description: "Row two" }]} />,
+      <BlockDataPreview
+        block={block}
+        rowData={[{ description: "Row one" }, { description: "Row two" }]}
+      />,
     );
 
     expect(screen.getByRole("columnheader", { name: "#" })).toBeInTheDocument();
@@ -120,7 +122,7 @@ describe("BlockDataPreview", () => {
     const block: Block = {
       type: "table",
       id: "lineItems",
-      config: { columns: [{ key: "description", label: "Description" }] },
+      columns: [{ key: "description", label: "Description" }],
     };
 
     render(<BlockDataPreview block={block} rowData={[{ description: "Row one" }]} />);
@@ -132,13 +134,11 @@ describe("BlockDataPreview", () => {
     const block: Block = {
       type: "table",
       id: "lineItems",
-      config: {
-        columns: [
-          { key: "description", label: "Description" },
-          { key: "qty", label: "Qty" },
-          { key: "total", label: "Total" },
-        ],
-      },
+      columns: [
+        { key: "description", label: "Description" },
+        { key: "qty", label: "Qty" },
+        { key: "total", label: "Total" },
+      ],
     };
 
     const { container } = render(<BlockDataPreview block={block} onChange={() => {}} />);
@@ -153,12 +153,10 @@ describe("BlockDataPreview", () => {
     const block: Block = {
       type: "table",
       id: "lineItems",
-      config: {
-        columns: [
-          { key: "description", label: "Description" },
-          { key: "qty", label: "Qty" },
-        ],
-      },
+      columns: [
+        { key: "description", label: "Description" },
+        { key: "qty", label: "Qty" },
+      ],
     };
 
     render(<BlockDataPreview block={block} />);

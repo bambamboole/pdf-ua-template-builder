@@ -89,7 +89,6 @@ export function usePdfUaApi({
         const pdf = await renderTemplatePdf(apiUrl, {
           template,
           data,
-          options: { title: "Template Preview" },
         });
         const nextPdfUrl = URL.createObjectURL(pdf);
 

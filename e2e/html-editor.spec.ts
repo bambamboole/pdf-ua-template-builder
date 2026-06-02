@@ -25,13 +25,13 @@ test.describe("editor mode tabs", () => {
   });
 });
 
-test("renders HTML to a PDF through the /convert endpoint", async ({ page }) => {
+test("renders HTML to a PDF through the backend", async ({ page }) => {
   await page.goto("/");
   await modeTab(page, "HTML editor").click();
   await expect(htmlEditor(page)).toBeVisible();
 
   const convertResponse = page.waitForResponse(
-    (res) => res.url().includes("/convert") && res.request().method() === "POST",
+    (res) => res.url().includes("/render/html") && res.request().method() === "POST",
     { timeout: 60_000 },
   );
   await renderButton(page).click();

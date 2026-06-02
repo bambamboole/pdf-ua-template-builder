@@ -5,7 +5,7 @@ import { createEditorModel } from "./editorModel";
 describe("getRowIndex", () => {
   it("resolves row drops over nested blocks to the block row", () => {
     const model = createEditorModel({
-      version: 1,
+      version: 2,
       rows: [
         { blocks: [{ type: "heading", id: "heading-1", text: "Title" }] },
         { blocks: [{ type: "text", id: "text-1", text: "Body" }] },
@@ -22,7 +22,7 @@ describe("getRowIndex", () => {
   });
 
   it("returns null when the target row is not found", () => {
-    const model = createEditorModel({ version: 1, rows: [] });
+    const model = createEditorModel({ version: 2, rows: [] });
 
     expect(getRowIndex(model, "missing", {})).toBeNull();
   });
@@ -30,13 +30,13 @@ describe("getRowIndex", () => {
 
 describe("getDropTarget", () => {
   it("targets a new body row for the new-row sentinel", () => {
-    const model = createEditorModel({ version: 1, rows: [] });
+    const model = createEditorModel({ version: 2, rows: [] });
 
     expect(getDropTarget(model, "new-row", {})).toEqual({ rowUid: null, index: 0, area: "body" });
   });
 
   it("targets a new footer row for the new-footer-row sentinel", () => {
-    const model = createEditorModel({ version: 1, rows: [] });
+    const model = createEditorModel({ version: 2, rows: [] });
 
     expect(getDropTarget(model, "new-footer-row", {})).toEqual({
       rowUid: null,

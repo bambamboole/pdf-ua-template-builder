@@ -10,7 +10,7 @@ const baseBlock = {
   id: "logo",
   src: "https://example.com/logo.png",
   alt: "Company logo",
-  config: { maxHeight: 28 },
+  maxHeight: "28px",
 } satisfies ImageBlock;
 
 function renderEditor(initial: Block = baseBlock) {
