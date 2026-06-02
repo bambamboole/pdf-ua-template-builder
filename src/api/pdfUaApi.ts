@@ -1,6 +1,7 @@
 import type { FileAttachment } from "../types/generated/template";
 import type {
-  RenderOptions,
+  PdfValidationResponse,
+  RenderedPdfPreview,
   Template,
   TemplateData,
   TemplateSchemaResponse,
@@ -9,7 +10,11 @@ import type {
 interface RenderTemplateRequest {
   template: Template;
   data?: TemplateData;
-  options?: RenderOptions;
+}
+
+interface RenderPdfJsonResponse {
+  validation: PdfValidationResponse;
+  pdf: string;
 }
 
 export interface ConvertHtmlRequest {
@@ -19,6 +24,12 @@ export interface ConvertHtmlRequest {
   baseUrl?: string;
   /** Files to embed in the produced PDF/A-3 document. */
   attachments?: FileAttachment[];
+}
+
+interface OpenApiDocument {
+  components?: {
+    schemas?: Record<string, unknown>;
+  };
 }
 
 export function resolveDefaultApiUrl(configuredApiUrl?: string): string {
@@ -43,7 +54,7 @@ async function parseError(response: Response): Promise<string> {
 }
 
 export async function fetchTemplateSchema(baseUrl: string): Promise<TemplateSchemaResponse> {
-  const response = await fetch(joinUrl(baseUrl, "/schema"), {
+  const response = await fetch(joinUrl(baseUrl, "/openapi.json"), {
     headers: {
       Accept: "application/json",
     },
@@ -53,25 +64,57 @@ export async function fetchTemplateSchema(baseUrl: string): Promise<TemplateSche
     throw new Error(await parseError(response));
   }
 
-  return (await response.json()) as TemplateSchemaResponse;
+  return extractTemplateSchemaFromOpenApi((await response.json()) as OpenApiDocument);
+}
+
+function extractTemplateSchemaFromOpenApi(openApi: OpenApiDocument): TemplateSchemaResponse {
+  const schemas = openApi.components?.schemas;
+  const template = schemas?.Template;
+
+  if (!isRecord(schemas) || !isRecord(template)) {
+    throw new Error("OpenAPI document does not contain components.schemas.Template");
+  }
+
+  const templateDefs = isRecord(template.$defs)
+    ? template.$defs
+    : Object.fromEntries(Object.entries(schemas).filter(([name]) => name !== "Template"));
+  const adapted = rewriteOpenApiRefs({
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    ...template,
+    $defs: templateDefs,
+  });
+
+  return adapted as TemplateSchemaResponse;
+}
+
+function rewriteOpenApiRefs(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(rewriteOpenApiRefs);
+  }
+
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nested]) => [
+      key,
+      key === "$ref" && typeof nested === "string"
+        ? nested.replace(/^#\/components\/schemas\//, "#/$defs/")
+        : rewriteOpenApiRefs(nested),
+    ]),
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export async function renderTemplatePdf(
   baseUrl: string,
   request: RenderTemplateRequest,
 ): Promise<Blob> {
-  const response = await fetch(joinUrl(baseUrl, "/render/template"), {
-    method: "POST",
-    headers: {
-      Accept: "application/pdf",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      data: {},
-      options: {},
-      ...request,
-    }),
-  });
+  const response = await postTemplateRender(baseUrl, request, "application/pdf, application/json;q=0.1");
 
   if (!response.ok) {
     throw new Error(await parseError(response));
@@ -80,11 +123,42 @@ export async function renderTemplatePdf(
   return response.blob();
 }
 
+export async function renderTemplatePreview(
+  baseUrl: string,
+  request: RenderTemplateRequest,
+): Promise<RenderedPdfPreview> {
+  const response = await postTemplateRender(baseUrl, request, "application/json");
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  return parsePreviewResponse(response);
+}
+
+function postTemplateRender(
+  baseUrl: string,
+  request: RenderTemplateRequest,
+  accept: string,
+): Promise<Response> {
+  return fetch(joinUrl(baseUrl, "/render/template"), {
+    method: "POST",
+    headers: {
+      Accept: accept,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      template: request.template,
+      data: request.data ?? {},
+    }),
+  });
+}
+
 export async function renderHtmlPdf(
   baseUrl: string,
   request: ConvertHtmlRequest,
 ): Promise<Blob> {
-  const response = await fetch(joinUrl(baseUrl, "/convert"), {
+  const response = await fetch(joinUrl(baseUrl, "/render/html"), {
     method: "POST",
     headers: {
       Accept: "application/pdf",
@@ -98,4 +172,48 @@ export async function renderHtmlPdf(
   }
 
   return response.blob();
+}
+
+export async function renderHtmlPreview(
+  baseUrl: string,
+  request: ConvertHtmlRequest,
+): Promise<RenderedPdfPreview> {
+  const response = await fetch(joinUrl(baseUrl, "/render/html"), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  return parsePreviewResponse(response);
+}
+
+async function parsePreviewResponse(response: Response): Promise<RenderedPdfPreview> {
+  const payload = (await response.json()) as Partial<RenderPdfJsonResponse>;
+
+  if (!payload.validation || typeof payload.pdf !== "string") {
+    throw new Error("Render response did not contain validation and pdf.");
+  }
+
+  return {
+    pdf: base64ToBlob(payload.pdf, "application/pdf"),
+    validation: payload.validation,
+  };
+}
+
+function base64ToBlob(base64: string, type: string): Blob {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return new Blob([bytes], { type });
 }

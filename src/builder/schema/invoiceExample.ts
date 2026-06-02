@@ -13,7 +13,7 @@ export interface InvoiceExample {
 
 export function createInvoiceExample(): InvoiceExample {
   const template: Template = {
-    version: 1,
+    version: 2,
     config: {
       page: {
         size: { format: "A4", orientation: "portrait" },
@@ -38,13 +38,13 @@ export function createInvoiceExample(): InvoiceExample {
                     registration: "HRB 123456 B",
                     taxNumber: "DE123456789",
                   },
+                  fields: [
+                    { key: "registration", label: "Registry" },
+                    { key: "taxNumber", label: "Tax no." },
+                  ],
                   config: {
                     width: "32%",
                     align: "right",
-                    fields: [
-                      { key: "registration", label: "Registry" },
-                      { key: "taxNumber", label: "Tax no." },
-                    ],
                   },
                 },
               ],
@@ -62,7 +62,8 @@ export function createInvoiceExample(): InvoiceExample {
             id: "logo",
             src: LOGO_SRC,
             alt: "PDF UA Kit GmbH logo",
-            config: { width: "58%", maxHeight: 28 },
+            maxHeight: "28px",
+            config: { width: "58%" },
           },
           {
             type: "key-value",
@@ -73,15 +74,15 @@ export function createInvoiceExample(): InvoiceExample {
               dueDate: "2026-03-19",
               currency: "EUR",
             },
+            fields: [
+              { key: "invoiceNumber", label: "Invoice number" },
+              { key: "issueDate", label: "Issue date" },
+              { key: "dueDate", label: "Due date" },
+              { key: "currency", label: "Currency" },
+            ],
             config: {
               width: "42%",
               align: "right",
-              fields: [
-                { key: "invoiceNumber", label: "Invoice number" },
-                { key: "issueDate", label: "Issue date" },
-                { key: "dueDate", label: "Due date" },
-                { key: "currency", label: "Currency" },
-              ],
             },
           },
         ],
@@ -92,7 +93,7 @@ export function createInvoiceExample(): InvoiceExample {
             type: "heading",
             id: "title",
             text: "Invoice",
-            config: { level: 1 },
+            level: 1,
           },
         ],
       },
@@ -108,15 +109,15 @@ export function createInvoiceExample(): InvoiceExample {
               email: "billing@pdfua-kit.example",
               vatId: "DE123456789",
             },
+            fields: [
+              { key: "name", label: "Seller" },
+              { key: "address", label: "Address" },
+              { key: "contact", label: "Contact" },
+              { key: "email", label: "Email" },
+              { key: "vatId", label: "VAT ID" },
+            ],
             config: {
               width: "50%",
-              fields: [
-                { key: "name", label: "Seller" },
-                { key: "address", label: "Address" },
-                { key: "contact", label: "Contact" },
-                { key: "email", label: "Email" },
-                { key: "vatId", label: "VAT ID" },
-              ],
             },
           },
           {
@@ -128,14 +129,14 @@ export function createInvoiceExample(): InvoiceExample {
               email: "invoice@musterkunde.example",
               reference: "04011000-12345-67",
             },
+            fields: [
+              { key: "name", label: "Buyer" },
+              { key: "address", label: "Address" },
+              { key: "email", label: "Email" },
+              { key: "reference", label: "Buyer reference" },
+            ],
             config: {
               width: "50%",
-              fields: [
-                { key: "name", label: "Buyer" },
-                { key: "address", label: "Address" },
-                { key: "email", label: "Email" },
-                { key: "reference", label: "Buyer reference" },
-              ],
             },
           },
         ],
@@ -148,17 +149,15 @@ export function createInvoiceExample(): InvoiceExample {
           {
             type: "table",
             id: "lineItems",
-            config: {
-              style: "striped",
-              numberRows: true,
-              columns: [
-                { key: "description", label: "Description", align: "left", width: "38%" },
-                { key: "quantity", label: "Qty", align: "right", width: "12%" },
-                { key: "unitPrice", label: "Unit price", align: "right", width: "16%" },
-                { key: "vatRate", label: "VAT", align: "right", width: "11%" },
-                { key: "total", label: "Total", align: "right", width: "16%" },
-              ],
-            },
+            style: "striped",
+            numberRows: true,
+            columns: [
+              { key: "description", label: "Description", align: "left", width: "38%" },
+              { key: "quantity", label: "Qty", align: "right", width: "12%" },
+              { key: "unitPrice", label: "Unit price", align: "right", width: "16%" },
+              { key: "vatRate", label: "VAT", align: "right", width: "11%" },
+              { key: "total", label: "Total", align: "right", width: "16%" },
+            ],
           },
         ],
       },
@@ -167,16 +166,16 @@ export function createInvoiceExample(): InvoiceExample {
           {
             type: "table",
             id: "vat-breakdown",
+            style: "minimal",
+            numberRows: false,
+            columns: [
+              { key: "vatCategory", label: "VAT category", align: "left" },
+              { key: "rate", label: "Rate", align: "right" },
+              { key: "taxableAmount", label: "Taxable amount", align: "right" },
+              { key: "vatAmount", label: "VAT amount", align: "right" },
+            ],
             config: {
-              style: "minimal",
               width: "54%",
-              numberRows: false,
-              columns: [
-                { key: "vatCategory", label: "VAT category", align: "left" },
-                { key: "rate", label: "Rate", align: "right" },
-                { key: "taxableAmount", label: "Taxable amount", align: "right" },
-                { key: "vatAmount", label: "VAT amount", align: "right" },
-              ],
             },
           },
           {
@@ -188,15 +187,15 @@ export function createInvoiceExample(): InvoiceExample {
               grandTotal: "7.282,80 €",
               amountDue: "7.282,80 €",
             },
+            fields: [
+              { key: "netAmount", label: "Net amount" },
+              { key: "vatAmount", label: "VAT 19%" },
+              { key: "grandTotal", label: "Grand total" },
+              { key: "amountDue", label: "Amount due" },
+            ],
             config: {
               width: "46%",
               align: "right",
-              fields: [
-                { key: "netAmount", label: "Net amount" },
-                { key: "vatAmount", label: "VAT 19%" },
-                { key: "grandTotal", label: "Grand total" },
-                { key: "amountDue", label: "Amount due" },
-              ],
             },
           },
         ],
@@ -218,15 +217,15 @@ export function createInvoiceExample(): InvoiceExample {
               bic: "COBADEFFXXX",
               reference: "RE-2026-001234",
             },
+            fields: [
+              { key: "bank", label: "Bank" },
+              { key: "iban", label: "IBAN" },
+              { key: "bic", label: "BIC" },
+              { key: "reference", label: "Payment reference" },
+            ],
             config: {
               width: "46%",
               align: "right",
-              fields: [
-                { key: "bank", label: "Bank" },
-                { key: "iban", label: "IBAN" },
-                { key: "bic", label: "BIC" },
-                { key: "reference", label: "Payment reference" },
-              ],
             },
           },
         ],

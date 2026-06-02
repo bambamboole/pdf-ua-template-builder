@@ -76,7 +76,8 @@ describe("SpacingControls", () => {
     const block = {
       type: "heading",
       text: "Title",
-      config: { level: 2, spacing: { top: 3, bottom: 9 } },
+      level: 2,
+      config: { spacing: { top: 3, bottom: 9 } },
     } satisfies Block;
     const { onChangeBlock } = renderBlockSpacing(block);
 
@@ -85,7 +86,7 @@ describe("SpacingControls", () => {
     expect(onChangeBlock).toHaveBeenCalledTimes(1);
     expect(onChangeBlock).toHaveBeenLastCalledWith({
       ...block,
-      config: { level: 2, spacing: { top: 3, bottom: 9, right: 12 } },
+      config: { spacing: { top: 3, bottom: 9, right: 12 } },
     });
   });
 
@@ -103,7 +104,7 @@ describe("SpacingControls", () => {
 
   it("updates page margins while preserving unrelated page config", () => {
     const template = {
-      version: 1,
+      version: 2,
       config: {
         page: {
           locale: "de-DE",

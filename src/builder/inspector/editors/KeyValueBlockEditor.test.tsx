@@ -18,12 +18,10 @@ const baseBlock = {
     invoiceNumber: "RE-2026-001234",
     issueDate: "2026-02-17",
   },
-  config: {
-    fields: [
-      { key: "invoiceNumber", label: "Invoice number" },
-      { key: "issueDate", label: "Issue date" },
-    ],
-  },
+  fields: [
+    { key: "invoiceNumber", label: "Invoice number" },
+    { key: "issueDate", label: "Issue date" },
+  ],
 } satisfies KeyValueBlock;
 
 describe("KeyValueBlockEditor render", () => {
@@ -77,13 +75,11 @@ describe("KeyValueBlockEditor state helpers", () => {
 
     expect(next).toEqual({
       ...baseBlock,
-      config: {
-        fields: [
-          { key: "invoiceNumber", label: "Invoice number" },
-          { key: "issueDate", label: "Issue date" },
-          { key: "field3", label: "Field 3" },
-        ],
-      },
+      fields: [
+        { key: "invoiceNumber", label: "Invoice number" },
+        { key: "issueDate", label: "Issue date" },
+        { key: "field3", label: "Field 3" },
+      ],
     });
   });
 
@@ -94,9 +90,7 @@ describe("KeyValueBlockEditor state helpers", () => {
     expect(next).toEqual({
       type: "key-value",
       id: "kv-empty",
-      config: {
-        fields: [{ key: "field1", label: "Field 1" }],
-      },
+      fields: [{ key: "field1", label: "Field 1" }],
     });
   });
 
@@ -106,9 +100,7 @@ describe("KeyValueBlockEditor state helpers", () => {
     expect(next).toEqual({
       ...baseBlock,
       values: { issueDate: "2026-02-17" },
-      config: {
-        fields: [{ key: "issueDate", label: "Issue date" }],
-      },
+      fields: [{ key: "issueDate", label: "Issue date" }],
     });
   });
 
@@ -119,7 +111,7 @@ describe("KeyValueBlockEditor state helpers", () => {
       invoiceNo: "RE-2026-001234",
       issueDate: "2026-02-17",
     });
-    expect(next.config?.fields?.[0]).toEqual({ key: "invoiceNo", label: "Invoice number" });
+    expect(next.fields?.[0]).toEqual({ key: "invoiceNo", label: "Invoice number" });
   });
 
   it("rejects renaming a field key onto another field's key", () => {
@@ -131,7 +123,7 @@ describe("KeyValueBlockEditor state helpers", () => {
   it("setFieldLabel updates only the label", () => {
     const next = setFieldLabel(baseBlock, 1, "Issued on");
 
-    expect(next.config?.fields).toEqual([
+    expect(next.fields).toEqual([
       { key: "invoiceNumber", label: "Invoice number" },
       { key: "issueDate", label: "Issued on" },
     ]);

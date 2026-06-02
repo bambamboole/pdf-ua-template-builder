@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TemplateSchemaResponse } from "../types/template";
-import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
+import { fetchTemplateSchema, renderTemplatePreview } from "../api/pdfUaApi";
 import { Builder } from "./Builder";
 import { TemplateBuilderProvider } from "./context/BuilderContext";
 import { Preview } from "../render/Preview";
@@ -10,7 +10,7 @@ import { createInvoiceExample } from "./schema/invoiceExample";
 
 vi.mock("../api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn(),
-  renderTemplatePdf: vi.fn(),
+  renderTemplatePreview: vi.fn(),
   resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
 }));
 
@@ -33,7 +33,7 @@ const builderSchema = {
   },
   "x-pdfUa": {
     kind: "template",
-    templateVersion: 1,
+    templateVersion: 2,
     renderEndpoint: "/render/template",
     templateFields: [],
     attachmentFields: [],
@@ -45,7 +45,7 @@ const builderSchema = {
 } satisfies TemplateSchemaResponse;
 
 const mockFetchSchema = vi.mocked(fetchTemplateSchema);
-const mockRenderPdf = vi.mocked(renderTemplatePdf);
+const mockRenderPreview = vi.mocked(renderTemplatePreview);
 
 function StackedBuilder() {
   return (
@@ -62,7 +62,7 @@ describe("composing Builder and Preview", () => {
   beforeEach(() => {
     mockFetchSchema.mockReset();
     mockFetchSchema.mockResolvedValue(builderSchema);
-    mockRenderPdf.mockReset();
+    mockRenderPreview.mockReset();
     URL.createObjectURL = vi.fn(() => "blob:mock-pdf");
     URL.revokeObjectURL = vi.fn();
   });
@@ -74,14 +74,15 @@ describe("composing Builder and Preview", () => {
     expect(screen.getByRole("complementary", { name: "Block palette" })).toBeInTheDocument();
     expect(screen.getByRole("complementary", { name: "Output" })).toBeInTheDocument();
 
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Load example" })).toBeEnabled(),
-    );
+    await waitFor(() => expect(screen.getByRole("button", { name: "Load example" })).toBeEnabled());
   });
 
   it("shares state: Load example (Builder) fills the canvas and Render (Preview) calls the API", async () => {
     const user = userEvent.setup();
-    mockRenderPdf.mockResolvedValue(new Blob(["%PDF-1.7"], { type: "application/pdf" }));
+    mockRenderPreview.mockResolvedValue({
+      pdf: new Blob(["%PDF-1.7"], { type: "application/pdf" }),
+      validation: validValidation,
+    });
 
     render(<StackedBuilder />);
 
@@ -98,12 +99,22 @@ describe("composing Builder and Preview", () => {
     await waitFor(() =>
       expect(screen.queryByText("Drop a block here to begin")).not.toBeInTheDocument(),
     );
-    expect(
-      screen.getByText(/Please transfer the amount due within 30 days/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Please transfer the amount due within 30 days/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Render PDF" }));
 
-    await waitFor(() => expect(mockRenderPdf).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockRenderPreview).toHaveBeenCalledTimes(1));
   });
 });
+
+const validValidation = {
+  isCompliant: true,
+  profiles: [],
+  summary: {
+    totalChecks: 1,
+    passedChecks: 1,
+    failedChecks: 0,
+    categories: [],
+  },
+  failures: [],
+};

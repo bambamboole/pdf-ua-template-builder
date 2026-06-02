@@ -132,8 +132,8 @@ describe("builder form controls", () => {
 
       return (
         <NumberField
-          name="config.maxHeight"
-          label="Max height"
+          name="config.typography.size"
+          label="Font size"
           value={value}
           min={0}
           step={0.5}
@@ -147,7 +147,7 @@ describe("builder form controls", () => {
 
     render(<Harness />);
 
-    const input = screen.getByLabelText("Max height");
+    const input = screen.getByLabelText("Font size");
     expect(input).toHaveAttribute("type", "number");
 
     await user.clear(input);

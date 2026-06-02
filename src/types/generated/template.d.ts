@@ -9,7 +9,12 @@
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "templateConfig".
  */
-export type TemplateConfig = {page?: PageConfig; typography?: TypographyConfig};
+export type TemplateConfig = {
+  title?: string;
+  page?: PageConfig;
+  typography?: TypographyConfig;
+  embedColorProfile?: boolean;
+};
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "block".
@@ -35,34 +40,19 @@ export type BlockConfig = {
 };
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "headingConfig".
+ * via the `definition` "keyValueField".
  */
-export type HeadingConfig = BlockConfig & {level?: number};
+export type KeyValueField = { key: string; label: string };
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "imageConfig".
+ * via the `definition` "dividerStyle".
  */
-export type ImageConfig = BlockConfig & {maxHeight?: number};
+export type DividerStyle = "solid" | "dashed" | "dotted" | "double" | "none";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "keyValueConfig".
+ * via the `definition` "tableStyle".
  */
-export type KeyValueConfig = BlockConfig & {labelWidth?: string; fields?: KeyValueField[]};
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "spacerConfig".
- */
-export type SpacerConfig = BlockConfig & {height?: number};
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "dividerConfig".
- */
-export type DividerConfig = BlockConfig & {thickness?: number; lineColor?: string; style?: DividerStyle};
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "tableConfig".
- */
-export type TableConfig = BlockConfig & {numberRows?: boolean; columns?: TableColumn[]; style?: TableStyle};
+export type TableStyle = "striped" | "bordered" | "minimal";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageFormat".
@@ -90,24 +80,9 @@ export type Align = "left" | "center" | "right";
 export type PageBackgroundType = "auto" | "image" | "pdf";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "dividerStyle".
- */
-export type DividerStyle = "solid" | "dashed" | "dotted" | "double" | "none";
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "keyValueField".
- */
-export type KeyValueField = {key: string; label: string};
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "tableStyle".
- */
-export type TableStyle = "striped" | "bordered" | "minimal";
-/**
- * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageFooterConfig".
  */
-export type PageFooterConfig = {repeat?: boolean; rows?: Row[]};
+export type PageFooterConfig = { repeat?: boolean; rows?: Row[] };
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageConfig".
@@ -127,7 +102,7 @@ export type PageConfig = {
 export type FontWeight = "300" | "400" | "500" | "600" | "700";
 
 export interface Template {
-  version: 1;
+  version: 2;
   config?: TemplateConfig;
   /**
    * External fonts keyed by font family name.
@@ -208,7 +183,8 @@ export interface HeadingBlock {
    */
   id?: string | null;
   text: string;
-  config?: HeadingConfig;
+  level?: number;
+  config?: BlockConfig;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
@@ -228,7 +204,11 @@ export interface ImageBlock {
    * Alternative text for screen readers and PDF accessibility.
    */
   alt?: string;
-  config?: ImageConfig;
+  /**
+   * Maximum rendered height as a CSS length, such as 60px or 20mm.
+   */
+  maxHeight?: string;
+  config?: BlockConfig;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
@@ -241,7 +221,9 @@ export interface KeyValueBlock {
    */
   id?: string | null;
   values?: KeyValueValues;
-  config?: KeyValueConfig;
+  labelWidth?: string;
+  fields?: KeyValueField[];
+  config?: BlockConfig;
 }
 export interface KeyValueValues {
   [k: string]: string | null;
@@ -256,7 +238,11 @@ export interface SpacerBlock {
    * Stable block identifier used for runtime data overrides.
    */
   id?: string | null;
-  config?: SpacerConfig;
+  /**
+   * Vertical space as a CSS length, such as 5mm or 12px.
+   */
+  height?: string;
+  config?: BlockConfig;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
@@ -268,7 +254,13 @@ export interface DividerBlock {
    * Stable block identifier used for runtime data overrides.
    */
   id?: string | null;
-  config?: DividerConfig;
+  /**
+   * Rule thickness as a CSS length, such as 1pt or 2px.
+   */
+  thickness?: string;
+  lineColor?: string;
+  style?: DividerStyle;
+  config?: BlockConfig;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
@@ -280,7 +272,32 @@ export interface TableBlock {
    * Stable block identifier used for runtime data overrides.
    */
   id?: string | null;
-  config?: TableConfig;
+  numberRows?: boolean;
+  columns?: TableColumn[];
+  style?: TableStyle;
+  config?: BlockConfig;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "tableColumn".
+ */
+export interface TableColumn {
+  /**
+   * Runtime data key used for this table column.
+   */
+  key: string;
+  /**
+   * Header label rendered for this table column.
+   */
+  label: string;
+  /**
+   * Text alignment for this table column.
+   */
+  align?: "left" | "center" | "right" | null;
+  /**
+   * Column width as a CSS width value, such as 20mm or 15%.
+   */
+  width?: string | null;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema
@@ -364,26 +381,4 @@ export interface TypographyConfig {
    * CSS color value used for text.
    */
   color?: string | null;
-}
-/**
- * This interface was referenced by `Template`'s JSON-Schema
- * via the `definition` "tableColumn".
- */
-export interface TableColumn {
-  /**
-   * Runtime data key used for this table column.
-   */
-  key: string;
-  /**
-   * Header label rendered for this table column.
-   */
-  label: string;
-  /**
-   * Text alignment for this table column.
-   */
-  align?: "left" | "center" | "right" | null;
-  /**
-   * Column width as a CSS width value, such as 20mm or 15%.
-   */
-  width?: string | null;
 }

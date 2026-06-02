@@ -2,11 +2,15 @@ import type { Block } from "../../types/generated/template";
 import type {
   JsonSchemaObject,
   JsonSchemaValue,
+  TemplateSchemaPropertyGroup,
   TemplateSchemaMetadata,
 } from "../../types/template";
 import { isRecord } from "../lib/records";
 
 export type { JsonSchemaObject, JsonSchemaValue };
+
+const PDF_UA_DEFAULT_KEY = "x-pdfUaDefault";
+const PDF_UA_GROUP_KEY = "x-pdfUaGroup";
 
 export function getSchemaMetadata(schema: JsonSchemaObject): TemplateSchemaMetadata {
   return assertTemplateSchemaMetadata(schema["x-pdfUa"]);
@@ -93,6 +97,20 @@ export function getBlockConfigSchema(
   };
 }
 
+export function getSchemaDefault(fieldSchema: JsonSchemaObject): JsonSchemaValue | undefined {
+  const value = fieldSchema[PDF_UA_DEFAULT_KEY] ?? fieldSchema.default;
+
+  return isJsonSchemaValue(value) ? value : undefined;
+}
+
+export function getSchemaPropertyGroup(
+  fieldSchema: JsonSchemaObject,
+): TemplateSchemaPropertyGroup | undefined {
+  const value = fieldSchema[PDF_UA_GROUP_KEY];
+
+  return isTemplateSchemaPropertyGroup(value) ? value : undefined;
+}
+
 export function createDefaultBlock(schema: JsonSchemaObject, blockType: string, id: string): Block {
   const definition = requireBlockDefinition(schema, blockType);
   const properties = getProperties(definition);
@@ -159,8 +177,10 @@ function getProperties(definition: JsonSchemaObject): Record<string, unknown> {
 }
 
 function createDefaultValue(schema: JsonSchemaObject, fieldSchema: JsonSchemaObject): unknown {
-  if ("default" in fieldSchema) {
-    return fieldSchema.default;
+  const schemaDefault = getSchemaDefault(fieldSchema);
+
+  if (schemaDefault !== undefined) {
+    return schemaDefault;
   }
 
   if (Array.isArray(fieldSchema.enum)) {
@@ -236,6 +256,27 @@ function isStringArray(value: unknown): value is string[] {
 
 function isSchemaObject(value: unknown): value is JsonSchemaObject {
   return isRecord(value);
+}
+
+function isJsonSchemaValue(value: unknown): value is JsonSchemaValue {
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    value === null
+  ) {
+    return true;
+  }
+
+  if (Array.isArray(value)) {
+    return value.every(isJsonSchemaValue);
+  }
+
+  return isRecord(value);
+}
+
+function isTemplateSchemaPropertyGroup(value: unknown): value is TemplateSchemaPropertyGroup {
+  return value === "content" || value === "layout" || value === "style" || value === "data";
 }
 
 function decodeJsonPointerSegment(segment: string): string {

@@ -6,7 +6,7 @@ import { TypographyControls } from "./TypographyControls";
 
 const metadata = {
   kind: "template",
-  templateVersion: 1,
+  templateVersion: 2,
   renderEndpoint: "/render/template",
   templateFields: ["version", "rows"],
   attachmentFields: [],
@@ -50,7 +50,6 @@ describe("TypographyControls", () => {
     const block = {
       type: "heading",
       text: "Title",
-      config: { level: 2 },
     } satisfies Block;
     const onChangeBlock = vi.fn();
     render(
@@ -65,13 +64,13 @@ describe("TypographyControls", () => {
     fireEvent.change(screen.getByLabelText("Family"), { target: { value: "Source Sans 3" } });
     expect(onChangeBlock).toHaveBeenLastCalledWith({
       ...block,
-      config: { level: 2, typography: { family: "Source Sans 3" } },
+      config: { typography: { family: "Source Sans 3" } },
     });
 
     fireEvent.change(screen.getByLabelText("Size"), { target: { value: "18" } });
     expect(onChangeBlock).toHaveBeenLastCalledWith({
       ...block,
-      config: { level: 2, typography: { size: 18 } },
+      config: { typography: { size: 18 } },
     });
   });
 
@@ -83,7 +82,8 @@ describe("TypographyControls", () => {
         block={{
           type: "heading",
           text: "Title",
-          config: { level: 2, typography: { family: "Inter" } },
+          level: 2,
+          config: { typography: { family: "Inter" } },
         }}
         metadata={metadata}
         onChangeBlock={onChangeBlock}
@@ -95,7 +95,7 @@ describe("TypographyControls", () => {
     expect(onChangeBlock).toHaveBeenLastCalledWith({
       type: "heading",
       text: "Title",
-      config: { level: 2 },
+      level: 2,
     });
   });
 
@@ -104,7 +104,7 @@ describe("TypographyControls", () => {
     render(
       <TypographyControls
         target="template"
-        template={{ version: 1 }}
+        template={{ version: 2 }}
         metadata={metadata}
         onChangeTemplate={onChangeTemplate}
       />,
@@ -113,7 +113,7 @@ describe("TypographyControls", () => {
     fireEvent.change(screen.getByLabelText("Align"), { target: { value: "right" } });
 
     expect(onChangeTemplate).toHaveBeenLastCalledWith({
-      version: 1,
+      version: 2,
       config: { typography: { align: "right" } },
     });
   });
@@ -122,7 +122,7 @@ describe("TypographyControls", () => {
     render(
       <TypographyControls
         target="template"
-        template={{ version: 1 }}
+        template={{ version: 2 }}
         metadata={metadata}
         onChangeTemplate={() => undefined}
       />,

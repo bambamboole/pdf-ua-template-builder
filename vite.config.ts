@@ -68,10 +68,8 @@ export default defineConfig(({ mode }) => {
       port: 5174,
       strictPort: false,
       proxy: {
-        // Anchored so it does not also catch the bundled `/schemas/...json` asset import.
-        "^/schema$": proxyTarget,
+        "/openapi.json": proxyTarget,
         "/render": proxyTarget,
-        "/convert": proxyTarget,
       },
     },
     test: {

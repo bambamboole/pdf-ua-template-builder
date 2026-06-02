@@ -5,7 +5,7 @@ import { getPageSize } from "./editorModel";
 import { createEditorState, editorReducer } from "./editorReducer";
 
 const template: Template = {
-  version: 1,
+  version: 2,
   rows: [
     {
       blocks: [
@@ -19,9 +19,7 @@ const template: Template = {
 const schema: JsonSchemaObject = {
   $defs: {
     block: {
-      oneOf: [
-        { type: "object", properties: { type: { const: "text" } }, required: ["type"] },
-      ],
+      oneOf: [{ type: "object", properties: { type: { const: "text" } }, required: ["type"] }],
     },
   },
   "x-pdfUa": { blockOrder: ["text"] },
@@ -73,7 +71,7 @@ describe("editorReducer", () => {
 
     const next = editorReducer(state, {
       type: "loadExample",
-      template: { version: 1, rows: [{ blocks: [{ type: "text", id: "only", text: "x" }] }] },
+      template: { version: 2, rows: [{ blocks: [{ type: "text", id: "only", text: "x" }] }] },
       data: { only: [] },
     });
 
@@ -83,7 +81,7 @@ describe("editorReducer", () => {
   });
 
   it("changes page orientation while preserving the format", () => {
-    const initial = createEditorState({ version: 1 }, {});
+    const initial = createEditorState({ version: 2 }, {});
 
     const next = editorReducer(initial, { type: "setOrientation", orientation: "landscape" });
 
@@ -91,7 +89,7 @@ describe("editorReducer", () => {
   });
 
   it("adds a default block from the palette", () => {
-    const initial = createEditorState({ version: 1 }, {});
+    const initial = createEditorState({ version: 2 }, {});
 
     const next = editorReducer(initial, { type: "addBlock", schema, blockType: "text" });
 
@@ -101,7 +99,7 @@ describe("editorReducer", () => {
   });
 
   it("drops a palette block into a brand new row", () => {
-    const initial = createEditorState({ version: 1 }, {});
+    const initial = createEditorState({ version: 2 }, {});
 
     const next = editorReducer(initial, {
       type: "dropFromPalette",

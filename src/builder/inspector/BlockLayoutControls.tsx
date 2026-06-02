@@ -1,14 +1,8 @@
 import type { ReactNode } from "react";
 import type { Block, BlockConfig, DividerStyle, TableStyle } from "../../types/generated/template";
-import {
-  NumberField,
-  SelectField,
-  TextField,
-  UnitField,
-  type SelectFieldOption,
-} from "../controls";
+import { SelectField, TextField, UnitField, type SelectFieldOption } from "../controls";
 import { setTableNumberRows } from "./editors/TableBlockEditor";
-import { setBlockConfigField } from "../state/configUpdates";
+import { setBlockConfigField, setBlockField } from "../state/configUpdates";
 import { ALIGN_OPTIONS } from "./alignOptions";
 
 export interface BlockLayoutControlsProps {
@@ -71,53 +65,50 @@ function renderTypeSpecificControls(
   switch (block.type) {
     case "spacer":
       return (
-        <NumberField
-          name="config.height"
+        <UnitField
+          name="height"
           label="Height"
-          value={block.config?.height}
-          min={0}
-          step={0.5}
-          onChange={(value) => onChangeBlock(setBlockConfigField(block, "height", value))}
+          value={block.height}
+          placeholder="5mm"
+          onChange={(value) => onChangeBlock(setBlockField(block, "height", value))}
         />
       );
     case "image":
       return (
-        <NumberField
-          name="config.maxHeight"
+        <UnitField
+          name="maxHeight"
           label="Max height"
-          value={block.config?.maxHeight}
-          min={0}
-          step={0.5}
-          onChange={(value) => onChangeBlock(setBlockConfigField(block, "maxHeight", value))}
+          value={block.maxHeight}
+          placeholder="60px"
+          onChange={(value) => onChangeBlock(setBlockField(block, "maxHeight", value))}
         />
       );
     case "divider":
       return (
         <>
-          <NumberField
-            name="config.thickness"
+          <UnitField
+            name="thickness"
             label="Thickness"
-            value={block.config?.thickness}
-            min={0}
-            step={0.5}
-            onChange={(value) => onChangeBlock(setBlockConfigField(block, "thickness", value))}
+            value={block.thickness}
+            placeholder="1pt"
+            onChange={(value) => onChangeBlock(setBlockField(block, "thickness", value))}
           />
           <TextField
-            name="config.lineColor"
+            name="lineColor"
             label="Line color"
-            value={block.config?.lineColor}
+            value={block.lineColor}
             placeholder="#334455"
             emptyValue="undefined"
-            onChange={(value) => onChangeBlock(setBlockConfigField(block, "lineColor", value))}
+            onChange={(value) => onChangeBlock(setBlockField(block, "lineColor", value))}
           />
           <SelectField
-            name="config.style"
+            name="style"
             label="Line style"
-            value={block.config?.style}
+            value={block.style}
             options={dividerStyleOptions}
             optional
             emptyLabel="Default"
-            onChange={(value) => onChangeBlock(setBlockConfigField(block, "style", value))}
+            onChange={(value) => onChangeBlock(setBlockField(block, "style", value))}
           />
         </>
       );
@@ -125,18 +116,18 @@ function renderTypeSpecificControls(
       return (
         <div className="grid grid-cols-2 gap-2">
           <SelectField
-            name="config.style"
+            name="style"
             label="Table style"
-            value={block.config?.style}
+            value={block.style}
             options={tableStyleOptions}
             optional
             emptyLabel="Default"
-            onChange={(value) => onChangeBlock(setBlockConfigField(block, "style", value))}
+            onChange={(value) => onChangeBlock(setBlockField(block, "style", value))}
           />
           <SelectField
-            name="config.numberRows"
+            name="numberRows"
             label="Row numbers"
-            value={numberRowsValue(block.config?.numberRows)}
+            value={numberRowsValue(block.numberRows)}
             options={numberRowsOptions}
             optional
             emptyLabel="Default"

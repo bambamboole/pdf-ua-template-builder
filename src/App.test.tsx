@@ -7,7 +7,7 @@ vi.mock("./api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn().mockResolvedValue({
     "x-pdfUa": {
       kind: "template",
-      templateVersion: 1,
+      templateVersion: 2,
       renderEndpoint: "/render/template",
       templateFields: [],
       attachmentFields: [],
@@ -17,8 +17,8 @@ vi.mock("./api/pdfUaApi", () => ({
       pageFormats: [],
     },
   }),
-  renderTemplatePdf: vi.fn(),
-  renderHtmlPdf: vi.fn(),
+  renderTemplatePreview: vi.fn(),
+  renderHtmlPreview: vi.fn(),
   resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
 }));
 
@@ -36,9 +36,7 @@ describe("App shell", () => {
       "true",
     );
     // The builder is lazy-loaded, so it resolves through a Suspense fallback first.
-    expect(
-      await screen.findByRole("complementary", { name: "Block palette" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("complementary", { name: "Block palette" })).toBeInTheDocument();
   });
 
   it("switches to the HTML editor tab", async () => {

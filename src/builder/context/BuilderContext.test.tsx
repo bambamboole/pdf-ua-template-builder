@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TemplateSchemaResponse } from "../../types/template";
-import { fetchTemplateSchema, renderTemplatePdf } from "../../api/pdfUaApi";
+import { fetchTemplateSchema, renderTemplatePreview } from "../../api/pdfUaApi";
 import { TemplateBuilderProvider, useTemplateBuilder } from "./BuilderContext";
 
 vi.mock("../../api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn(),
-  renderTemplatePdf: vi.fn(),
+  renderTemplatePreview: vi.fn(),
   resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
 }));
 
@@ -24,7 +24,7 @@ const builderSchema = {
   },
   "x-pdfUa": {
     kind: "template",
-    templateVersion: 1,
+    templateVersion: 2,
     renderEndpoint: "/render/template",
     templateFields: [],
     attachmentFields: [],
@@ -52,7 +52,7 @@ describe("TemplateBuilderProvider", () => {
   beforeEach(() => {
     mockFetchSchema.mockReset();
     mockFetchSchema.mockResolvedValue(builderSchema);
-    vi.mocked(renderTemplatePdf).mockReset();
+    vi.mocked(renderTemplatePreview).mockReset();
     URL.createObjectURL = vi.fn(() => "blob:mock-pdf");
     URL.revokeObjectURL = vi.fn();
   });
@@ -77,9 +77,7 @@ describe("TemplateBuilderProvider", () => {
     expect(mockFetchSchema).toHaveBeenCalledWith("https://example.test");
     expect(screen.getByTestId("schema-loaded")).toHaveTextContent("no");
 
-    await waitFor(() =>
-      expect(screen.getByTestId("schema-loaded")).toHaveTextContent("yes"),
-    );
+    await waitFor(() => expect(screen.getByTestId("schema-loaded")).toHaveTextContent("yes"));
     expect(screen.getByTestId("block-count")).toHaveTextContent("1");
   });
 });

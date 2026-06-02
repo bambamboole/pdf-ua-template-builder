@@ -99,7 +99,11 @@ export function reorderFields(
   sourceIndex: number,
   targetIndex: number,
 ): KeyValueBlock {
-  return applyFields(block, moveField(getFields(block), sourceIndex, targetIndex), getValues(block));
+  return applyFields(
+    block,
+    moveField(getFields(block), sourceIndex, targetIndex),
+    getValues(block),
+  );
 }
 
 export function KeyValueBlockEditor({ block, onChangeBlock }: BlockEditorProps): ReactNode {
@@ -210,7 +214,7 @@ function fieldRowKey(field: KeyValueField, index: number): string {
 }
 
 function getFields(block: KeyValueBlock): KeyValueField[] {
-  const candidate = block.config?.fields;
+  const candidate = block.fields;
 
   return Array.isArray(candidate) ? (candidate as KeyValueField[]) : [];
 }
@@ -226,27 +230,20 @@ function applyFields(
   fields: KeyValueField[],
   values: KeyValueValues,
 ): KeyValueBlock {
-  const config = { ...block.config };
-
-  if (fields.length === 0) {
-    delete (config as { fields?: KeyValueField[] }).fields;
-  } else {
-    (config as { fields?: KeyValueField[] }).fields = fields;
-  }
-
   const nextBlock: KeyValueBlock = {
     ...block,
-    config: Object.keys(config).length === 0 ? undefined : config,
   };
+
+  if (fields.length === 0) {
+    delete nextBlock.fields;
+  } else {
+    nextBlock.fields = fields;
+  }
 
   if (Object.keys(values).length === 0) {
     delete (nextBlock as { values?: KeyValueValues }).values;
   } else {
     nextBlock.values = values;
-  }
-
-  if (nextBlock.config === undefined) {
-    delete (nextBlock as { config?: KeyValueBlock["config"] }).config;
   }
 
   return nextBlock;

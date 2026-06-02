@@ -10,13 +10,12 @@ import {
   type ReactNode,
 } from "react";
 import { resolveDefaultApiUrl } from "../../api/pdfUaApi";
+import type { Block, Orientation, PageFormat, Template } from "../../types/generated/template";
 import type {
-  Block,
-  Orientation,
-  PageFormat,
-  Template,
-} from "../../types/generated/template";
-import type { TemplateData, TemplateSchemaResponse } from "../../types/template";
+  PdfValidationResponse,
+  TemplateData,
+  TemplateSchemaResponse,
+} from "../../types/template";
 import { getBlockSummary } from "../blocks/blockChrome";
 import { BlockCardPreview } from "../canvas/BlockCardPreview";
 import { useBuilderDragDrop, type ActiveDrag } from "../hooks/useBuilderDragDrop";
@@ -38,7 +37,7 @@ import { createEditorState, editorReducer } from "../state/editorReducer";
 import { getBlockTypes, type JsonSchemaObject } from "../schema/schemaAdapter";
 
 const emptyTemplate: Template = {
-  version: 1,
+  version: 2,
 };
 
 /** A loadable example: a template plus its optional runtime data. */
@@ -76,6 +75,7 @@ export interface BuilderState {
   footerRepeat: boolean;
   pageNumbers: PageNumbersValue;
   pdfUrl: string | null;
+  validation: PdfValidationResponse | null;
   pdfLoading: boolean;
   error: string | null;
 }
@@ -150,6 +150,7 @@ export function TemplateBuilderProvider({
     schema,
     schemaLoading,
     pdfUrl,
+    validation,
     pdfLoading,
     error,
     renderPdf: renderPdfRequest,
@@ -310,6 +311,7 @@ export function TemplateBuilderProvider({
       footerRepeat: getFooterRepeat(model),
       pageNumbers: getPageNumbers(model),
       pdfUrl,
+      validation,
       pdfLoading,
       error,
     }),
@@ -323,6 +325,7 @@ export function TemplateBuilderProvider({
       selectedBlock,
       blockTypes,
       pdfUrl,
+      validation,
       pdfLoading,
       error,
     ],
@@ -333,12 +336,13 @@ export function TemplateBuilderProvider({
       template: serializedTemplate,
       data,
       pdfUrl,
+      validation,
       pdfLoading,
       error,
       renderPdf,
       renderDisabled: !schema || pdfLoading,
     }),
-    [serializedTemplate, data, pdfUrl, pdfLoading, error, renderPdf, schema],
+    [serializedTemplate, data, pdfUrl, validation, pdfLoading, error, renderPdf, schema],
   );
 
   return (

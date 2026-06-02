@@ -30,7 +30,7 @@ function DefaultLayout({ className }: { className?: string }) {
 
 /**
  * All-in-one preset: a raw-HTML editor and a rendered-PDF preview side by side.
- * The preview is produced by the backend `POST /convert` (HTML → PDF/UA) endpoint.
+ * The preview is produced by the backend `POST /render/html` (HTML → PDF/UA) endpoint.
  *
  * For custom layouts, compose directly with `HtmlEditorProvider`, `HtmlCodeEditor`,
  * and `HtmlPreview`.

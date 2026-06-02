@@ -6,7 +6,7 @@ import { DocumentSettings } from "./DocumentSettings";
 
 const metadata = {
   kind: "template",
-  templateVersion: 1,
+  templateVersion: 2,
   renderEndpoint: "/render/template",
   templateFields: ["version", "config", "rows"],
   attachmentFields: [],
@@ -20,7 +20,7 @@ describe("DocumentSettings", () => {
   it("renders the document-scoped settings as a 'Page settings' bar", () => {
     render(
       <DocumentSettings
-        template={{ version: 1 }}
+        template={{ version: 2 }}
         metadata={metadata}
         format="A4"
         orientation="portrait"
@@ -42,7 +42,7 @@ describe("DocumentSettings", () => {
     const onChangeTemplate = vi.fn();
     render(
       <DocumentSettings
-        template={{ version: 1 }}
+        template={{ version: 2 }}
         metadata={metadata}
         format="A4"
         orientation="portrait"
@@ -55,14 +55,14 @@ describe("DocumentSettings", () => {
     fireEvent.change(screen.getByLabelText("Family"), { target: { value: "Source Sans 3" } });
 
     expect(onChangeTemplate).toHaveBeenLastCalledWith({
-      version: 1,
+      version: 2,
       config: { typography: { family: "Source Sans 3" } },
     });
   });
 
   it("updates page margins while preserving footer rows and page numbers", () => {
     const template = {
-      version: 1,
+      version: 2,
       config: {
         page: {
           pageNumbers: { enabled: true, position: "right" },
@@ -108,7 +108,7 @@ describe("DocumentSettings", () => {
     const onChangeOrientation = vi.fn<(orientation: Orientation) => void>();
     render(
       <DocumentSettings
-        template={{ version: 1 }}
+        template={{ version: 2 }}
         metadata={metadata}
         format="A4"
         orientation="portrait"
