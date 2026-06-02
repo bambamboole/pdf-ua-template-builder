@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Template } from "../types/generated/template";
-import { fetchTemplateSchema, renderHtmlPdf, renderTemplatePdf } from "./pdfUaApi";
+import {
+  fetchTemplateSchema,
+  renderHtmlPdf,
+  renderHtmlPreview,
+  renderTemplatePdf,
+  renderTemplatePreview,
+} from "./pdfUaApi";
 
 const mockFetch = vi.fn<typeof fetch>();
 
@@ -214,7 +220,7 @@ describe("renderTemplatePdf", () => {
     expect(url).toBe("http://api.test/render/template");
     expect(init.method).toBe("POST");
     expect(init.headers).toMatchObject({
-      Accept: "application/pdf, application/json",
+      Accept: "application/pdf, application/json;q=0.1",
       "Content-Type": "application/json",
     });
     expect(JSON.parse(String(init.body))).toEqual({ data: {}, template });
@@ -245,6 +251,25 @@ describe("renderTemplatePdf", () => {
     await expect(renderTemplatePdf("http://api.test", { template })).rejects.toThrow(
       "invalid template",
     );
+  });
+
+  it("requests JSON preview output and decodes the returned PDF", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ pdf: "JVBERi0xLjc=", validation: validValidation }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    const result = await renderTemplatePreview("http://api.test", { template });
+
+    expect(await result.pdf.text()).toBe("%PDF-1.7");
+    expect(result.validation).toEqual(validValidation);
+    expect(lastCall()[1].headers).toMatchObject({
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    });
+    expect(JSON.parse(String(lastCall()[1].body))).toEqual({ data: {}, template });
   });
 });
 
@@ -296,4 +321,46 @@ describe("renderHtmlPdf", () => {
       "HTML content cannot be empty",
     );
   });
+
+  it("requests JSON preview output and decodes the returned PDF", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ pdf: "JVBERi0xLjc=", validation: validValidation }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    const result = await renderHtmlPreview("http://api.test", { html: "<h1>Hi</h1>" });
+
+    expect(await result.pdf.text()).toBe("%PDF-1.7");
+    expect(result.validation).toEqual(validValidation);
+    const [url, init] = lastCall();
+    expect(url).toBe("http://api.test/render/html");
+    expect(init.headers).toMatchObject({
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    });
+    expect(JSON.parse(String(init.body))).toEqual({ html: "<h1>Hi</h1>" });
+  });
 });
+
+const validValidation = {
+  isCompliant: true,
+  profiles: [
+    {
+      profile: "PDF/UA-1",
+      specification: "ISO 14289-1",
+      isCompliant: true,
+      totalChecks: 2,
+      passedChecks: 2,
+      failedChecks: 0,
+    },
+  ],
+  summary: {
+    totalChecks: 2,
+    passedChecks: 2,
+    failedChecks: 0,
+    categories: [],
+  },
+  failures: [],
+};

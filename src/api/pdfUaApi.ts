@@ -1,9 +1,20 @@
 import type { FileAttachment } from "../types/generated/template";
-import type { Template, TemplateData, TemplateSchemaResponse } from "../types/template";
+import type {
+  PdfValidationResponse,
+  RenderedPdfPreview,
+  Template,
+  TemplateData,
+  TemplateSchemaResponse,
+} from "../types/template";
 
 interface RenderTemplateRequest {
   template: Template;
   data?: TemplateData;
+}
+
+interface RenderPdfJsonResponse {
+  validation: PdfValidationResponse;
+  pdf: string;
 }
 
 export interface ConvertHtmlRequest {
@@ -103,10 +114,37 @@ export async function renderTemplatePdf(
   baseUrl: string,
   request: RenderTemplateRequest,
 ): Promise<Blob> {
-  const response = await fetch(joinUrl(baseUrl, "/render/template"), {
+  const response = await postTemplateRender(baseUrl, request, "application/pdf, application/json;q=0.1");
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  return response.blob();
+}
+
+export async function renderTemplatePreview(
+  baseUrl: string,
+  request: RenderTemplateRequest,
+): Promise<RenderedPdfPreview> {
+  const response = await postTemplateRender(baseUrl, request, "application/json");
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  return parsePreviewResponse(response);
+}
+
+function postTemplateRender(
+  baseUrl: string,
+  request: RenderTemplateRequest,
+  accept: string,
+): Promise<Response> {
+  return fetch(joinUrl(baseUrl, "/render/template"), {
     method: "POST",
     headers: {
-      Accept: "application/pdf, application/json",
+      Accept: accept,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -114,12 +152,6 @@ export async function renderTemplatePdf(
       data: request.data ?? {},
     }),
   });
-
-  if (!response.ok) {
-    throw new Error(await parseError(response));
-  }
-
-  return response.blob();
 }
 
 export async function renderHtmlPdf(
@@ -140,4 +172,48 @@ export async function renderHtmlPdf(
   }
 
   return response.blob();
+}
+
+export async function renderHtmlPreview(
+  baseUrl: string,
+  request: ConvertHtmlRequest,
+): Promise<RenderedPdfPreview> {
+  const response = await fetch(joinUrl(baseUrl, "/render/html"), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  return parsePreviewResponse(response);
+}
+
+async function parsePreviewResponse(response: Response): Promise<RenderedPdfPreview> {
+  const payload = (await response.json()) as Partial<RenderPdfJsonResponse>;
+
+  if (!payload.validation || typeof payload.pdf !== "string") {
+    throw new Error("Render response did not contain validation and pdf.");
+  }
+
+  return {
+    pdf: base64ToBlob(payload.pdf, "application/pdf"),
+    validation: payload.validation,
+  };
+}
+
+function base64ToBlob(base64: string, type: string): Blob {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return new Blob([bytes], { type });
 }

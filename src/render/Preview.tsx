@@ -6,13 +6,14 @@ export interface PreviewProps {
 }
 
 export function Preview({ className }: PreviewProps = {}) {
-  const { template, data, pdfUrl, pdfLoading, error, renderPdf, renderDisabled } =
+  const { template, data, pdfUrl, validation, pdfLoading, error, renderPdf, renderDisabled } =
     useRenderContext();
 
   return (
     <PdfPane
       className={className}
       pdfUrl={pdfUrl}
+      validation={validation}
       error={error}
       loading={pdfLoading}
       template={template ?? undefined}

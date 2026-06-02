@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Template } from "../types/generated/template";
 import type { TemplateData, TemplateSchemaResponse } from "../types/template";
-import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
+import { fetchTemplateSchema, renderTemplatePreview } from "../api/pdfUaApi";
 import { TemplateBuilder } from "./TemplateBuilder";
 import { createInvoiceExample } from "./schema/invoiceExample";
 
@@ -11,7 +11,7 @@ const examples = { Invoice: createInvoiceExample() };
 
 vi.mock("../api/pdfUaApi", () => ({
   fetchTemplateSchema: vi.fn(),
-  renderTemplatePdf: vi.fn(),
+  renderTemplatePreview: vi.fn(),
   resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
 }));
 
@@ -46,12 +46,12 @@ const builderSchema = {
 } satisfies TemplateSchemaResponse;
 
 const mockFetchSchema = vi.mocked(fetchTemplateSchema);
-const mockRenderPdf = vi.mocked(renderTemplatePdf);
+const mockRenderPreview = vi.mocked(renderTemplatePreview);
 
 describe("TemplateBuilder", () => {
   beforeEach(() => {
     mockFetchSchema.mockReset();
-    mockRenderPdf.mockReset();
+    mockRenderPreview.mockReset();
     mockFetchSchema.mockResolvedValue(builderSchema);
     URL.createObjectURL = vi.fn(() => "blob:mock-pdf");
     URL.revokeObjectURL = vi.fn();
@@ -78,7 +78,7 @@ describe("TemplateBuilder", () => {
   it("renders a PDF and reports the blob when Render is clicked", async () => {
     const user = userEvent.setup();
     const pdf = new Blob(["%PDF-1.7"], { type: "application/pdf" });
-    mockRenderPdf.mockResolvedValue(pdf);
+    mockRenderPreview.mockResolvedValue({ pdf, validation: validValidation });
     const onRendered = vi.fn<(pdf: Blob) => void>();
 
     render(<TemplateBuilder onRendered={onRendered} />);
@@ -90,8 +90,8 @@ describe("TemplateBuilder", () => {
 
     await user.click(renderButton);
 
-    await waitFor(() => expect(mockRenderPdf).toHaveBeenCalledTimes(1));
-    expect(mockRenderPdf).toHaveBeenCalledWith(
+    await waitFor(() => expect(mockRenderPreview).toHaveBeenCalledTimes(1));
+    expect(mockRenderPreview).toHaveBeenCalledWith(
       "",
       expect.objectContaining({
         template: expect.objectContaining({ version: 2 }),
@@ -123,3 +123,15 @@ describe("TemplateBuilder", () => {
     expect(Object.keys(lastCall?.[1] ?? {})).toContain("lineItems");
   });
 });
+
+const validValidation = {
+  isCompliant: true,
+  profiles: [],
+  summary: {
+    totalChecks: 1,
+    passedChecks: 1,
+    failedChecks: 0,
+    categories: [],
+  },
+  failures: [],
+};

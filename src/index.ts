@@ -12,12 +12,19 @@ export type { PreviewProps } from "./render/Preview";
 
 export {
   fetchTemplateSchema,
+  renderTemplatePreview,
   renderTemplatePdf,
+  renderHtmlPreview,
   renderHtmlPdf,
   resolveDefaultApiUrl,
 } from "./api/pdfUaApi";
 export type { ConvertHtmlRequest } from "./api/pdfUaApi";
-export type { TemplateData, TemplateSchemaResponse } from "./types/template";
+export type {
+  PdfValidationResponse,
+  RenderedPdfPreview,
+  TemplateData,
+  TemplateSchemaResponse,
+} from "./types/template";
 export type {
   Align,
   Block,

@@ -1,20 +1,23 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderHtmlPdf } from "../api/pdfUaApi";
+import { renderHtmlPreview } from "../api/pdfUaApi";
 import { HtmlEditor } from "./HtmlEditor";
 
 vi.mock("../api/pdfUaApi", () => ({
-  renderHtmlPdf: vi.fn(),
+  renderHtmlPreview: vi.fn(),
   resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
 }));
 
-const mockRenderHtmlPdf = vi.mocked(renderHtmlPdf);
+const mockRenderHtmlPreview = vi.mocked(renderHtmlPreview);
 
 describe("HtmlEditor", () => {
   beforeEach(() => {
-    mockRenderHtmlPdf.mockReset();
-    mockRenderHtmlPdf.mockResolvedValue(new Blob(["%PDF-1.7"], { type: "application/pdf" }));
+    mockRenderHtmlPreview.mockReset();
+    mockRenderHtmlPreview.mockResolvedValue({
+      pdf: new Blob(["%PDF-1.7"], { type: "application/pdf" }),
+      validation: validValidation,
+    });
     URL.createObjectURL = vi.fn(() => "blob:mock-pdf");
     URL.revokeObjectURL = vi.fn();
   });
@@ -35,8 +38,8 @@ describe("HtmlEditor", () => {
 
     await user.click(renderButton);
 
-    await waitFor(() => expect(mockRenderHtmlPdf).toHaveBeenCalledTimes(1));
-    expect(mockRenderHtmlPdf).toHaveBeenCalledWith("https://example.test", {
+    await waitFor(() => expect(mockRenderHtmlPreview).toHaveBeenCalledTimes(1));
+    expect(mockRenderHtmlPreview).toHaveBeenCalledWith("https://example.test", {
       html: "<h1>Hi</h1>",
       baseUrl: undefined,
     });
@@ -60,10 +63,45 @@ describe("HtmlEditor", () => {
 
     await user.click(screen.getByRole("button", { name: "Render PDF" }));
 
-    await waitFor(() => expect(mockRenderHtmlPdf).toHaveBeenCalledTimes(1));
-    expect(mockRenderHtmlPdf).toHaveBeenCalledWith("https://example.test", {
+    await waitFor(() => expect(mockRenderHtmlPreview).toHaveBeenCalledTimes(1));
+    expect(mockRenderHtmlPreview).toHaveBeenCalledWith("https://example.test", {
       html: "<p>x</p>",
       baseUrl: "https://assets.test",
     });
   });
+
+  it("shows validation returned from the HTML render preview", async () => {
+    const user = userEvent.setup();
+    mockRenderHtmlPreview.mockResolvedValueOnce({
+      pdf: new Blob(["%PDF-1.7"], { type: "application/pdf" }),
+      validation: {
+        ...validValidation,
+        summary: {
+          totalChecks: 3,
+          passedChecks: 3,
+          failedChecks: 0,
+          categories: [],
+        },
+      },
+    });
+    render(<HtmlEditor initialHtml="<h1>Hi</h1>" />);
+
+    await user.click(screen.getByRole("button", { name: "Render PDF" }));
+    await user.click(screen.getByRole("tab", { name: "Validation" }));
+
+    expect(await screen.findByText("Compliant")).toBeInTheDocument();
+    expect(screen.getByText("3 of 3 checks passed")).toBeInTheDocument();
+  });
 });
+
+const validValidation = {
+  isCompliant: true,
+  profiles: [],
+  summary: {
+    totalChecks: 1,
+    passedChecks: 1,
+    failedChecks: 0,
+    categories: [],
+  },
+  failures: [],
+};

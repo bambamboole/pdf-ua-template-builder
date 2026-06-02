@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchTemplateSchema, renderTemplatePdf } from "../api/pdfUaApi";
+import { fetchTemplateSchema, renderTemplatePreview } from "../api/pdfUaApi";
 import type { Template } from "../types/generated/template";
-import type { TemplateData, TemplateSchemaResponse } from "../types/template";
+import type { PdfValidationResponse, TemplateData, TemplateSchemaResponse } from "../types/template";
 
 interface UsePdfUaApiOptions {
   initialApiUrl: string;
@@ -14,6 +14,7 @@ interface PdfUaApi {
   schema: TemplateSchemaResponse | null;
   schemaLoading: boolean;
   pdfUrl: string | null;
+  validation: PdfValidationResponse | null;
   pdfLoading: boolean;
   error: string | null;
   loadSchema: (url: string) => Promise<void>;
@@ -29,6 +30,7 @@ export function usePdfUaApi({
   const [schema, setSchema] = useState<TemplateSchemaResponse | null>(null);
   const [schemaLoading, setSchemaLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [validation, setValidation] = useState<PdfValidationResponse | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,13 +86,14 @@ export function usePdfUaApi({
       renderRequestId.current = requestId;
       setPdfLoading(true);
       setError(null);
+      setValidation(null);
 
       try {
-        const pdf = await renderTemplatePdf(apiUrl, {
+        const result = await renderTemplatePreview(apiUrl, {
           template,
           data,
         });
-        const nextPdfUrl = URL.createObjectURL(pdf);
+        const nextPdfUrl = URL.createObjectURL(result.pdf);
 
         if (requestId !== renderRequestId.current) {
           revokeObjectUrl(nextPdfUrl);
@@ -102,7 +105,8 @@ export function usePdfUaApi({
           pdfUrlRef.current = nextPdfUrl;
           return nextPdfUrl;
         });
-        onRenderedRef.current?.(pdf);
+        setValidation(result.validation);
+        onRenderedRef.current?.(result.pdf);
       } catch (cause) {
         if (requestId === renderRequestId.current) {
           setError(errorMessage(cause));
@@ -116,7 +120,7 @@ export function usePdfUaApi({
     [apiUrl],
   );
 
-  return { schema, schemaLoading, pdfUrl, pdfLoading, error, loadSchema, renderPdf };
+  return { schema, schemaLoading, pdfUrl, validation, pdfLoading, error, loadSchema, renderPdf };
 }
 
 function revokeObjectUrl(url: string | null): void {

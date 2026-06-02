@@ -17,8 +17,8 @@ vi.mock("./api/pdfUaApi", () => ({
       pageFormats: [],
     },
   }),
-  renderTemplatePdf: vi.fn(),
-  renderHtmlPdf: vi.fn(),
+  renderTemplatePreview: vi.fn(),
+  renderHtmlPreview: vi.fn(),
   resolveDefaultApiUrl: (configuredApiUrl?: string) => configuredApiUrl ?? "",
 }));
 

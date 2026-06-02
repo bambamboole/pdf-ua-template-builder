@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { resolveDefaultApiUrl } from "../api/pdfUaApi";
+import type { PdfValidationResponse } from "../types/template";
 import { DEFAULT_HTML } from "./defaultHtml";
 import { useHtmlPreview } from "./useHtmlPreview";
 
@@ -30,6 +31,7 @@ export interface HtmlEditorContextValue {
   html: string;
   setHtml: (html: string) => void;
   pdfUrl: string | null;
+  validation: PdfValidationResponse | null;
   pdfLoading: boolean;
   error: string | null;
   renderPdf: () => void;
@@ -72,7 +74,11 @@ export function HtmlEditorProvider({
     onChangeRef.current?.(html);
   }, [html]);
 
-  const { pdfUrl, loading, error, render } = useHtmlPreview({ apiUrl, baseUrl, onRendered });
+  const { pdfUrl, validation, loading, error, render } = useHtmlPreview({
+    apiUrl,
+    baseUrl,
+    onRendered,
+  });
 
   const htmlRef = useRef(html);
   htmlRef.current = html;
@@ -88,12 +94,13 @@ export function HtmlEditorProvider({
       html,
       setHtml,
       pdfUrl,
+      validation,
       pdfLoading: loading,
       error,
       renderPdf,
       renderDisabled: html.trim() === "" || loading,
     }),
-    [html, pdfUrl, loading, error, renderPdf],
+    [html, pdfUrl, validation, loading, error, renderPdf],
   );
 
   return <HtmlEditorContext.Provider value={value}>{children}</HtmlEditorContext.Provider>;
