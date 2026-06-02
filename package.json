@@ -1,6 +1,6 @@
 {
   "name": "@bambamboole/pdf-ua-template-builder",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": false,
   "description": "Embeddable React template builder for the pdf-ua-api PDF/UA renderer.",
   "author": "Manuel Christlieb",
