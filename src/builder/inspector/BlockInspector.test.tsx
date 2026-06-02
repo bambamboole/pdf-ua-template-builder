@@ -7,7 +7,7 @@ import { BlockInspector } from "./BlockInspector";
 const schema = {
   "x-pdfUa": {
     kind: "template",
-    templateVersion: 1,
+    templateVersion: 2,
     renderEndpoint: "/render/template",
     templateFields: [],
     attachmentFields: [],
@@ -21,7 +21,7 @@ const schema = {
 describe("BlockInspector", () => {
   it("renders the inspector shell for the selected block", () => {
     const model = createEditorModel({
-      version: 1,
+      version: 2,
       rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
     });
     const selectedBlockUid = model.rows[0]?.blocks[0]?.uid ?? "";
@@ -49,7 +49,7 @@ describe("BlockInspector", () => {
 
   it("edits the block id", () => {
     const model = createEditorModel({
-      version: 1,
+      version: 2,
       rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
     });
     const selectedBlockUid = model.rows[0]?.blocks[0]?.uid ?? "";
@@ -77,13 +77,10 @@ describe("BlockInspector", () => {
 
   it("moves focus into the panel when a block is selected", () => {
     const model = createEditorModel({
-      version: 1,
+      version: 2,
       rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
     });
-    const selectedBlock = resolveSelectedEditorBlock(
-      model,
-      model.rows[0]?.blocks[0]?.uid ?? "",
-    );
+    const selectedBlock = resolveSelectedEditorBlock(model, model.rows[0]?.blocks[0]?.uid ?? "");
 
     render(
       <BlockInspector
@@ -101,13 +98,10 @@ describe("BlockInspector", () => {
 
   it("calls onClose when Escape is pressed inside the panel", () => {
     const model = createEditorModel({
-      version: 1,
+      version: 2,
       rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
     });
-    const selectedBlock = resolveSelectedEditorBlock(
-      model,
-      model.rows[0]?.blocks[0]?.uid ?? "",
-    );
+    const selectedBlock = resolveSelectedEditorBlock(model, model.rows[0]?.blocks[0]?.uid ?? "");
     const onClose = vi.fn();
 
     render(
@@ -130,13 +124,10 @@ describe("BlockInspector", () => {
 
   it("restores focus to the previously focused element when the panel closes", () => {
     const model = createEditorModel({
-      version: 1,
+      version: 2,
       rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
     });
-    const selectedBlock = resolveSelectedEditorBlock(
-      model,
-      model.rows[0]?.blocks[0]?.uid ?? "",
-    );
+    const selectedBlock = resolveSelectedEditorBlock(model, model.rows[0]?.blocks[0]?.uid ?? "");
 
     function Harness({ open }: { open: boolean }) {
       return (
@@ -170,7 +161,7 @@ describe("BlockInspector", () => {
 
   it("shows the empty state when no block is selected", () => {
     const model = createEditorModel({
-      version: 1,
+      version: 2,
       rows: [{ blocks: [{ type: "text", id: "text-1", text: "Body" }] }],
     });
 

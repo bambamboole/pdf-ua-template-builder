@@ -17,7 +17,7 @@ import { BlockInspector } from "./BlockInspector";
 const schema = {
   "x-pdfUa": {
     kind: "template",
-    templateVersion: 1,
+    templateVersion: 2,
     renderEndpoint: "/render/template",
     templateFields: [],
     attachmentFields: [],
@@ -75,7 +75,7 @@ describe("BlockContentControls", () => {
       type: "heading",
       id: "title",
       text: "Invoice",
-      config: { level: 2 },
+      level: 2,
     } satisfies HeadingBlock;
     const { onChangeBlock } = renderControls(block);
 
@@ -92,9 +92,7 @@ describe("BlockContentControls", () => {
     );
 
     await user.selectOptions(levelSelect, "3");
-    expect(onChangeBlock).toHaveBeenLastCalledWith(
-      expect.objectContaining({ config: { level: 3 } }),
-    );
+    expect(onChangeBlock).toHaveBeenLastCalledWith(expect.objectContaining({ level: 3 }));
 
     await user.selectOptions(levelSelect, "Default");
     expect(onChangeBlock).toHaveBeenLastCalledWith({
@@ -130,7 +128,8 @@ describe("BlockContentControls", () => {
       id: "logo",
       src: "https://example.com/logo.png",
       alt: "Company logo",
-      config: { maxHeight: 24, width: "40mm", align: "right" },
+      maxHeight: "24mm",
+      config: { width: "40mm", align: "right" },
     } satisfies ImageBlock;
     const { onChangeBlock } = renderControls(block);
 
@@ -153,7 +152,7 @@ describe("BlockContentControls", () => {
 describe("BlockInspector content section", () => {
   it("renders selected known block content controls", () => {
     const model = createEditorModel({
-      version: 1,
+      version: 2,
       rows: [{ blocks: [{ type: "heading", id: "heading-1", text: "Title" }] }],
     });
     const selectedUid = model.rows[0]?.blocks[0]?.uid ?? "";

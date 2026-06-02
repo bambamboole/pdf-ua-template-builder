@@ -1,15 +1,9 @@
 import type { FileAttachment } from "../types/generated/template";
-import type {
-  RenderOptions,
-  Template,
-  TemplateData,
-  TemplateSchemaResponse,
-} from "../types/template";
+import type { Template, TemplateData, TemplateSchemaResponse } from "../types/template";
 
 interface RenderTemplateRequest {
   template: Template;
   data?: TemplateData;
-  options?: RenderOptions;
 }
 
 export interface ConvertHtmlRequest {
@@ -19,6 +13,12 @@ export interface ConvertHtmlRequest {
   baseUrl?: string;
   /** Files to embed in the produced PDF/A-3 document. */
   attachments?: FileAttachment[];
+}
+
+interface OpenApiDocument {
+  components?: {
+    schemas?: Record<string, unknown>;
+  };
 }
 
 export function resolveDefaultApiUrl(configuredApiUrl?: string): string {
@@ -43,7 +43,7 @@ async function parseError(response: Response): Promise<string> {
 }
 
 export async function fetchTemplateSchema(baseUrl: string): Promise<TemplateSchemaResponse> {
-  const response = await fetch(joinUrl(baseUrl, "/schema"), {
+  const response = await fetch(joinUrl(baseUrl, "/openapi.json"), {
     headers: {
       Accept: "application/json",
     },
@@ -53,7 +53,50 @@ export async function fetchTemplateSchema(baseUrl: string): Promise<TemplateSche
     throw new Error(await parseError(response));
   }
 
-  return (await response.json()) as TemplateSchemaResponse;
+  return extractTemplateSchemaFromOpenApi((await response.json()) as OpenApiDocument);
+}
+
+function extractTemplateSchemaFromOpenApi(openApi: OpenApiDocument): TemplateSchemaResponse {
+  const schemas = openApi.components?.schemas;
+  const template = schemas?.Template;
+
+  if (!isRecord(schemas) || !isRecord(template)) {
+    throw new Error("OpenAPI document does not contain components.schemas.Template");
+  }
+
+  const templateDefs = isRecord(template.$defs)
+    ? template.$defs
+    : Object.fromEntries(Object.entries(schemas).filter(([name]) => name !== "Template"));
+  const adapted = rewriteOpenApiRefs({
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    ...template,
+    $defs: templateDefs,
+  });
+
+  return adapted as TemplateSchemaResponse;
+}
+
+function rewriteOpenApiRefs(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(rewriteOpenApiRefs);
+  }
+
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nested]) => [
+      key,
+      key === "$ref" && typeof nested === "string"
+        ? nested.replace(/^#\/components\/schemas\//, "#/$defs/")
+        : rewriteOpenApiRefs(nested),
+    ]),
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export async function renderTemplatePdf(
@@ -63,13 +106,12 @@ export async function renderTemplatePdf(
   const response = await fetch(joinUrl(baseUrl, "/render/template"), {
     method: "POST",
     headers: {
-      Accept: "application/pdf",
+      Accept: "application/pdf, application/json",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      data: {},
-      options: {},
-      ...request,
+      template: request.template,
+      data: request.data ?? {},
     }),
   });
 
@@ -84,7 +126,7 @@ export async function renderHtmlPdf(
   baseUrl: string,
   request: ConvertHtmlRequest,
 ): Promise<Blob> {
-  const response = await fetch(joinUrl(baseUrl, "/convert"), {
+  const response = await fetch(joinUrl(baseUrl, "/render/html"), {
     method: "POST",
     headers: {
       Accept: "application/pdf",

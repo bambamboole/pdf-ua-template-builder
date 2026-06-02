@@ -12,7 +12,7 @@ import type {
   TextBlock,
 } from "../../types/generated/template";
 import { isRecord } from "../lib/records";
-import { setBlockConfigField } from "../state/configUpdates";
+import { setBlockField } from "../state/configUpdates";
 import { ColumnResizer } from "./ColumnResizer";
 import { formatWidths, labelWidthPercent, tableColumnTracks } from "./columns";
 
@@ -108,7 +108,7 @@ function KeyValuePreview({
   onChange?: (block: Block) => void;
 }) {
   const listRef = useRef<HTMLDListElement | null>(null);
-  const fields = block.config?.fields ?? [];
+  const fields = block.fields ?? [];
   const values = mergeRecordValues(block.values, rowData);
   const entries =
     fields.length > 0
@@ -127,7 +127,7 @@ function KeyValuePreview({
     return <EmptyPreview>No fields yet</EmptyPreview>;
   }
 
-  const labelPercent = labelWidthPercent(block.config?.labelWidth);
+  const labelPercent = labelWidthPercent(block.labelWidth);
   const columnsStyle = { gridTemplateColumns: `${labelPercent}% minmax(0, 1fr)` };
 
   return (
@@ -153,7 +153,7 @@ function KeyValuePreview({
             leftIndex={0}
             containerRef={listRef}
             label="Resize the label column"
-            onResize={(widths) => onChange(setBlockConfigField(block, "labelWidth", widths[0]))}
+            onResize={(widths) => onChange(setBlockField(block, "labelWidth", widths[0]))}
           />
         </div>
       ) : null}
@@ -171,8 +171,8 @@ function TablePreview({
   onChange?: (block: Block) => void;
 }) {
   const tableRef = useRef<HTMLDivElement | null>(null);
-  const columns = block.config?.columns ?? [];
-  const numberRows = block.config?.numberRows === true;
+  const columns = block.columns ?? [];
+  const numberRows = block.numberRows === true;
   const rows = Array.isArray(rowData) ? rowData.filter(isRecord) : [];
 
   if (columns.length === 0) {
@@ -267,7 +267,7 @@ function TablePreview({
                   label={`Resize column ${index + 1}`}
                   onResize={(next) =>
                     onChange(
-                      setBlockConfigField(
+                      setBlockField(
                         block,
                         "columns",
                         columns.map((current, columnIndex) => ({
@@ -287,17 +287,17 @@ function TablePreview({
 }
 
 function SpacerPreview({ block }: { block: SpacerBlock }) {
-  const height = block.config?.height;
+  const height = block.height;
 
   return (
     <div className="grid h-9 place-items-center rounded-md border border-dashed border-border-strong text-2xs text-fg-subtle">
-      {typeof height === "number" ? `${height}mm spacer` : "Spacer"}
+      {typeof height === "string" ? `${height} spacer` : "Spacer"}
     </div>
   );
 }
 
 function DividerPreview({ block }: { block: DividerBlock }) {
-  const style = block.config?.style ?? "solid";
+  const style = block.style ?? "solid";
   const styleClass =
     style === "dashed"
       ? "border-dashed"
@@ -319,10 +319,7 @@ function mergeRecordValues(
   return Object.assign({}, values, isRecord(rowData) ? rowData : undefined);
 }
 
-function tableRowPreviewKey(
-  row: Record<string, unknown>,
-  columns: NonNullable<TableBlock["config"]>["columns"],
-): string {
+function tableRowPreviewKey(row: Record<string, unknown>, columns: TableBlock["columns"]): string {
   return columns?.map((column) => stringifyPreviewValue(row[column.key])).join("|") ?? "";
 }
 

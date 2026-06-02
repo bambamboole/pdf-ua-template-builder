@@ -26,7 +26,7 @@ describe("HtmlEditor", () => {
     expect(screen.getByLabelText("Template HTML editor")).toBeInTheDocument();
   });
 
-  it("renders the seeded HTML through the /convert endpoint", async () => {
+  it("renders the seeded HTML through the backend", async () => {
     const user = userEvent.setup();
     render(<HtmlEditor apiUrl="https://example.test" initialHtml="<h1>Hi</h1>" />);
 

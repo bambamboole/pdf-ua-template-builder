@@ -15,11 +15,6 @@ export interface JsonSchemaObject {
   [key: string]: unknown;
 }
 
-export interface RenderOptions {
-  title?: string;
-  baseUrl?: string;
-}
-
 export interface TemplatePageFormat {
   name: string;
   widthMm: number;
@@ -37,6 +32,8 @@ export interface TemplateSchemaMetadata {
   blockOrder: string[];
   pageFormats: TemplatePageFormat[];
 }
+
+export type TemplateSchemaPropertyGroup = "content" | "layout" | "style" | "data";
 
 export interface TemplateSchemaResponse extends JsonSchemaObject {
   $schema?: string;

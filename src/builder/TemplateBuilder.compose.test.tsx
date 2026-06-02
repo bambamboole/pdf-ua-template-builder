@@ -33,7 +33,7 @@ const builderSchema = {
   },
   "x-pdfUa": {
     kind: "template",
-    templateVersion: 1,
+    templateVersion: 2,
     renderEndpoint: "/render/template",
     templateFields: [],
     attachmentFields: [],
@@ -74,9 +74,7 @@ describe("composing Builder and Preview", () => {
     expect(screen.getByRole("complementary", { name: "Block palette" })).toBeInTheDocument();
     expect(screen.getByRole("complementary", { name: "Output" })).toBeInTheDocument();
 
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Load example" })).toBeEnabled(),
-    );
+    await waitFor(() => expect(screen.getByRole("button", { name: "Load example" })).toBeEnabled());
   });
 
   it("shares state: Load example (Builder) fills the canvas and Render (Preview) calls the API", async () => {
@@ -98,9 +96,7 @@ describe("composing Builder and Preview", () => {
     await waitFor(() =>
       expect(screen.queryByText("Drop a block here to begin")).not.toBeInTheDocument(),
     );
-    expect(
-      screen.getByText(/Please transfer the amount due within 30 days/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Please transfer the amount due within 30 days/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Render PDF" }));
 

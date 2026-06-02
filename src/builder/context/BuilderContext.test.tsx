@@ -24,7 +24,7 @@ const builderSchema = {
   },
   "x-pdfUa": {
     kind: "template",
-    templateVersion: 1,
+    templateVersion: 2,
     renderEndpoint: "/render/template",
     templateFields: [],
     attachmentFields: [],
@@ -77,9 +77,7 @@ describe("TemplateBuilderProvider", () => {
     expect(mockFetchSchema).toHaveBeenCalledWith("https://example.test");
     expect(screen.getByTestId("schema-loaded")).toHaveTextContent("no");
 
-    await waitFor(() =>
-      expect(screen.getByTestId("schema-loaded")).toHaveTextContent("yes"),
-    );
+    await waitFor(() => expect(screen.getByTestId("schema-loaded")).toHaveTextContent("yes"));
     expect(screen.getByTestId("block-count")).toHaveTextContent("1");
   });
 });

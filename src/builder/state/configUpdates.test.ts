@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Block, Template } from "../../types/generated/template";
 import {
   setBlockConfigField,
+  setBlockField,
   setBlockSpacingField,
   setBlockTypographyField,
   setTemplatePageMargin,
@@ -36,7 +37,7 @@ describe("config updates", () => {
       type: "heading",
       id: "title",
       text: "Title",
-      config: { level: 2 },
+      level: 2,
     } satisfies Block;
 
     const withFamily = setBlockTypographyField(block, "family", "Inter");
@@ -44,7 +45,7 @@ describe("config updates", () => {
 
     expect(withSize).toEqual({
       ...block,
-      config: { level: 2, typography: { family: "Inter", size: 14 } },
+      config: { typography: { family: "Inter", size: 14 } },
     });
 
     const withoutFamily = setBlockTypographyField(withSize, "family", null);
@@ -52,9 +53,23 @@ describe("config updates", () => {
 
     expect(withoutFamily).toEqual({
       ...block,
-      config: { level: 2, typography: { size: 14 } },
+      config: { typography: { size: 14 } },
     });
     expect(withoutSize).toEqual(block);
+  });
+
+  it("sets and clears v2 block-specific root fields", () => {
+    const block = {
+      type: "spacer",
+      id: "gap",
+      config: { width: "100%" },
+    } satisfies Block;
+
+    const withHeight = setBlockField(block, "height", "8mm");
+    const withoutHeight = setBlockField(withHeight, "height", "");
+
+    expect(withHeight).toEqual({ ...block, height: "8mm" });
+    expect(withoutHeight).toEqual(block);
   });
 
   it("sets and clears block spacing while pruning empty block config", () => {
@@ -80,7 +95,7 @@ describe("config updates", () => {
 
   it("sets template typography and page margins while preserving footer and page numbers", () => {
     const template = {
-      version: 1,
+      version: 2,
       config: {
         page: {
           pageNumbers: { enabled: true, position: "center" },

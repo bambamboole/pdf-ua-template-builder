@@ -3,9 +3,9 @@ import { parseTemplate } from "./parseTemplate";
 
 describe("parseTemplate", () => {
   it("parses a valid template object", () => {
-    const result = parseTemplate('{ "version": 1 }');
+    const result = parseTemplate('{ "version": 2 }');
     expect(result.error).toBeNull();
-    expect(result.template).toEqual({ version: 1 });
+    expect(result.template).toEqual({ version: 2 });
   });
 
   it("returns an error for malformed JSON", () => {

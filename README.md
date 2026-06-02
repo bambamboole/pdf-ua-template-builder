@@ -159,8 +159,10 @@ themes, matching the white PDF the backend produces.
 
 The component talks to a `pdf-ua-api` instance via:
 
-- `GET {apiUrl}/schema` — for block metadata used by the palette and forms.
+- `GET {apiUrl}/openapi.json` — the builder extracts `components.schemas.Template`
+  for block metadata used by the palette and forms.
 - `POST {apiUrl}/render/template` — to render the current template + data into a PDF blob.
+- `POST {apiUrl}/render/html` — to render raw HTML into a PDF blob.
 
 See the [pdf-ua-api](https://github.com/bambamboole/pdf-ua-api) repository for
 installation and configuration. The component does **not** render PDFs in the
@@ -194,8 +196,9 @@ npm run typecheck    # tsc --noEmit
 npm run lint         # oxlint
 ```
 
-`npm run dev` proxies `/schema` and `/render/*` to a local `pdf-ua-api`
-(default: `http://localhost:9999`, override with `PDF_UA_API_PROXY_URL`).
+`npm run dev` starts the Compose backend and serves the Vite app. Set
+`VITE_PDF_UA_API_URL` to point the app at a different `pdf-ua-api`
+(default: `http://localhost:9999`; proxy fallback override: `PDF_UA_API_PROXY_URL`).
 
 ## License
 

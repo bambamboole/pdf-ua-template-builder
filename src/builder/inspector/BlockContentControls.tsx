@@ -4,7 +4,7 @@ import { ImageBlockEditor } from "./editors/ImageBlockEditor";
 import { KeyValueBlockEditor } from "./editors/KeyValueBlockEditor";
 import { TableBlockEditor } from "./editors/TableBlockEditor";
 import { SelectField, TextAreaField, TextField, type SelectFieldOption } from "../controls";
-import { setBlockConfigField } from "../state/configUpdates";
+import { setBlockField } from "../state/configUpdates";
 import { InspectorSection } from "./InspectorShell";
 
 export interface BlockContentControlsProps {
@@ -80,14 +80,14 @@ function renderContentFields({ block, onChangeBlock }: BlockContentControlsProps
             onChange={(value) => onChangeBlock({ ...block, text: value ?? "" })}
           />
           <SelectField
-            name="config.level"
+            name="level"
             label="Level"
-            value={headingLevelValue(block.config?.level)}
+            value={headingLevelValue(block.level)}
             options={headingLevelOptions}
             optional
             emptyLabel="Default"
             onChange={(value) =>
-              onChangeBlock(setBlockConfigField(block, "level", parseHeadingLevel(value)))
+              onChangeBlock(setBlockField(block, "level", parseHeadingLevel(value)))
             }
           />
         </div>

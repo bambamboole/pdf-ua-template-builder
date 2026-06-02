@@ -5,13 +5,15 @@ import {
   getBlockConfigSchema,
   getBlockFieldSchema,
   getBlockTypes,
+  getSchemaDefault,
   getSchemaMetadata,
+  getSchemaPropertyGroup,
   type JsonSchemaObject,
 } from "./schemaAdapter";
 
 const metadata: TemplateSchemaMetadata = {
   kind: "template",
-  templateVersion: 1,
+  templateVersion: 2,
   renderEndpoint: "/render/template",
   templateFields: ["version", "rows"],
   attachmentFields: [],
@@ -23,7 +25,7 @@ const metadata: TemplateSchemaMetadata = {
 
 const schema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://pdf-ua-api.com/schemas/template-v1.json",
+  $id: "https://pdf-ua-api.com/schemas/template-v2.json",
   title: "Template",
   type: "object",
   $defs: {
@@ -40,8 +42,9 @@ const schema = {
       properties: {
         type: { const: "heading" },
         id: { type: ["string", "null"] },
-        text: { type: "string" },
-        config: { $ref: "#/$defs/headingConfig" },
+        text: { type: "string", "x-pdfUaGroup": "content" },
+        level: { type: "integer", "x-pdfUaDefault": 2, "x-pdfUaGroup": "content" },
+        config: { $ref: "#/$defs/blockConfig" },
       },
     },
     textBlock: {
@@ -50,7 +53,8 @@ const schema = {
       properties: {
         type: { const: "text" },
         id: { type: ["string", "null"] },
-        text: { type: "string", default: "Body copy" },
+        text: { type: "string", "x-pdfUaDefault": "Body copy" },
+        config: { $ref: "#/$defs/blockConfig" },
       },
     },
     dividerBlock: {
@@ -59,19 +63,14 @@ const schema = {
       properties: {
         type: { const: "divider" },
         id: { type: ["string", "null"] },
-        config: { $ref: "#/$defs/dividerConfig" },
+        style: { enum: ["solid", "dashed"], "x-pdfUaDefault": "solid" },
+        config: { $ref: "#/$defs/blockConfig" },
       },
     },
-    headingConfig: {
+    blockConfig: {
       type: "object",
       properties: {
-        level: { type: "number", default: 2 },
-      },
-    },
-    dividerConfig: {
-      type: "object",
-      properties: {
-        style: { enum: ["solid", "dashed"] },
+        width: { type: "string", "x-pdfUaGroup": "layout" },
       },
     },
   },
@@ -104,7 +103,8 @@ describe("schema adapter", () => {
       type: "object",
       properties: {
         id: { type: ["string", "null"] },
-        text: { type: "string" },
+        text: { type: "string", "x-pdfUaGroup": "content" },
+        level: { type: "integer", "x-pdfUaDefault": 2, "x-pdfUaGroup": "content" },
       },
       required: ["text"],
       $defs: schema.$defs,
@@ -113,9 +113,18 @@ describe("schema adapter", () => {
 
   it("resolves the block config schema", () => {
     expect(getBlockConfigSchema(schema, "heading")).toEqual({
-      ...(schema.$defs.headingConfig as JsonSchemaObject),
+      ...(schema.$defs.blockConfig as JsonSchemaObject),
       $defs: schema.$defs,
     });
+  });
+
+  it("reads namespaced backend schema hints", () => {
+    const headingLevel = (
+      (schema.$defs.headingBlock as JsonSchemaObject).properties as Record<string, JsonSchemaObject>
+    ).level;
+
+    expect(getSchemaDefault(headingLevel)).toBe(2);
+    expect(getSchemaPropertyGroup(headingLevel)).toBe("content");
   });
 
   it("creates a conservative default heading block", () => {
@@ -133,4 +142,11 @@ describe("schema adapter", () => {
     });
   });
 
+  it("uses x-pdfUaDefault for required defaults", () => {
+    expect(createDefaultBlock(schema, "text", "text-1")).toEqual({
+      type: "text",
+      id: "text-1",
+      text: "Body copy",
+    });
+  });
 });

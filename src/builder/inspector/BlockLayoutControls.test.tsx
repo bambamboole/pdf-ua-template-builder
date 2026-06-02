@@ -55,21 +55,21 @@ describe("BlockLayoutControls", () => {
     ]);
   });
 
-  it("updates and clears spacer height as a block-specific numeric field", async () => {
+  it("updates and clears spacer height as a block-specific CSS length field", async () => {
     const user = userEvent.setup();
     const block = {
       type: "spacer",
       id: "gap",
-      config: { height: 12 },
+      height: "12mm",
     } satisfies SpacerBlock;
     const { onChangeBlock } = renderControls(block);
 
     const height = screen.getByLabelText("Height");
-    expect(height).toHaveAttribute("type", "number");
+    expect(height).toHaveAttribute("type", "text");
 
     await user.clear(height);
-    await user.type(height, "24");
-    expect(onChangeBlock).toHaveBeenLastCalledWith({ ...block, config: { height: 24 } });
+    await user.type(height, "24mm");
+    expect(onChangeBlock).toHaveBeenLastCalledWith({ ...block, height: "24mm" });
 
     await user.clear(height);
     expect(onChangeBlock).toHaveBeenLastCalledWith({ type: "spacer", id: "gap" });
@@ -80,7 +80,8 @@ describe("BlockLayoutControls", () => {
     const block = {
       type: "divider",
       id: "rule",
-      config: { thickness: 2, style: "dashed" },
+      thickness: "2px",
+      style: "dashed",
     } satisfies DividerBlock;
     const { onChangeBlock } = renderControls(block);
 
@@ -92,10 +93,14 @@ describe("BlockLayoutControls", () => {
     await user.selectOptions(style, "dotted");
     expect(onChangeBlock).toHaveBeenLastCalledWith({
       ...block,
-      config: { thickness: 2, style: "dotted" },
+      style: "dotted",
     });
 
     await user.selectOptions(style, "");
-    expect(onChangeBlock).toHaveBeenLastCalledWith({ ...block, config: { thickness: 2 } });
+    expect(onChangeBlock).toHaveBeenLastCalledWith({
+      type: "divider",
+      id: "rule",
+      thickness: "2px",
+    });
   });
 });
