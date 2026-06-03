@@ -10,6 +10,7 @@ const CHROME: Record<string, BlockChrome> = {
   text: { chip: "¶", label: "Text" },
   html: { chip: "</>", label: "HTML" },
   image: { chip: "◇", label: "Image" },
+  barcode: { chip: "▥", label: "Barcode / QR" },
   table: { chip: "▦", label: "Table" },
   "key-value": { chip: "≡", label: "Key-Value" },
   spacer: { chip: "↕", label: "Spacer" },
@@ -29,6 +30,8 @@ export function getBlockSummary(block: Block): string {
       return truncate(block.html);
     case "image":
       return truncate(block.alt ?? block.src);
+    case "barcode":
+      return `${block.symbology}${block.height ? ` · ${block.height}` : ""}`;
     case "key-value": {
       const fields = block.fields ?? [];
 

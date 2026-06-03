@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Block } from "../../types/generated/template";
+import { BarcodeBlockEditor } from "./editors/BarcodeBlockEditor";
 import { ImageBlockEditor } from "./editors/ImageBlockEditor";
 import { KeyValueBlockEditor } from "./editors/KeyValueBlockEditor";
 import { TableBlockEditor } from "./editors/TableBlockEditor";
@@ -94,6 +95,8 @@ function renderContentFields({ block, onChangeBlock }: BlockContentControlsProps
       );
     case "image":
       return <ImageBlockEditor block={block} onChangeBlock={onChangeBlock} />;
+    case "barcode":
+      return <BarcodeBlockEditor block={block} onChangeBlock={onChangeBlock} />;
     case "key-value":
     case "table":
       return null;

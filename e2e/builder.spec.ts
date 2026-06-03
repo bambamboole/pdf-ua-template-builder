@@ -91,3 +91,24 @@ test("renders a PDF through the backend", async ({ page }) => {
   await outputPane(page).getByRole("tab", { name: "Validation" }).click();
   await expect(outputPane(page).getByText(/checks passed/)).toBeVisible();
 });
+
+test("adds a barcode block and renders it through the backend", async ({ page }) => {
+  await page.goto("/");
+  await expect(loadExampleButton(page)).toBeEnabled();
+
+  await addBlockButton(page, "Barcode / QR").click();
+  const bodySheet = page.locator('[data-theme="light"]').first();
+  await expect(bodySheet.getByRole("article").last()).toContainText("QR");
+  await expect(bodySheet.getByRole("article").last()).toContainText("Example");
+
+  const renderResponse = page.waitForResponse(
+    (res) => res.url().includes("/render/template") && res.request().method() === "POST",
+    { timeout: 60_000 },
+  );
+  await renderButton(page).click();
+  const response = await renderResponse;
+  expect(response.status()).toBe(200);
+
+  await expect(outputPane(page).getByText("Ready")).toBeVisible({ timeout: 60_000 });
+  await expect(pdfObject(page)).toHaveAttribute("data", /^blob:/);
+});

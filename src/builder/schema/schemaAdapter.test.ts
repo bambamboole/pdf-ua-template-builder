@@ -149,4 +149,45 @@ describe("schema adapter", () => {
       text: "Body copy",
     });
   });
+
+  it("discovers barcode from block definitions and creates a renderable default", () => {
+    const barcodeSchema = {
+      ...schema,
+      $defs: {
+        ...schema.$defs,
+        block: {
+          oneOf: [
+            ...((schema.$defs.block as JsonSchemaObject).oneOf as JsonSchemaObject[]),
+            { $ref: "#/$defs/barcodeBlock" },
+          ],
+        },
+        barcodeBlock: {
+          type: "object",
+          required: ["type", "symbology", "content"],
+          properties: {
+            type: { const: "barcode" },
+            id: { type: ["string", "null"] },
+            symbology: { enum: ["qr", "code128"] },
+            content: {
+              oneOf: [
+                {
+                  type: "object",
+                  required: ["type", "value"],
+                  properties: { type: { const: "raw" }, value: { type: "string" } },
+                },
+              ],
+            },
+          },
+        },
+      },
+    } satisfies JsonSchemaObject;
+
+    expect(getBlockTypes(barcodeSchema)).toEqual(["heading", "text", "divider", "barcode"]);
+    expect(createDefaultBlock(barcodeSchema, "barcode", "barcode-1")).toEqual({
+      type: "barcode",
+      id: "barcode-1",
+      symbology: "qr",
+      content: { type: "raw", value: "Example" },
+    });
+  });
 });

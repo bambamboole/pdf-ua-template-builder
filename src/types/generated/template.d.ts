@@ -27,7 +27,8 @@ export type Block =
   | KeyValueBlock
   | SpacerBlock
   | DividerBlock
-  | TableBlock;
+  | TableBlock
+  | BarcodeBlock;
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "blockConfig".
@@ -53,6 +54,44 @@ export type DividerStyle = "solid" | "dashed" | "dotted" | "double" | "none";
  * via the `definition` "tableStyle".
  */
 export type TableStyle = "striped" | "bordered" | "minimal";
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "symbology".
+ */
+export type Symbology =
+  | "qr"
+  | "datamatrix"
+  | "aztec"
+  | "pdf417"
+  | "code128"
+  | "code39"
+  | "ean13"
+  | "ean8"
+  | "upca"
+  | "upce"
+  | "itf14"
+  | "codabar"
+  | "gs1-128"
+  | "gs1-datamatrix"
+  | "gs1-qr"
+  | "gs1-databar"
+  | "gs1-databar-expanded"
+  | "swiss-qr";
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "barcodeContent".
+ */
+export type BarcodeContent = Epc | Gs1 | Raw | Swiss | Text | Url | Vcard | Wifi;
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "swissReferenceType".
+ */
+export type SwissReferenceType = "QRR" | "SCOR" | "NON";
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "wifiSecurity".
+ */
+export type WifiSecurity = "WPA" | "WEP" | "nopass";
 /**
  * This interface was referenced by `Template`'s JSON-Schema
  * via the `definition` "pageFormat".
@@ -298,6 +337,139 @@ export interface TableColumn {
    * Column width as a CSS width value, such as 20mm or 15%.
    */
   width?: string | null;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "barcodeBlock".
+ */
+export interface BarcodeBlock {
+  type: "barcode";
+  /**
+   * Stable block identifier used for runtime data overrides.
+   */
+  id?: string | null;
+  symbology: Symbology;
+  content: BarcodeContent;
+  /**
+   * Rendered code height as a CSS length, such as 20mm or 96px.
+   */
+  height?: string | null;
+  config?: BlockConfig;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "epc".
+ */
+export interface Epc {
+  type: "epc";
+  name: string;
+  iban: string;
+  bic?: string | null;
+  /**
+   * Amount in euros, such as 12.50.
+   */
+  amount?: string | null;
+  purpose?: string | null;
+  reference?: string | null;
+  remittance?: string | null;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "gs1".
+ */
+export interface Gs1 {
+  type: "gs1";
+  elements: Gs1Element[];
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "gs1Element".
+ */
+export interface Gs1Element {
+  /**
+   * GS1 Application Identifier, such as 01 or 3103.
+   */
+  ai: string;
+  value: string;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "raw".
+ */
+export interface Raw {
+  type: "raw";
+  value: string;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "swiss".
+ */
+export interface Swiss {
+  type: "swiss";
+  creditorIban: string;
+  creditor: SwissAddress;
+  /**
+   * Amount in the given currency, such as 1949.75.
+   */
+  amount?: string | null;
+  currency?: string;
+  debtor?: SwissAddress | null;
+  referenceType?: SwissReferenceType;
+  reference?: string | null;
+  message?: string | null;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "swissAddress".
+ */
+export interface SwissAddress {
+  name: string;
+  street?: string | null;
+  buildingNumber?: string | null;
+  postalCode: string;
+  town: string;
+  country: string;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "text".
+ */
+export interface Text {
+  type: "text";
+  text: string;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "url".
+ */
+export interface Url {
+  type: "url";
+  url: string;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "vcard".
+ */
+export interface Vcard {
+  type: "vcard";
+  firstName: string;
+  lastName: string;
+  org?: string | null;
+  title?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  url?: string | null;
+}
+/**
+ * This interface was referenced by `Template`'s JSON-Schema
+ * via the `definition` "wifi".
+ */
+export interface Wifi {
+  type: "wifi";
+  ssid: string;
+  password?: string | null;
+  security?: WifiSecurity;
+  hidden?: boolean;
 }
 /**
  * This interface was referenced by `Template`'s JSON-Schema

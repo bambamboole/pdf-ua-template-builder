@@ -2,7 +2,13 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
-import type { Block, DividerBlock, SpacerBlock, TextBlock } from "../../types/generated/template";
+import type {
+  BarcodeBlock,
+  Block,
+  DividerBlock,
+  SpacerBlock,
+  TextBlock,
+} from "../../types/generated/template";
 import { BlockLayoutControls } from "./BlockLayoutControls";
 
 function renderControls(initial: Block) {
@@ -102,5 +108,25 @@ describe("BlockLayoutControls", () => {
       id: "rule",
       thickness: "2px",
     });
+  });
+
+  it("updates barcode height as a block-specific CSS length field", async () => {
+    const user = userEvent.setup();
+    const block = {
+      type: "barcode",
+      id: "code",
+      symbology: "qr",
+      height: "24mm",
+      content: { type: "raw", value: "ABC123" },
+    } satisfies BarcodeBlock;
+    const { onChangeBlock } = renderControls(block);
+
+    const height = screen.getByLabelText("Height");
+    expect(height).toHaveValue("24mm");
+
+    await user.clear(height);
+    await user.type(height, "28mm");
+
+    expect(onChangeBlock).toHaveBeenLastCalledWith({ ...block, height: "28mm" });
   });
 });

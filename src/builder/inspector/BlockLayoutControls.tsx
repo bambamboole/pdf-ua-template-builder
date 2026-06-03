@@ -83,6 +83,16 @@ function renderTypeSpecificControls(
           onChange={(value) => onChangeBlock(setBlockField(block, "maxHeight", value))}
         />
       );
+    case "barcode":
+      return (
+        <UnitField
+          name="height"
+          label="Height"
+          value={block.height ?? undefined}
+          placeholder={block.symbology === "swiss-qr" ? "46mm" : "24mm"}
+          onChange={(value) => onChangeBlock(setBlockField(block, "height", value))}
+        />
+      );
     case "divider":
       return (
         <>
@@ -159,6 +169,7 @@ function setCommonConfigField<TKey extends "width" | "align">(
     case "spacer":
     case "divider":
     case "table":
+    case "barcode":
       return setBlockConfigField(block, field, value);
   }
 }
