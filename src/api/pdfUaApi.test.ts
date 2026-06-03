@@ -45,10 +45,13 @@ const schema = {
 describe("fetchTemplateSchema", () => {
   it("requests /openapi.json joined to the base URL and returns components.schemas.Template", async () => {
     mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ openapi: "3.1.1", components: { schemas: { Template: schema } } }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({ openapi: "3.1.1", components: { schemas: { Template: schema } } }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      ),
     );
 
     const result = await fetchTemplateSchema("http://api.test");
@@ -61,10 +64,13 @@ describe("fetchTemplateSchema", () => {
 
   it("collapses duplicate slashes between base URL and path", async () => {
     const openApiResponse = () =>
-      new Response(JSON.stringify({ openapi: "3.1.1", components: { schemas: { Template: schema } } }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      });
+      new Response(
+        JSON.stringify({ openapi: "3.1.1", components: { schemas: { Template: schema } } }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      );
 
     mockFetch.mockResolvedValueOnce(openApiResponse());
     await fetchTemplateSchema("http://api.test/");
@@ -107,7 +113,9 @@ describe("fetchTemplateSchema", () => {
 
     await expect(fetchTemplateSchema("http://api.test")).resolves.toEqual(templateSchema);
 
-    expect(mockFetch.mock.calls.map(([url]) => String(url))).toEqual(["http://api.test/openapi.json"]);
+    expect(mockFetch.mock.calls.map(([url]) => String(url))).toEqual([
+      "http://api.test/openapi.json",
+    ]);
   });
 
   it("rewrites OpenAPI component refs into template $defs refs", async () => {
@@ -165,6 +173,55 @@ describe("fetchTemplateSchema", () => {
           },
           Block: { oneOf: [] },
         },
+      }),
+    );
+  });
+
+  it("repairs the 1.11.0 barcode component omission in the block union", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          openapi: "3.1.1",
+          components: {
+            schemas: {
+              Template: {
+                title: "Template",
+                type: "object",
+                $defs: {
+                  block: {
+                    oneOf: [{ $ref: "#/components/schemas/textBlock" }],
+                  },
+                  textBlock: {
+                    type: "object",
+                    properties: { type: { const: "text" } },
+                  },
+                  barcodeBlock: {
+                    type: "object",
+                    properties: { type: { const: "barcode" } },
+                  },
+                },
+                "x-pdfUa": {
+                  ...schema["x-pdfUa"],
+                  blockOrder: ["text", "image"],
+                },
+              },
+            },
+          },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+
+    await expect(fetchTemplateSchema("http://api.test")).resolves.toEqual(
+      expect.objectContaining({
+        $defs: expect.objectContaining({
+          block: {
+            oneOf: [{ $ref: "#/$defs/textBlock" }, { $ref: "#/$defs/barcodeBlock" }],
+          },
+        }),
+        "x-pdfUa": expect.objectContaining({
+          blockOrder: ["text", "image", "barcode"],
+        }),
       }),
     );
   });

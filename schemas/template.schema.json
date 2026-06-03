@@ -63,11 +63,11 @@
       "properties": {
         "width": {
           "type": "integer",
-          "minimum": 1.0
+          "minimum": 1
         },
         "height": {
           "type": "integer",
-          "minimum": 1.0
+          "minimum": 1
         }
       },
       "required": ["width", "height"],
@@ -91,22 +91,22 @@
         "top": {
           "type": ["integer", "null"],
           "description": "Top spacing in millimetres.",
-          "minimum": 0.0
+          "minimum": 0
         },
         "right": {
           "type": ["integer", "null"],
           "description": "Right spacing in millimetres.",
-          "minimum": 0.0
+          "minimum": 0
         },
         "bottom": {
           "type": ["integer", "null"],
           "description": "Bottom spacing in millimetres.",
-          "minimum": 0.0
+          "minimum": 0
         },
         "left": {
           "type": ["integer", "null"],
           "description": "Left spacing in millimetres.",
-          "minimum": 0.0
+          "minimum": 0
         }
       },
       "additionalProperties": false
@@ -153,10 +153,342 @@
       "required": ["src"],
       "additionalProperties": false
     },
-    "dividerStyle": {
+    "symbology": {
       "type": "string",
-      "title": "DividerStyle",
-      "enum": ["solid", "dashed", "dotted", "double", "none"]
+      "title": "Symbology",
+      "enum": [
+        "qr",
+        "datamatrix",
+        "aztec",
+        "pdf417",
+        "code128",
+        "code39",
+        "ean13",
+        "ean8",
+        "upca",
+        "upce",
+        "itf14",
+        "codabar",
+        "gs1-128",
+        "gs1-datamatrix",
+        "gs1-qr",
+        "gs1-databar",
+        "gs1-databar-expanded",
+        "swiss-qr"
+      ]
+    },
+    "epc": {
+      "type": "object",
+      "title": "Epc",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "epc"
+        },
+        "name": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "iban": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "bic": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "amount": {
+          "type": ["string", "null"],
+          "description": "Amount in euros, such as 12.50.",
+          "x-pdfUaGroup": "content"
+        },
+        "purpose": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "remittance": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["type", "name", "iban"],
+      "additionalProperties": false
+    },
+    "gs1Element": {
+      "type": "object",
+      "title": "Gs1Element",
+      "properties": {
+        "ai": {
+          "type": "string",
+          "description": "GS1 Application Identifier, such as 01 or 3103.",
+          "x-pdfUaGroup": "content"
+        },
+        "value": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["ai", "value"],
+      "additionalProperties": false
+    },
+    "gs1": {
+      "type": "object",
+      "title": "Gs1",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "gs1"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gs1Element"
+          },
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["type", "elements"],
+      "additionalProperties": false
+    },
+    "raw": {
+      "type": "object",
+      "title": "Raw",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "raw"
+        },
+        "value": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["type", "value"],
+      "additionalProperties": false
+    },
+    "swissAddress": {
+      "type": "object",
+      "title": "SwissAddress",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "street": {
+          "type": ["string", "null"]
+        },
+        "buildingNumber": {
+          "type": ["string", "null"]
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "town": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "required": ["name", "postalCode", "town", "country"],
+      "additionalProperties": false
+    },
+    "swissReferenceType": {
+      "type": "string",
+      "title": "SwissReferenceType",
+      "enum": ["QRR", "SCOR", "NON"]
+    },
+    "swiss": {
+      "type": "object",
+      "title": "Swiss",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "swiss"
+        },
+        "creditorIban": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "creditor": {
+          "$ref": "#/$defs/swissAddress",
+          "x-pdfUaGroup": "content"
+        },
+        "amount": {
+          "type": ["string", "null"],
+          "description": "Amount in the given currency, such as 1949.75.",
+          "x-pdfUaGroup": "content"
+        },
+        "currency": {
+          "type": "string",
+          "x-pdfUaDefault": "CHF",
+          "x-pdfUaGroup": "content"
+        },
+        "debtor": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/swissAddress"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-pdfUaGroup": "content"
+        },
+        "referenceType": {
+          "$ref": "#/$defs/swissReferenceType",
+          "x-pdfUaDefault": "NON",
+          "x-pdfUaGroup": "content"
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "message": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["type", "creditorIban", "creditor"],
+      "additionalProperties": false
+    },
+    "text": {
+      "type": "object",
+      "title": "Text",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "text"
+        },
+        "text": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["type", "text"],
+      "additionalProperties": false
+    },
+    "url": {
+      "type": "object",
+      "title": "Url",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "url"
+        },
+        "url": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["type", "url"],
+      "additionalProperties": false
+    },
+    "vcard": {
+      "type": "object",
+      "title": "Vcard",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "vcard"
+        },
+        "firstName": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "lastName": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "org": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "title": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "phone": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "email": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "url": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["type", "firstName", "lastName"],
+      "additionalProperties": false
+    },
+    "wifiSecurity": {
+      "type": "string",
+      "title": "WifiSecurity",
+      "enum": ["WPA", "WEP", "nopass"]
+    },
+    "wifi": {
+      "type": "object",
+      "title": "Wifi",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "wifi"
+        },
+        "ssid": {
+          "type": "string",
+          "x-pdfUaGroup": "content"
+        },
+        "password": {
+          "type": ["string", "null"],
+          "x-pdfUaGroup": "content"
+        },
+        "security": {
+          "$ref": "#/$defs/wifiSecurity",
+          "x-pdfUaDefault": "WPA",
+          "x-pdfUaGroup": "content"
+        },
+        "hidden": {
+          "type": "boolean",
+          "x-pdfUaDefault": false,
+          "x-pdfUaGroup": "content"
+        }
+      },
+      "required": ["type", "ssid"],
+      "additionalProperties": false
+    },
+    "barcodeContent": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/epc"
+        },
+        {
+          "$ref": "#/$defs/gs1"
+        },
+        {
+          "$ref": "#/$defs/raw"
+        },
+        {
+          "$ref": "#/$defs/swiss"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/url"
+        },
+        {
+          "$ref": "#/$defs/vcard"
+        },
+        {
+          "$ref": "#/$defs/wifi"
+        }
+      ]
     },
     "typographyConfig": {
       "type": "object",
@@ -169,7 +501,7 @@
         "size": {
           "type": ["integer", "null"],
           "description": "Font size in points.",
-          "minimum": 1.0
+          "minimum": 1
         },
         "weight": {
           "type": ["string", "null"],
@@ -230,6 +562,44 @@
       "additionalProperties": false,
       "tsType": "{ typography?: TypographyConfig; spacing?: SpacingConfig; width?: string | null; align?: Align | null }"
     },
+    "barcodeBlock": {
+      "type": "object",
+      "title": "BarcodeBlock",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "barcode"
+        },
+        "id": {
+          "type": ["string", "null"],
+          "description": "Stable block identifier used for runtime data overrides."
+        },
+        "symbology": {
+          "$ref": "#/$defs/symbology",
+          "x-pdfUaGroup": "content"
+        },
+        "content": {
+          "$ref": "#/$defs/barcodeContent",
+          "x-pdfUaGroup": "content"
+        },
+        "height": {
+          "type": ["string", "null"],
+          "description": "Rendered code height as a CSS length, such as 20mm or 96px.",
+          "pattern": "^(auto|\\d+(\\.\\d+)?(mm|cm|in|px|pt|pc|em|rem|%|vw|vh|ch))$",
+          "x-pdfUaGroup": "layout"
+        },
+        "config": {
+          "$ref": "#/$defs/blockConfig"
+        }
+      },
+      "required": ["type", "symbology", "content"],
+      "additionalProperties": false
+    },
+    "dividerStyle": {
+      "type": "string",
+      "title": "DividerStyle",
+      "enum": ["solid", "dashed", "dotted", "double", "none"]
+    },
     "dividerBlock": {
       "type": "object",
       "title": "DividerBlock",
@@ -286,8 +656,8 @@
         "level": {
           "type": "integer",
           "x-pdfUaDefault": 2,
-          "minimum": 1.0,
-          "maximum": 6.0,
+          "minimum": 1,
+          "maximum": 6,
           "x-pdfUaGroup": "content"
         },
         "config": {
@@ -559,6 +929,9 @@
         },
         {
           "$ref": "#/$defs/tableBlock"
+        },
+        {
+          "$ref": "#/$defs/barcodeBlock"
         }
       ]
     },
@@ -733,27 +1106,37 @@
       "Roboto",
       "Rubik"
     ],
-    "blockOrder": ["text", "html", "heading", "image", "key-value", "spacer", "divider", "table"],
+    "blockOrder": [
+      "text",
+      "html",
+      "heading",
+      "image",
+      "barcode",
+      "key-value",
+      "spacer",
+      "divider",
+      "table"
+    ],
     "pageFormats": [
       {
         "name": "A3",
-        "widthMm": 297.0,
-        "heightMm": 420.0
+        "widthMm": 297,
+        "heightMm": 420
       },
       {
         "name": "A4",
-        "widthMm": 210.0,
-        "heightMm": 297.0
+        "widthMm": 210,
+        "heightMm": 297
       },
       {
         "name": "A5",
-        "widthMm": 148.0,
-        "heightMm": 210.0
+        "widthMm": 148,
+        "heightMm": 210
       },
       {
         "name": "A6",
-        "widthMm": 105.0,
-        "heightMm": 148.0
+        "widthMm": 105,
+        "heightMm": 148
       },
       {
         "name": "Letter",

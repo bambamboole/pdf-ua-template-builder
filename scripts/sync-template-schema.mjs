@@ -35,11 +35,68 @@ function extractTemplateSchema(openApi) {
     ? template.$defs
     : Object.fromEntries(Object.entries(schemas).filter(([name]) => name !== "Template"));
 
-  return rewriteOpenApiRefs({
-    $schema: "https://json-schema.org/draft/2020-12/schema",
-    ...template,
-    $defs: templateDefs,
-  });
+  return rewriteOpenApiRefs(
+    repairKnownOpenApiOmissions({
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      ...template,
+      $defs: templateDefs,
+    }),
+  );
+}
+
+function repairKnownOpenApiOmissions(schema) {
+  const defs = schema.$defs;
+  const block = defs?.block;
+  const barcodeBlock = defs?.barcodeBlock;
+
+  if (!isRecord(defs) || !isRecord(block) || !isRecord(barcodeBlock)) {
+    return schema;
+  }
+
+  const oneOf = Array.isArray(block.oneOf) ? block.oneOf : [];
+  const hasBarcodeBlock = oneOf.some(
+    (entry) => isRecord(entry) && entry.$ref === "#/components/schemas/barcodeBlock",
+  );
+
+  if (hasBarcodeBlock) {
+    return schema;
+  }
+
+  const metadata = schema["x-pdfUa"];
+  const blockOrder = Array.isArray(metadata?.blockOrder) ? metadata.blockOrder : undefined;
+
+  return {
+    ...schema,
+    $defs: {
+      ...defs,
+      block: {
+        ...block,
+        oneOf: [...oneOf, { $ref: "#/components/schemas/barcodeBlock" }],
+      },
+    },
+    ...(blockOrder
+      ? {
+          "x-pdfUa": {
+            ...metadata,
+            blockOrder: insertAfter(blockOrder, "image", "barcode"),
+          },
+        }
+      : {}),
+  };
+}
+
+function insertAfter(values, after, value) {
+  if (values.includes(value)) {
+    return values;
+  }
+
+  const index = values.indexOf(after);
+
+  if (index === -1) {
+    return [...values, value];
+  }
+
+  return [...values.slice(0, index + 1), value, ...values.slice(index + 1)];
 }
 
 function rewriteOpenApiRefs(value) {

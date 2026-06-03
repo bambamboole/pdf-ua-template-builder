@@ -27,6 +27,21 @@ describe("BlockDataPreview", () => {
     expect(image).toHaveAttribute("alt", "PDF UA Kit logo");
   });
 
+  it("renders barcode symbology and content summary directly on the card", () => {
+    const block: Block = {
+      type: "barcode",
+      id: "tracking",
+      symbology: "qr",
+      content: { type: "url", url: "https://example.com/track/ABC123" },
+    };
+
+    render(<BlockDataPreview block={block} />);
+
+    expect(screen.getByText("QR")).toBeInTheDocument();
+    expect(screen.getByText("url")).toBeInTheDocument();
+    expect(screen.getByText("https://example.com/track/ABC123")).toBeInTheDocument();
+  });
+
   it("renders key-value labels and values directly on the card", () => {
     const block: Block = {
       type: "key-value",

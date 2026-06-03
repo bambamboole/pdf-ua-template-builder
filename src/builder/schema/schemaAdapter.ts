@@ -131,6 +131,14 @@ export function createDefaultBlock(schema: JsonSchemaObject, blockType: string, 
     }
   }
 
+  if (blockType === "barcode") {
+    return {
+      ...block,
+      symbology: typeof block.symbology === "string" ? block.symbology : "qr",
+      content: { type: "raw", value: "Example" },
+    } as unknown as Block;
+  }
+
   return block as unknown as Block;
 }
 

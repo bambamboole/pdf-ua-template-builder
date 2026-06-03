@@ -1,6 +1,7 @@
 import { useRef, type ReactNode } from "react";
 import type {
   Block,
+  BarcodeBlock,
   DividerBlock,
   HeadingBlock,
   HtmlBlock,
@@ -11,6 +12,7 @@ import type {
   TableBlock,
   TextBlock,
 } from "../../types/generated/template";
+import { describeBarcodeContent, symbologyLabel } from "../blocks/barcode";
 import { isRecord } from "../lib/records";
 import { setBlockField } from "../state/configUpdates";
 import { ColumnResizer } from "./ColumnResizer";
@@ -41,6 +43,8 @@ export function BlockDataPreview({ block, rowData, onChange }: BlockDataPreviewP
       return <HtmlPreview block={block} />;
     case "image":
       return <ImagePreview block={block} />;
+    case "barcode":
+      return <BarcodePreview block={block} />;
     case "key-value":
       return <KeyValuePreview block={block} rowData={rowData} onChange={onChange} />;
     case "table":
@@ -52,6 +56,29 @@ export function BlockDataPreview({ block, rowData, onChange }: BlockDataPreviewP
     default:
       return null;
   }
+}
+
+function BarcodePreview({ block }: { block: BarcodeBlock }) {
+  const content = describeBarcodeContent(block.content).trim();
+
+  return (
+    <div className="grid gap-2 rounded-md border border-solid border-border bg-surface-muted p-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="inline-grid h-8 w-8 flex-none place-items-center rounded border border-solid border-border bg-surface font-mono text-sm text-fg">
+          ▥
+        </span>
+        <div className="min-w-0">
+          <p className="m-0 text-sm font-medium text-fg">{symbologyLabel(block.symbology)}</p>
+          <p className="m-0 text-2xs text-fg-muted">{block.content.type}</p>
+        </div>
+      </div>
+      {content ? (
+        <p className={copyClass}>{content}</p>
+      ) : (
+        <EmptyPreview>No barcode content yet</EmptyPreview>
+      )}
+    </div>
+  );
 }
 
 function TextPreview({

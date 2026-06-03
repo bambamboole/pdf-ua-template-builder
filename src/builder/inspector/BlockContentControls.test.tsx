@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import type {
+  BarcodeBlock,
   Block,
   HeadingBlock,
   HtmlBlock,
@@ -146,6 +147,42 @@ describe("BlockContentControls", () => {
     expect(onChangeBlock).toHaveBeenLastCalledWith(
       expect.objectContaining({ alt: "Updated logo" }),
     );
+  });
+
+  it("updates barcode content and coerces incompatible symbologies", async () => {
+    const user = userEvent.setup();
+    const block = {
+      type: "barcode",
+      id: "tracking",
+      symbology: "code128",
+      content: { type: "raw", value: "ABC123" },
+    } satisfies BarcodeBlock;
+    const { onChangeBlock } = renderControls(block);
+
+    expect(screen.getByLabelText("Symbology")).toHaveValue("code128");
+    expect(screen.getByLabelText("Content")).toHaveValue("raw");
+    expect(screen.getByLabelText("Value")).toHaveValue("ABC123");
+
+    await user.selectOptions(screen.getByLabelText("Content"), "url");
+
+    expect(onChangeBlock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        symbology: "qr",
+        content: { type: "url", url: "https://example.com" },
+      }),
+    );
+    expect(screen.getByLabelText("URL")).toHaveValue("https://example.com");
+
+    await user.selectOptions(screen.getByLabelText("Symbology"), "swiss-qr");
+
+    expect(onChangeBlock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        symbology: "swiss-qr",
+        height: "46mm",
+        content: expect.objectContaining({ type: "swiss" }),
+      }),
+    );
+    expect(screen.getByLabelText("Creditor IBAN")).toHaveValue("CH4431999123000889012");
   });
 });
 
